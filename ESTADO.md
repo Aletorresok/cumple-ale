@@ -22,6 +22,8 @@
   lecturas y 200 escrituras. Una noche completa debería quedar entre 15.000 y 25.000 lecturas,
   dentro de la cuota gratis (50.000 por día) si el Firebase es propio.
 
+- Plan B en papel: el botón 🖨 de cada banco imprime todo para jugar sin internet.
+
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.

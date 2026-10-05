@@ -492,6 +492,18 @@ body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidde
   .imp-titulo { font-weight: bold; font-size: 13pt; margin-bottom: 4mm; }
   .imp-qr { width: 55mm; margin: 0 auto; }
   .imp-pie { font-size: 9pt; margin-top: 3mm; }
+  /* Plan B en papel */
+  .respaldo { font: 11pt sans-serif; }
+  .imp-seccion + .imp-seccion { break-before: page; }
+  .imp-h { font-size: 16pt; margin: 0 0 2mm; }
+  .imp-ayuda { font-size: 10pt; margin: 0 0 4mm; }
+  .imp-tabla { width: 100%; border-collapse: collapse; }
+  .imp-tabla th, .imp-tabla td { border: 1pt solid #000; padding: 3mm; text-align: left; }
+  .imp-total td { font-weight: bold; height: 10mm; }
+  .imp-recortes { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .imp-recorte { border: 1pt dashed #000; height: 30mm; display: grid; place-items: center; text-align: center; padding: 3mm; font-size: 14pt; font-weight: bold; break-inside: avoid; }
+  .imp-bloque { margin-bottom: 5mm; break-inside: avoid; }
+  .imp-bloque ol { margin: 1mm 0 0; }
 }
 
 /* ── Portal de clases ── */
