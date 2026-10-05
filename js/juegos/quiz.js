@@ -204,7 +204,7 @@ export default {
               const pe = j.porEquipo?.[e.id] || { ok: 0, n: 0, pts: 0 };
               return h('div', { class: 'tv-eq', style: { '--c': e.color } },
                 h('span', { class: 'tv-eq-nombre' }, e.nombre),
-                h('span', { class: 'tv-eq-dato' }, `${pe.ok}/${pe.n} acertaron`),
+                h('span', { class: 'tv-eq-dato' }, `${pe.ok}/${pe.n} ✓`),
                 h('span', { class: 'tv-eq-pts' }, `+${pe.pts}`));
             }))
             : barras);

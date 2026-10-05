@@ -327,7 +327,7 @@ body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidde
 .tv-eq-nombre { font-weight: 700; }
 .tv-eq-barra { height: .6em; background: var(--tv-surface2); border-radius: 99px; overflow: hidden; }
 .tv-eq-barra b { display: block; height: 100%; background: var(--c); transition: width .4s; }
-.tv-eq-dato { font-family: var(--mono); color: var(--tv-muted); white-space: nowrap; }
+.tv-eq-dato { font-family: var(--mono); color: var(--tv-muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .tv-eq-pts { font-family: var(--mono); font-weight: 700; color: var(--mark); }
 
 .tv-rosco { flex: 1; min-height: 0; display: grid; grid-template-columns: auto 1fr; gap: 4vw; align-items: center; }
