@@ -25,6 +25,11 @@ cada juego, tocás **🧩 Dar pieza** en el equipo que ganó: le llega un númer
 posición, que ven en el celular. En el escape final, en modo cooperativo, los equipos tienen que
 juntar sus piezas para abrir el último candado. El escape de ejemplo ya viene preparado así.
 
+**🍩 Temática Springfield (Los Simpson).** Toda la noche pasa en Springfield: los equipos son
+Krusty Burger, Escuela Primaria, Planta Nuclear y Taberna de Moe (se pueden renombrar), la
+pantalla grande da la bienvenida a Springfield, y en «Mis bancos» está el banco *Springfield*
+con trivia, mímica, pares del impostor y encuestas de la serie.
+
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
 (unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
 música* y *Cultura general*. Se pueden editar o combinar, y sumar preguntas sobre Ale.

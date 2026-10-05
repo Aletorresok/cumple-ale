@@ -1,29 +1,32 @@
 /* Cumple Ale — estilos (base: Recreo, de juegos-aula)
-   Paleta de fiesta con acento violeta y dorado. La pantalla grande es siempre oscura. */
+   Temática Springfield: cielo celeste, azul Marge de acento y amarillo Simpson para lo que
+   brilla. La pantalla grande es siempre oscura, como el cielo de Springfield de noche. */
 :root {
   color-scheme: light;
-  --bg: #F6F2F8;
+  --bg: #EDF6FC;
   --surface: #FFFFFF;
-  --surface2: #EEE7F2;
-  --ink: #1E1724;
-  --muted: #675C70;
-  --line: #DED3E5;
-  --accent: #6B2FA8;
-  --accent-hover: #57248A;
+  --surface2: #DCEDF8;
+  --ink: #16202E;
+  --muted: #546273;
+  --line: #C7DDEC;
+  --accent: #1F5FBF;
+  --accent-hover: #184C99;
   --accent-ink: #FFFFFF;
-  --accent-soft: #EBDDF6;
-  --mark: #F2C94C;
-  --mark-ink: #3A2E00;
+  --accent-soft: #D7E6FA;
+  --mark: #FED90F;
+  --mark-ink: #2B2300;
   --ok: #1F8A55;
   --bad: #C7363F;
   --t1: #E4572E; --t2: #2E6FE4; --t3: #2BA36B; --t4: #8A4FD8; --t5: #C98A12; --t6: #1A9BA8;
-  --tv-bg: #140F1C;
-  --tv-surface: #221A2E;
-  --tv-surface2: #2F2440;
-  --tv-tinta: #EEF2F6;
-  --tv-muted: #93A0AF;
+  --tv-bg: #0D1626;
+  --tv-cielo: #17325A;
+  --tv-surface: #182539;
+  --tv-surface2: #22344D;
+  --tv-tinta: #EEF3F8;
+  --tv-muted: #93A4B8;
   --mi-color: var(--accent);
-  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --display: "Lilita One", "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif;
+  font-synthesis-weight: none;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   --radio: 12px;
@@ -31,16 +34,16 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --bg: #121014;
-    --surface: #1B1720;
-    --surface2: #261F2D;
-    --ink: #ECE6F0;
-    --muted: #A99DB3;
-    --line: #352C3E;
-    --accent: #B98AF0;
-    --accent-hover: #C9A2F5;
-    --accent-ink: #1A0E26;
-    --accent-soft: #2E2240;
+    --bg: #0E1520;
+    --surface: #16202E;
+    --surface2: #1F2B3C;
+    --ink: #E8EFF7;
+    --muted: #9DACBD;
+    --line: #2A3A50;
+    --accent: #7FB2FF;
+    --accent-hover: #A0C6FF;
+    --accent-ink: #0B1A33;
+    --accent-soft: #1D3150;
     --ok: #4CC38A;
     --bad: #F0646C;
   }
@@ -285,7 +288,8 @@ button.nube-palabra:hover { text-decoration: underline; }
 .nube-palabra.tachada { opacity: .35; text-decoration: line-through; }
 
 /* ════════ Pantalla grande ════════ */
-body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidden; }
+body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-bg) 42%) fixed, var(--tv-bg); color: var(--tv-tinta); overflow: hidden; }
+.tv-bienvenida { font-family: var(--display); font-size: 2.4em; line-height: 1.05; color: var(--mark); text-shadow: 0 .06em 0 #000; }
 .tv { height: 100dvh; display: grid; grid-template-rows: 1fr auto; padding: 2.5vh 3vw; gap: 2vh; font-size: clamp(16px, 1.6vw, 34px); color-scheme: dark; }
 .tv-controles { position: fixed; bottom: 10px; right: 12px; display: flex; gap: 8px; z-index: 5; opacity: 0; transition: opacity .3s; }
 .tv-controles.visible, .tv-controles:hover, .tv-controles:focus-within { opacity: 1; }

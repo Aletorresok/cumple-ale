@@ -14,12 +14,13 @@ export const firebaseConfig = {
 
 // Equipos disponibles al crear una sala (se usan los primeros N).
 export const EQUIPOS_BASE = [
-  { id: 'e1', nombre: 'Coral',    color: '#E4572E' },
-  { id: 'e2', nombre: 'Azul',     color: '#2E6FE4' },
-  { id: 'e3', nombre: 'Verde',    color: '#2BA36B' },
-  { id: 'e4', nombre: 'Violeta',  color: '#8A4FD8' },
-  { id: 'e5', nombre: 'Ámbar',    color: '#C98A12' },
-  { id: 'e6', nombre: 'Turquesa', color: '#1A9BA8' },
+// Temática Springfield: cada equipo es un lugar de la ciudad (se pueden renombrar en el panel).
+  { id: 'e1', nombre: 'Krusty Burger',       color: '#E4572E' },
+  { id: 'e2', nombre: 'Escuela Primaria',    color: '#3D8BFF' },
+  { id: 'e3', nombre: 'Planta Nuclear',      color: '#2BA36B' },
+  { id: 'e4', nombre: 'Taberna de Moe',      color: '#8A4FD8' },
+  { id: 'e5', nombre: 'Kwik-E-Mart',         color: '#C98A12' },
+  { id: 'e6', nombre: 'Avenida Siempreviva', color: '#1A9BA8' },
 ];
 
 // Una sala se puede usar durante este tiempo; después no admite invitados nuevos.

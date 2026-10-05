@@ -30,7 +30,8 @@ async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
       if (!existsSync(archivo)) return r.abort();
       return r.fulfill({ body: readFileSync(archivo), contentType: 'text/javascript' });
     });
-    await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    // Las fuentes de Google se cortan para ir más rápido, salvo con FUENTES=1 (para capturas).
+    if (!process.env.FUENTES) await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   }
   const p = await ctx.newPage();
   p.on('console', (m) => { if (m.type() === 'error') errores.push(`${nombre}: ${m.text()}`); });
@@ -87,6 +88,8 @@ try {
   await host.getByText('Mis bancos').waitFor({ timeout: 20000 }); // la página se recarga sola al entrar
   await host.getByRole('button', { name: /banco de ejemplo/ }).click();
   await host.getByText('Cumple Ale · ejemplo').waitFor();
+  await host.getByRole('button', { name: '🍩 Agregar el banco Springfield' }).click();
+  await host.getByText('Springfield · Los Simpson').waitFor();
   await host.getByRole('button', { name: '⚡ Trivia · Bien argentina' }).click();
   await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');

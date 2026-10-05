@@ -25,6 +25,9 @@
 - Página de diagnóstico (`?diagnostico=ABCD`) para revisar conexión y sala antes de empezar.
 - Plan B en papel: el botón 🖨 de cada banco imprime todo para jugar sin internet.
 
+- Temática Springfield para toda la noche: equipos, colores, tipografía, bienvenida y banco Simpson.
+- Trivia «Bien argentina» con la pregunta del contrato, que sale siempre.
+
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.
@@ -33,6 +36,8 @@
 - A revisar: ¿Cuánto apostás?. Veremos: nube de deseos.
 - No: «¿Quién es más probable que…?».
 - Interés: sala de escape conectada con los otros juegos.
+- Temática Simpson para toda la noche (05/10).
+- Invitación por carta documento (PDF a mandar): llevarla al escape, firmada por Lionel Hutz.
 
 ## Pendiente
 

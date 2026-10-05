@@ -40,7 +40,7 @@ function formulario(raiz, codigo, aviso = '') {
     const error = await entrar(raiz, c, n, false);
     if (error) { estado.textContent = error; boton.disabled = false; }
   } },
-  h('div', { class: 'marca' }, 'Cumple Ale 🎉'),
+  h('div', { class: 'marca' }, 'Cumple Ale 🍩'),
   h('h1', null, 'Entrar a la sala'),
   h('label', { class: 'pila-s', hidden: !!codigo }, h('span', { class: 'etq' }, 'Código de la sala'), inCodigo),
   codigo && h('p', { class: 'muted' }, 'Sala ', h('b', { class: 'mono' }, codigo)),

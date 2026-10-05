@@ -63,6 +63,7 @@ function espera(el, sala) {
   const jugadores = sala.listaJugadores();
   montar(el, h('div', { class: 'tv-espera' },
     h('div', { class: 'tv-entrar' },
+      h('div', { class: 'tv-bienvenida' }, '¡Bienvenidos a Springfield!'),
       h('div', { class: 'tv-etiqueta' }, 'Entrá desde tu celular'),
       qr(enlace, 'qr qr-tv'),
       h('div', { class: 'tv-url' }, base),
