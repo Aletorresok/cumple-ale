@@ -10,7 +10,8 @@ export const TIPOS = {
     nombre: 'Preguntas', singular: 'pregunta',
     ayuda: 'Pregunta con una respuesta correcta y hasta 3 incorrectas. La usa la Trivia.',
     campos: [['pregunta', 'Pregunta', '¿En qué año salió Titanic?'], ['correcta', 'Respuesta correcta', '1997'],
-      ['inc1', 'Incorrecta 1', '1994'], ['inc2', 'Incorrecta 2 (opcional)', '2001'], ['inc3', 'Incorrecta 3 (opcional)', '1999']],
+      ['inc1', 'Incorrecta 1', '1994'], ['inc2', 'Incorrecta 2 (opcional)', '2001'], ['inc3', 'Incorrecta 3 (opcional)', '1999'],
+      ['fija', '¿Sale siempre? (escribí «sí» para que no quede afuera al sortear)', '']],
     formato: 'pregunta [TAB] correcta [TAB] incorrecta [TAB] incorrecta [TAB] incorrecta',
     ejemploPegado: '¿En qué año salió Titanic?\t1997\t1994\t2001\t1999',
     nota: 'Poné siempre la correcta en la segunda columna: el orden de las opciones se mezcla al jugar.',
@@ -129,7 +130,7 @@ function textoItem(it) {
   if (it.tipo === 'afirmacion') return [h('b', null, it.texto), h('br'), h('span', { class: it.verdadera ? 'ok-txt' : 'mal-txt' }, it.verdadera ? 'Verdadera' : 'Falsa'), it.explicacion ? h('span', { class: 'muted' }, ' · ' + it.explicacion) : null];
   if (it.tipo === 'escape') return [h('b', null, '🔐 ' + it.titulo), h('br'), h('span', { class: 'muted' }, `${it.candados.length} candados · ${it.minutos} minutos`)];
   if (it.tipo === 'encuesta') return [h('b', null, it.pregunta), h('br'), h('span', { class: 'muted' }, it.respuestas.map((r) => `${r.texto} (${r.puntos})`).join(' · '))];
-  return [h('b', null, it.pregunta), h('br'), h('span', { class: 'ok-txt' }, '✓ ' + it.correcta), ' · ',
+  return [it.fija && '⭐ ', h('b', null, it.pregunta), h('br'), h('span', { class: 'ok-txt' }, '✓ ' + it.correcta), ' · ',
     h('span', { class: 'muted' }, it.incorrectas.join(' · '))];
 }
 
@@ -142,7 +143,8 @@ function itemDesdeForm(tipo, v) {
     return v.pregunta && respuestas.length >= 2 ? { tipo, pregunta: v.pregunta, respuestas } : null;
   }
   const incorrectas = [v.inc1, v.inc2, v.inc3].filter(Boolean);
-  return v.pregunta && v.correcta && incorrectas.length ? { tipo, pregunta: v.pregunta, correcta: v.correcta, incorrectas } : null;
+  if (!v.pregunta || !v.correcta || !incorrectas.length) return null;
+  return { tipo, pregunta: v.pregunta, correcta: v.correcta, incorrectas, ...(/^s/i.test(v.fija || '') ? { fija: true } : {}) };
 }
 
 function valoresDeItem(it) {
@@ -150,7 +152,7 @@ function valoresDeItem(it) {
   if (it.tipo === 'encuesta') return { ...it, respuestas: it.respuestas.map((r) => `${r.texto} = ${r.puntos}`).join('\n') };
   if (it.tipo !== 'pregunta') return it;
   const [inc1 = '', inc2 = '', inc3 = ''] = it.incorrectas;
-  return { ...it, inc1, inc2, inc3 };
+  return { ...it, inc1, inc2, inc3, fija: it.fija ? 'sí' : '' };
 }
 
 // Editor de un banco. `alSalir` se llama al volver (con o sin cambios guardados).

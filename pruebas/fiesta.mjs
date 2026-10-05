@@ -88,7 +88,7 @@ try {
   await host.getByRole('button', { name: /banco de ejemplo/ }).click();
   await host.getByText('Cumple Ale · ejemplo').waitFor();
   await host.getByRole('button', { name: '⚡ Trivia · Bien argentina' }).click();
-  await host.getByText('15 preguntas').waitFor();
+  await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
   await host.getByRole('button', { name: 'Abrir una sala' }).click();
   const codigo = (await host.locator('.sala-codigo').textContent()).trim();
@@ -151,6 +151,7 @@ try {
   afirmar(distintas.length === 2, `dos palabras repartidas (${distintas})`);
   paso(`Impostor: palabras repartidas (${distintas.map((d) => `${d} ×${palabras.filter((x) => x === d).length}`).join(', ')})`);
   await captura(tv, '5-impostor-pistas');
+  await captura(invitados[0], '5a-impostor-celular');
 
   // ── Reconexión: se corta la red de tres celulares y otros tres recargan la página ──
   const cortados = invitados.slice(0, 3);
@@ -225,26 +226,34 @@ try {
   await elegirJuego(host, 'Los invitados dicen');
   await tv.locator('.tablero').waitFor({ timeout: 15000 });
   await captura(tv, '10-invitados-dicen');
+  await esperar(1500);
+  await captura(invitados[0], '10f-invitados-dicen-celular');
   paso('Los invitados dicen: arrancó con el tablero');
   await terminarJuego(host);
   await medir('Los invitados dicen (arranque)');
 
   // ── Trivia ──
   await elegirJuego(host, 'Trivia por equipos', async () => {
-    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Bien argentina — 15 preguntas' });
+    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Bien argentina — 16 preguntas' });
     await host.locator('#cfg-cantidad').selectOption('5');
   });
-  for (let n = 0; n < 2; n++) {
+  let salioContrato = false;
+  for (let n = 0; n < 5; n++) {
     await invitados[0].locator('.opcion').first().waitFor({ timeout: 15000 });
+    const pregunta = await tv.locator('.tv-pregunta').textContent();
+    const esContrato = pregunta.includes('contrato');
+    if (esContrato) { salioContrato = true; await captura(tv, '10c-trivia-contrato'); await captura(invitados[0], '10d-trivia-celular'); }
     await Promise.all(invitados.map((p) => p.locator('.opcion').nth(n % 2).click()));
-    await host.getByRole('button', { name: /Siguiente pregunta/ }).waitFor({ timeout: 20000 });
+    await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
     await tv.locator('.tv-opcion.correcta').waitFor();
     if (n === 0) await captura(tv, '10a-trivia');
-    await host.getByRole('button', { name: /Siguiente pregunta/ }).click();
+    if (esContrato) await captura(tv, '10e-trivia-contrato-revelada');
+    await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).click();
   }
-  paso('Trivia: dos preguntas respondidas por todos y reveladas solas');
+  afirmar(salioContrato, 'la pregunta del contrato sale siempre, aunque se sorteen 5');
+  paso('Trivia: cinco preguntas respondidas por todos, con la del contrato');
   await terminarJuego(host);
-  await medir('Trivia (dos preguntas)');
+  await medir('Trivia (cinco preguntas)');
 
   // ── Piezas del código final ──
   await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();

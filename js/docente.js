@@ -117,7 +117,7 @@ async function inicio(raiz, docente) {
     const catalogo = [
       agregar(BANCO_FIESTA, '🎉 Agregar el banco de ejemplo', 'Banco de ejemplo agregado'),
       trivias.length > 0 && h('div', { class: 'pila-s' },
-        h('span', { class: 'muted chico' }, 'Propuestas de temática para la trivia (15 preguntas cada una):'),
+        h('span', { class: 'muted chico' }, 'Propuestas de temática para la trivia (unas 15 preguntas cada una):'),
         h('div', { class: 'fila' }, trivias)),
     ];
     montar(zonaBancos,

@@ -30,7 +30,11 @@ export default {
 
   async iniciar(sala, { banco, cantidad, segundos }) {
     let items = mezclar(itemsDe(banco, 'pregunta'));
-    if (cantidad) items = items.slice(0, cantidad);
+    // Las preguntas marcadas como «sale siempre» entran aunque se sorteen menos.
+    if (cantidad) {
+      const fijas = items.filter((it) => it.fija);
+      items = mezclar([...fijas, ...items.filter((it) => !it.fija)].slice(0, Math.max(cantidad, fijas.length)));
+    }
     const preguntas = items.map((it) => {
       const opciones = mezclar([it.correcta, ...it.incorrectas]);
       return { pregunta: it.pregunta, opciones, correcta: opciones.indexOf(it.correcta) };
