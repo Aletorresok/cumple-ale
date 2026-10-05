@@ -171,7 +171,8 @@ function panelSala(raiz, docente, codigo) {
             h('a', { class: 'btn', href: urlApp('?tv=' + codigo), target: '_blank', rel: 'noopener' }, '📺 Abrir pantalla grande'),
             h('button', { class: 'btn sec', onclick: async () => {
               try { await navigator.clipboard.writeText(enlace); toast('Enlace copiado', 'ok'); } catch { toast(enlace); }
-            } }, 'Copiar enlace')))),
+            } }, 'Copiar enlace'),
+            h('a', { class: 'btn-link', href: urlApp('?diagnostico=' + codigo), target: '_blank', rel: 'noopener' }, '🩺 Diagnóstico')))),
       zonaJuego,
       zonaEquipos,
       piezas.el,

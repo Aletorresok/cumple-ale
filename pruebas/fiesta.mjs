@@ -94,6 +94,16 @@ try {
 
   const tv = await pagina('tv', `?tv=${codigo}`, { width: 1600, height: 900 });
 
+  // ── Diagnóstico de la sala (lo que se mira antes de que llegue la gente) ──
+  const diag = await pagina('diag', `?diagnostico=${codigo}`);
+  await diag.getByText(/Todo listo|Funciona, con avisos|problema/).waitFor({ timeout: 30000 });
+  const resumenDiag = await diag.locator('.diag-resumen').textContent();
+  afirmar(!resumenDiag.includes('❌'), `el diagnóstico no encuentra problemas (${resumenDiag}: ${(await diag.locator('.diag-fila.mal').allTextContents()).join(' | ')})`);
+  afirmar(await diag.getByText(`Sala ${codigo} abierta`).count(), 'el diagnóstico ve la sala abierta');
+  await captura(diag, '0-diagnostico');
+  paso(`Diagnóstico: ${resumenDiag}`);
+  await diag.close();
+
   // ── Invitados ──
   const invitados = [];
   for (let i = 0; i < N; i += 10) {

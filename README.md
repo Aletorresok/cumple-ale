@@ -32,6 +32,10 @@ deseos y 🎯 ¿A quién le toca? (sorteo).
 internet: tarjetas de mímica para recortar, pares del impostor por ronda, encuestas con sus
 respuestas, preguntas con la correcta marcada, el escape con sus respuestas y una hoja de puntos.
 
+**🩺 Diagnóstico.** `…/cumple-ale/?diagnostico` revisa en segundos que el dispositivo llega a
+Firebase y cuánto tarda; con `?diagnostico=ABCD` revisa también la sala (horas que le quedan,
+invitados, código final). Está enlazado desde el panel de la sala.
+
 ## Cómo se usa
 
 1. Entrá a la app y tocá **Organizo yo →**. Entrás con tu cuenta de Google.
