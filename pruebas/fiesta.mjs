@@ -87,6 +87,8 @@ try {
   await host.getByText('Mis bancos').waitFor({ timeout: 20000 }); // la página se recarga sola al entrar
   await host.getByRole('button', { name: /banco de ejemplo/ }).click();
   await host.getByText('Cumple Ale · ejemplo').waitFor();
+  await host.getByRole('button', { name: '⚡ Trivia · Bien argentina' }).click();
+  await host.getByText('15 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
   await host.getByRole('button', { name: 'Abrir una sala' }).click();
   const codigo = (await host.locator('.sala-codigo').textContent()).trim();
@@ -227,6 +229,23 @@ try {
   await terminarJuego(host);
   await medir('Los invitados dicen (arranque)');
 
+  // ── Trivia ──
+  await elegirJuego(host, 'Trivia por equipos', async () => {
+    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Bien argentina — 15 preguntas' });
+    await host.locator('#cfg-cantidad').selectOption('5');
+  });
+  for (let n = 0; n < 2; n++) {
+    await invitados[0].locator('.opcion').first().waitFor({ timeout: 15000 });
+    await Promise.all(invitados.map((p) => p.locator('.opcion').nth(n % 2).click()));
+    await host.getByRole('button', { name: /Siguiente pregunta/ }).waitFor({ timeout: 20000 });
+    await tv.locator('.tv-opcion.correcta').waitFor();
+    if (n === 0) await captura(tv, '10a-trivia');
+    await host.getByRole('button', { name: /Siguiente pregunta/ }).click();
+  }
+  paso('Trivia: dos preguntas respondidas por todos y reveladas solas');
+  await terminarJuego(host);
+  await medir('Trivia (dos preguntas)');
+
   // ── Piezas del código final ──
   await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();
   await host.waitForFunction(() => document.querySelector('#codigo-final')?.value === '0811');
@@ -277,8 +296,10 @@ try {
   await medir('Podio');
 
   // ── Plan B en papel ──
+  const usoHost = await usoDe(host);
+  usoPrevio.lecturas += usoHost.lecturas; usoPrevio.escrituras += usoHost.escrituras;
   await host.goto(BASE + '?docente');
-  await host.getByRole('button', { name: 'Imprimir plan B' }).click();
+  await host.getByRole('listitem').filter({ hasText: 'Cumple Ale · ejemplo' }).getByRole('button', { name: 'Imprimir plan B' }).click();
   await host.emulateMedia({ media: 'print' });
   const impreso = host.locator('#impresion');
   await impreso.waitFor();

@@ -28,7 +28,8 @@
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.
-- Trivia: sí, pero con otra temática (falta definir cuál).
+- Trivia: sí, pero con otra temática. Hay tres propuestas para elegir en «Mis bancos»: Bien
+  argentina, Cine tele y música, y Cultura general.
 - A revisar: ¿Cuánto apostás?. Veremos: nube de deseos.
 - No: «¿Quién es más probable que…?».
 - Interés: sala de escape conectada con los otros juegos.
@@ -38,4 +39,4 @@
 - Probarlo en una tele y celulares reales.
 - Pasar a un Firebase propio (ver README).
 - Cargar el banco real con cosas de la familia y los amigos.
-- Temática de la trivia.
+- Elegir la temática de la trivia entre las tres propuestas.

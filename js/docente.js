@@ -3,6 +3,7 @@ import { usuario, esDocente, entrarConGoogle, salir, mensajeError, alCambiarUsua
 import { Sala, crearSala, misSalas, cerrarSala } from './sala.js';
 import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, itemsDe } from './bancos.js';
 import { BANCO_FIESTA } from './ejemplos.js';
+import { TRIVIAS } from './trivias.js';
 import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
 import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
@@ -107,12 +108,18 @@ async function inicio(raiz, docente) {
 
   try {
     const bancos = await misBancos(docente.uid);
-    const tieneEjemplo = bancos.some((b) => b.plantilla === BANCO_FIESTA.id);
-    const catalogo = !tieneEjemplo && h('button', { class: 'btn sec', onclick: async () => {
-      const { id, ...datos } = BANCO_FIESTA;
-      try { await guardarBanco(docente.uid, { ...structuredClone(datos), plantilla: id }); toast('Banco de ejemplo agregado', 'ok'); inicio(raiz, docente); }
+    const agregar = (plantilla, texto, aviso) => !bancos.some((b) => b.plantilla === plantilla.id) && h('button', { class: 'btn sec', onclick: async () => {
+      const { id, ...datos } = plantilla;
+      try { await guardarBanco(docente.uid, { ...structuredClone(datos), plantilla: id }); toast(aviso, 'ok'); inicio(raiz, docente); }
       catch (e) { toast(mensajeError(e), 'error'); }
-    } }, '🎉 Agregar el banco de ejemplo');
+    } }, texto);
+    const trivias = TRIVIAS.map((t) => agregar(t, `⚡ ${t.titulo}`, 'Trivia agregada')).filter(Boolean);
+    const catalogo = [
+      agregar(BANCO_FIESTA, '🎉 Agregar el banco de ejemplo', 'Banco de ejemplo agregado'),
+      trivias.length > 0 && h('div', { class: 'pila-s' },
+        h('span', { class: 'muted chico' }, 'Propuestas de temática para la trivia (15 preguntas cada una):'),
+        h('div', { class: 'fila' }, trivias)),
+    ];
     montar(zonaBancos,
       bancos.length
         ? h('ul', { class: 'bancos' }, bancos.map((b) => h('li', { class: 'tarjeta banco' },
