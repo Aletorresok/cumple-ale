@@ -1,9 +1,10 @@
 // Panel de quien organiza: bancos de contenido, salas y control de los juegos.
 import { usuario, esDocente, entrarConGoogle, salir, mensajeError, alCambiarUsuario } from './fb.js';
 import { Sala, crearSala, misSalas, cerrarSala } from './sala.js';
-import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, claveItem } from './bancos.js';
+import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, itemsDe } from './bancos.js';
 import { BANCO_FIESTA } from './ejemplos.js';
 import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
+import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar } from './util.js';
 import { qr } from './qr.js';
 
@@ -148,6 +149,7 @@ function panelSala(raiz, docente, codigo) {
   const enlace = urlApp('?sala=' + codigo);
   const zonaJuego = h('section', { class: 'tarjeta pila' });
   const zonaEquipos = h('section', { class: 'tarjeta pila' });
+  const piezas = panelPiezas(sala, () => bancos);
   const contadorAlumnos = h('span', null, '0');
   let entrada;
 
@@ -170,6 +172,7 @@ function panelSala(raiz, docente, codigo) {
             } }, 'Copiar enlace')))),
       zonaJuego,
       zonaEquipos,
+      piezas.el,
       h('div', { class: 'fila entre' },
         h('button', { class: 'btn-link', onclick: salirAlInicio }, '← Volver al inicio (la sala sigue abierta)'),
         h('button', { class: 'btn-link peligro', onclick: async () => {
@@ -185,7 +188,7 @@ function panelSala(raiz, docente, codigo) {
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.jugadores.size;
     if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
-    if (motivo !== 'respuestas') dibujarEquipos();
+    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
 
@@ -316,3 +319,59 @@ function panelSala(raiz, docente, codigo) {
   window.addEventListener('popstate', () => location.reload(), { once: true });
 }
 
+
+// ── Piezas del código final ──
+// Conecta los juegos con el escape: cada juego ganado le da al equipo una pieza del código del
+// candado final, que ve en su celular. En el escape final, los equipos juntan sus piezas.
+function panelPiezas(sala, bancos) {
+  const input = h('input', { class: 'campo mono', id: 'codigo-final', maxlength: 12, placeholder: 'Ej.: 0811', autocomplete: 'off' });
+  const sugerencias = h('div', { class: 'fila' });
+  const lista = h('div', { class: 'pila-s' });
+  const guardar = async (valor) => {
+    try {
+      const c = await sala.definirCodigoFinal(valor);
+      input.value = c;
+      toast(c ? `Código final: ${c}` : 'Sin código final', 'ok');
+    } catch (e) { toast(mensajeError(e), 'error'); }
+  };
+  const el = h('section', { class: 'tarjeta pila' },
+    h('h2', null, '🧩 Piezas del código final'),
+    h('p', { class: 'muted chico' }, 'Escribí el código del último candado del escape. Después de cada juego, dale una pieza al equipo que ganó: la ve en su celular. En el escape final juntan las piezas para abrir el candado.'),
+    h('form', { class: 'fila', onsubmit: (e) => { e.preventDefault(); guardar(input.value); } },
+      input, h('button', { class: 'btn sec', type: 'submit' }, 'Guardar código')),
+    sugerencias, lista);
+
+  sala.codigoFinal().then((c) => { if (c && !input.value) input.value = c; }).catch(() => {});
+
+  // Ofrece el código del último candado de cada escape de los bancos (si es de números o letras).
+  let sugeridos = '';
+  function dibujarSugerencias() {
+    const opciones = bancos().flatMap((b) => itemsDe(b, 'escape'))
+      .map((e) => ({ titulo: e.titulo, c: e.candados[e.candados.length - 1] }))
+      .filter(({ c }) => c && (c.tipo === 'numero' || c.tipo === 'palabra'))
+      .map(({ titulo, c }) => ({ titulo, codigo: String(c.respuesta).split('/')[0].replace(/\s+/g, '').toUpperCase() }));
+    const clave = JSON.stringify(opciones);
+    if (clave === sugeridos) return;
+    sugeridos = clave;
+    montar(sugerencias, opciones.map((o) => h('button', { class: 'btn-link chico', type: 'button', onclick: () => guardar(o.codigo) },
+      `Usar el del escape «${o.titulo}»`)));
+  }
+
+  function refrescar() {
+    dibujarSugerencias();
+    if (!sala.data?.piezas?.largo) { montar(lista); return; }
+    montar(lista, sala.equipos().map((e) => {
+      const texto = sala.textoPiezas(e.id);
+      return h('div', { class: 'fila entre nowrap' },
+        h('span', { class: 'fila nowrap' }, pildoraEquipo(e), h('span', { class: 'mono' }, texto || 'sin piezas')),
+        h('button', { class: 'btn sec chico', onclick: async (ev) => {
+          ev.currentTarget.disabled = true;
+          try {
+            const pos = await sala.darPieza(e.id);
+            toast(pos === null ? `${e.nombre} ya tiene el código completo` : `🧩 Pieza para ${e.nombre}`, 'ok');
+          } catch (err) { toast(mensajeError(err), 'error'); }
+        } }, '🧩 Dar pieza'));
+    }));
+  }
+  return { el, refrescar };
+}

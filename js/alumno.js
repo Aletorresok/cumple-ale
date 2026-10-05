@@ -111,7 +111,8 @@ function enSala(raiz, codigo, uid, nombre) {
   sala.escuchar({}, (motivo) => {
     if (sala.data.cerrada) { cerrada(); return; }
     const eq = sala.equipoDe(uid);
-    montar(miEquipo, pildoraEquipo(eq, eq ? ` · ${eq.puntos} pts` : ''));
+    const pz = eq ? sala.textoPiezas(eq.id) : '';
+    montar(miEquipo, pildoraEquipo(eq, eq ? ` · ${eq.puntos} pts` : ''), pz && h('span', { class: 'piezas-chip mono', title: 'Piezas del código final' }, '🧩 ', pz));
     document.documentElement.style.setProperty('--mi-color', eq?.color || 'var(--accent)');
     const j = sala.juego;
     if ((j?.id || null) !== idJuego) {

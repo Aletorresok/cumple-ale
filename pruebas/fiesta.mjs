@@ -42,8 +42,9 @@ const paso = (t) => console.log(`· ${t}`);
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 function afirmar(cond, texto) { if (!cond) throw new Error('Falló: ' + texto); }
 
-async function elegirJuego(host, nombre) {
+async function elegirJuego(host, nombre, preparar) {
   await host.locator('.juego-tarjeta', { hasText: nombre }).click();
+  await preparar?.();
   await host.getByRole('button', { name: 'Empezar', exact: true }).click();
 }
 
@@ -157,12 +158,43 @@ try {
   paso('Los invitados dicen: arrancó con el tablero');
   await terminarJuego(host);
 
-  // ── Sala de escape ──
-  await elegirJuego(host, 'Sala de escape');
-  await tv.getByText('¿Quién se llevó la torta?').first().waitFor({ timeout: 15000 });
-  await captura(tv, '11-escape');
-  paso('Sala de escape: arrancó');
-  await terminarJuego(host);
+  // ── Piezas del código final ──
+  await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();
+  await host.waitForFunction(() => document.querySelector('#codigo-final')?.value === '0811');
+  const darPieza = host.getByRole('button', { name: '🧩 Dar pieza' });
+  for (const i of [0, 0, 1, 1]) {
+    await darPieza.nth(i).click();
+    await esperar(700);
+  }
+  const textos = (await host.locator('.tarjeta .mono').allTextContents()).filter((t) => /^\S( \S){3}$/.test(t));
+  const juntas = Array.from({ length: 4 }, (_, i) => textos.map((t) => t.split(' ')[i]).find((x) => x && x !== '_'));
+  afirmar(juntas.join('') === '0811', `entre los dos equipos tienen el código completo (${textos.join(' | ')})`);
+  const chips = await Promise.all(invitados.map((p) => p.locator('.piezas-chip').count()));
+  const conPiezas = chips.filter(Boolean).length;
+  afirmar(conPiezas === tamanios[0] + tamanios[1], `ven las piezas los ${tamanios[0] + tamanios[1]} de los dos equipos (las ven ${conPiezas})`);
+  paso(`Piezas: dos equipos juntan 0811 entre los dos (${textos.join(' | ')}); las ven ${conPiezas} celulares`);
+  await captura(invitados[chips.findIndex(Boolean)], '10b-piezas-celular');
+
+  // ── Sala de escape cooperativa: el candado final se abre con las piezas ──
+  await elegirJuego(host, 'Sala de escape', () => host.locator('#cfg-modo-escape').selectOption('coop'));
+  await host.getByRole('button', { name: /▶ Empezar/ }).click();
+  // Quien organiza abre los candados de cada equipo hasta que aparece el final (que no lo abre).
+  const final = () => invitados[0].getByText('Candado final · todo el grupo').count();
+  for (let k = 0; k < 4 && !(await final()); k++) {
+    await host.getByRole('button', { name: 'Abrir candado' }).first().click();
+    await esperar(800);
+  }
+  await invitados[0].getByText('Candado final · todo el grupo').waitFor({ timeout: 15000 });
+  const conPieza = [];
+  for (const p of invitados) if (await p.locator('.piezas-grande').count()) conPieza.push(p);
+  afirmar(conPieza.length === conPiezas, `el candado final muestra las piezas a ${conPiezas} invitados (a ${conPieza.length})`);
+  await captura(conPieza[0], '11-escape-final-celular');
+  await conPieza[0].locator('#escape-codigo').fill('0811');
+  await conPieza[0].getByRole('button', { name: '🔑 Probar código' }).click();
+  await tv.getByText(/La encontraron/).first().waitFor({ timeout: 20000 });
+  await captura(tv, '11b-escape-final');
+  paso('Sala de escape: el grupo abrió el candado final con las piezas');
+  await terminarJuego(host).catch(() => {});
 
   // ── Podio ──
   await elegirJuego(host, 'Podio final');

@@ -19,6 +19,12 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos, en carrera o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
 
+**🧩 Piezas del código final.** Conectan todo con la sala de escape. En el panel de la sala
+escribís el código del último candado del escape (o tocás «Usar el del escape…»). Después de
+cada juego, tocás **🧩 Dar pieza** en el equipo que ganó: le llega un número del código en su
+posición, que ven en el celular. En el escape final, en modo cooperativo, los equipos tienen que
+juntar sus piezas para abrir el último candado. El escape de ejemplo ya viene preparado así.
+
 También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto apostás?, ☁️ Nube de
 deseos y 🎯 ¿A quién le toca? (sorteo).
 
