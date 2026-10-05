@@ -80,6 +80,7 @@ async function entrar(raiz, codigo, nombre, reconexion) {
 
 function enSala(raiz, codigo, uid, nombre) {
   const sala = new Sala(codigo, { rol: 'alumno', uid, nombre });
+  sala.miNombre = nombre;
   const miEquipo = h('span');
   const cuerpo = h('main', { class: 'alumno-cuerpo' });
   let vistaJuego = null;

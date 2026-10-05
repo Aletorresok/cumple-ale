@@ -14,6 +14,37 @@ function posiciones(sala) {
 
 const MEDALLA = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
+// Sentencia personal: cuando termina el podio, cada invitado recibe en el celular un fallo de
+// Lionel Hutz. Sale siempre el mismo para la misma persona (depende de su uid).
+const FALLOS = [
+  'Culpable de divertirse demasiado. Pena: bailar el próximo tema.',
+  'Inocente por falta de pruebas. Se recomienda no comentar dónde estuvo durante el escape.',
+  'Pena: brindar con Ale antes de irse.',
+  'Absolución total, a cambio de una porción de torta para el abogado.',
+  'Pena: contar su mejor anécdota con Ale en la próxima juntada.',
+  'Libertad condicional: puede volver a Springfield el año que viene.',
+  'Pena: sacarse una foto con Ale en los próximos diez minutos.',
+  'Culpable de haber estado en el mejor cumple del año. No hay apelación.',
+  'Se le otorga el título de Empleado del Mes de la Planta Nuclear. Sin aumento.',
+  'Pena: cantar el próximo feliz cumpleaños más fuerte que nadie.',
+  'Queda obligado a pasarle a Ale todas las fotos de esta noche.',
+  'Sobreseimiento: el jurado lo vio comer torta, pero no le importó.',
+];
+const indice = (uid, n) => [...String(uid)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 11) % n;
+const CONDENA_EQUIPO = {
+  1: 'Además, por ganar la noche: no lava ni un plato.',
+  2: 'Además, por el segundo puesto: elige la próxima canción.',
+};
+
+export function sentencia(nombre, equipo, pos, uid) {
+  return h('div', { class: 'sentencia' },
+    h('div', { class: 'sentencia-cab' }, 'Sentencia · Causa «la torta de Ale»'),
+    h('p', null, 'Visto el expediente de ', h('b', null, nombre), ` (${equipo}, ${pos}° puesto), este tribunal resuelve:`),
+    h('p', { class: 'sentencia-fallo' }, FALLOS[indice(uid, FALLOS.length)]),
+    CONDENA_EQUIPO[pos] && h('p', null, CONDENA_EQUIPO[pos]),
+    h('p', { class: 'sentencia-firma' }, 'Lionel Hutz', h('br'), h('small', null, 'Abogado. Springfield, 8 de noviembre.')));
+}
+
 export default {
   id: 'podio',
   nombre: 'Podio final',
@@ -67,10 +98,12 @@ export default {
           vibrar(e.pos === 1 ? [200, 80, 200, 80, 400] : 120);
           if (e.pos === 1) confeti([e.color, '#F2C94C', '#FFFFFF']);
         }
+        const nombre = sala.miNombre || sala.jugadores.get(sala.uid)?.nombre || 'Invitado';
         montar(el, h('div', { class: 'resultado mi-equipo', style: { '--c': e.color } },
           h('div', { class: 'etiqueta' }, e.nombre),
           h('div', { class: 'resultado-titulo' }, `${MEDALLA[e.pos] || ''} ${e.pos}° puesto`),
-          h('p', null, `${e.puntos} puntos`)));
+          h('p', null, `${e.puntos} puntos`)),
+          j.revelados >= total && sentencia(nombre, e.nombre, e.pos, sala.uid));
       },
     });
   },
@@ -91,7 +124,7 @@ export default {
         montar(el, h('div', { class: 'tv-centro' },
           h('div', { class: 'tv-etiqueta' }, nuevo.pos === 1 ? '¡Campeón de la noche!' : `${nuevo.pos}° puesto`),
           h('h1', { class: 'tv-titulo enorme podio-nuevo', style: { color: nuevo.color } }, `${MEDALLA[nuevo.pos] || ''} ${nuevo.nombre}`),
-          h('p', { class: 'tv-sub' }, `${nuevo.puntos} puntos`),
+          h('p', { class: 'tv-sub' }, `${nuevo.puntos} puntos`, j.revelados >= total ? ' · Miren el celular: Hutz dictó una sentencia para cada uno' : ''),
           h('ol', { class: 'ranking podio-lista' }, visibles.map((e) => h('li', { style: { '--c': e.color } },
             h('span', { class: 'rk-pos' }, e.pos + '°'), h('span', { class: 'rk-nombre' }, e.nombre), h('span', { class: 'rk-pts' }, e.puntos + ' pts'))))));
         if (nuevo.pos === 1) { sonido('fin'); confeti(); setTimeout(() => confeti(), 1200); }

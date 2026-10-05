@@ -11,6 +11,7 @@ import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { imprimirRespaldo } from './respaldo.js';
+import { panelEscaleta } from './escaleta.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -163,6 +164,7 @@ function panelSala(raiz, docente, codigo) {
   const zonaJuego = h('section', { class: 'tarjeta pila' });
   const zonaEquipos = h('section', { class: 'tarjeta pila' });
   const piezas = panelPiezas(sala, () => bancos);
+  const escaleta = panelEscaleta(sala, { abrirJuego: (def) => configurarJuego(def) });
   const contadorAlumnos = h('span', null, '0');
   let entrada;
 
@@ -184,6 +186,7 @@ function panelSala(raiz, docente, codigo) {
               try { await navigator.clipboard.writeText(enlace); toast('Enlace copiado', 'ok'); } catch { toast(enlace); }
             } }, 'Copiar enlace'),
             h('a', { class: 'btn-link', href: urlApp('?diagnostico=' + codigo), target: '_blank', rel: 'noopener' }, '🩺 Diagnóstico')))),
+      escaleta.el,
       zonaJuego,
       zonaEquipos,
       piezas.el,
@@ -203,7 +206,7 @@ function panelSala(raiz, docente, codigo) {
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.jugadores.size;
     if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
-    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); }
+    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
 
@@ -361,7 +364,8 @@ function panelPiezas(sala, bancos) {
   // Ofrece el código del último candado de cada escape de los bancos (si es de números o letras).
   let sugeridos = '';
   function dibujarSugerencias() {
-    const opciones = bancos().flatMap((b) => itemsDe(b, 'escape'))
+    // Los expedientes de Hutz (con «marco») cierran con su propia clave: no son el código final.
+    const opciones = bancos().flatMap((b) => itemsDe(b, 'escape')).filter((e) => !e.marco)
       .map((e) => ({ titulo: e.titulo, c: e.candados[e.candados.length - 1] }))
       .filter(({ c }) => c && (c.tipo === 'numero' || c.tipo === 'palabra'))
       .map(({ titulo, c }) => ({ titulo, codigo: String(c.respuesta).split('/')[0].replace(/\s+/g, '').toUpperCase() }));
