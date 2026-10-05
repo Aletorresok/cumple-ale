@@ -266,6 +266,19 @@ try {
   paso('Podio: revelado hasta el campeón');
   await medir('Podio');
 
+  // ── Plan B en papel ──
+  await host.goto(BASE + '?docente');
+  await host.getByRole('button', { name: 'Imprimir plan B' }).click();
+  await host.emulateMedia({ media: 'print' });
+  const impreso = host.locator('#impresion');
+  await impreso.waitFor();
+  for (const t of ['Hoja de puntos', 'Titanic', 'pileta', 'Nombrá algo que se lleva a la playa', 'Respuesta: 0811']) {
+    afirmar(await impreso.getByText(t, { exact: false }).count(), `el plan B en papel incluye «${t}»`);
+  }
+  await captura(host, '14-plan-b');
+  await host.emulateMedia({ media: 'screen' });
+  paso('Plan B: se imprime el banco con mímica, impostor, encuestas, trivia, escape y hoja de puntos');
+
   console.log('\nUso de Firebase (aprox.):');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(32)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
   const t = await usoTotal();

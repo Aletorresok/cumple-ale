@@ -7,6 +7,7 @@ import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
 import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
 import { qr } from './qr.js';
+import { imprimirRespaldo } from './respaldo.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -126,6 +127,7 @@ async function inicio(raiz, docente) {
               await guardarBanco(docente.uid, { ...copia, titulo: b.titulo + ' (copia)' });
               inicio(raiz, docente);
             } }, '⧉'),
+            h('button', { class: 'btn-icono', 'aria-label': 'Imprimir plan B', title: 'Imprimir plan B (todo en papel, por si se corta internet)', onclick: () => imprimirRespaldo(b, Number(cant.value)) }, '🖨'),
             h('button', { class: 'btn-icono', 'aria-label': 'Borrar', title: 'Borrar', onclick: async () => {
               if (!(await confirmar({ titulo: `¿Borrar «${b.titulo}»?`, texto: 'No se puede deshacer.', ok: 'Borrar', peligro: true }))) return;
               await borrarBanco(b.id); inicio(raiz, docente);

@@ -28,6 +28,10 @@ juntar sus piezas para abrir el último candado. El escape de ejemplo ya viene p
 También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto apostás?, ☁️ Nube de
 deseos y 🎯 ¿A quién le toca? (sorteo).
 
+**🖨 Plan B en papel.** En «Mis bancos», el botón 🖨 de cada banco imprime todo para jugar sin
+internet: tarjetas de mímica para recortar, pares del impostor por ronda, encuestas con sus
+respuestas, preguntas con la correcta marcada, el escape con sus respuestas y una hoja de puntos.
+
 ## Cómo se usa
 
 1. Entrá a la app y tocá **Organizo yo →**. Entrás con tu cuenta de Google.
