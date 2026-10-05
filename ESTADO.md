@@ -14,6 +14,13 @@
   código del último candado del escape; en el escape final cooperativo juntan las piezas.
 - Probado con los emuladores y 30 invitados simulados: selección, impostor, mímica, los
   invitados dicen, escape y podio.
+- Aviso «Sin conexión · reconectando…» en celulares, pantalla grande y panel. Aparece si se
+  corta la red o si el wifi no tiene internet (una escritura que no llega en 4 segundos), y se
+  va solo al volver. Probado con 40 invitados: celulares sin red, sin internet y recargados
+  vuelven solos a su equipo y al juego.
+- Medición de cuota: una pasada corta por todos los juegos con 40 invitados gasta unas 2.600
+  lecturas y 200 escrituras. Una noche completa debería quedar entre 15.000 y 25.000 lecturas,
+  dentro de la cuota gratis (50.000 por día) si el Firebase es propio.
 
 ## Decisiones de Alexis
 

@@ -229,3 +229,25 @@ export function confeti(colores = ['#F2C94C', '#E4572E', '#2E6FE4', '#2BA36B', '
   document.body.append(capa);
   setTimeout(() => capa.remove(), 5000);
 }
+
+// Banda «Sin conexión» arriba de todo. Aparece si la conexión se corta más de un momento y se va
+// sola al volver. bandaConexion() devuelve la función a la que se le avisa true/false (null la
+// saca de la página).
+export function bandaConexion() {
+  const banda = h('div', { class: 'banda-conexion', role: 'status', 'aria-live': 'assertive', hidden: true },
+    h('span', { class: 'banda-punto' }), 'Sin conexión · reconectando…');
+  document.body.append(banda);
+  let espera = null;
+  let visible = false;
+  return (ok) => {
+    clearTimeout(espera);
+    if (ok === null) { banda.remove(); return; }
+    if (ok) {
+      if (visible) toast('Conexión recuperada', 'ok');
+      visible = false;
+      banda.hidden = true;
+      return;
+    }
+    espera = setTimeout(() => { visible = true; banda.hidden = false; }, 1500);
+  };
+}

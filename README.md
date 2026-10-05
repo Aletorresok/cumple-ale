@@ -72,6 +72,9 @@ python3 -m http.server 5173
 node pruebas/fiesta.mjs 30 capturas      # 30 invitados simulados juegan una noche entera
 ```
 
+La prueba también corta la red de algunos celulares, recarga otros, y al final muestra cuántas
+lecturas y escrituras de Firebase gastó cada juego.
+
 En `http://localhost:5173/`, con `localStorage.emulador = '1'` la app usa los emuladores.
 
 ## Estructura del código

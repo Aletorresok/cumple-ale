@@ -1,5 +1,7 @@
 // Prueba de punta a punta con los emuladores de Firebase: abre la sala, la pantalla grande y
 // N invitados (30 por defecto), y juega la selección de equipos, el impostor, la mímica y el podio.
+// En el medio corta la conexión de algunos celulares y recarga otros, y al final muestra cuántas
+// lecturas y escrituras de Firebase gastó la noche (para compararlo con la cuota gratis).
 //
 //   firebase emulators:start --only auth,firestore      (en otra terminal)
 //   python3 -m http.server 5173                          (en la carpeta del repo)
@@ -34,7 +36,30 @@ async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
   p.on('console', (m) => { if (m.type() === 'error') errores.push(`${nombre}: ${m.text()}`); });
   p.on('pageerror', (e) => errores.push(`${nombre}: ${e.message}`));
   await p.goto(BASE + url);
+  todas.push(p);
   return p;
+}
+
+// Lecturas y escrituras de Firebase de todas las páginas (las recargadas suman lo de antes).
+const todas = [];
+const usoPrevio = { lecturas: 0, escrituras: 0 };
+async function usoDe(p) { return p.evaluate(() => ({ ...(window.usoFirestore || { lecturas: 0, escrituras: 0 }) })).catch(() => ({ lecturas: 0, escrituras: 0 })); }
+async function usoTotal() {
+  const t = { ...usoPrevio };
+  for (const u of await Promise.all(todas.map(usoDe))) { t.lecturas += u.lecturas; t.escrituras += u.escrituras; }
+  return t;
+}
+let usoAntes = { lecturas: 0, escrituras: 0 };
+const etapas = [];
+async function medir(nombre) {
+  const t = await usoTotal();
+  etapas.push([nombre, t.lecturas - usoAntes.lecturas, t.escrituras - usoAntes.escrituras]);
+  usoAntes = t;
+}
+async function recargar(p) {
+  const u = await usoDe(p);
+  usoPrevio.lecturas += u.lecturas; usoPrevio.escrituras += u.escrituras;
+  await p.reload();
 }
 
 const captura = async (p, nombre) => { if (CAPTURAS) await p.screenshot({ path: `${CAPTURAS}/${nombre}.png` }); };
@@ -84,6 +109,7 @@ try {
   }
   await host.waitForFunction((n) => document.querySelector('.entrada')?.textContent.includes(`${n} invitados conectados`), N, { timeout: 30000 });
   paso(`${N} invitados conectados`);
+  await medir('Entrada de los invitados');
   await captura(tv, '1-espera');
 
   // ── Selección de equipos ──
@@ -102,6 +128,7 @@ try {
   paso(`Equipos armados y parejos: ${tamanios.join(', ')}`);
   await captura(invitados[0], '4-seleccion-celular');
   await terminarJuego(host);
+  await medir('Selección de equipos');
 
   // ── Impostor ──
   await elegirJuego(host, 'El impostor');
@@ -112,14 +139,44 @@ try {
   afirmar(distintas.length === 2, `dos palabras repartidas (${distintas})`);
   paso(`Impostor: palabras repartidas (${distintas.map((d) => `${d} ×${palabras.filter((x) => x === d).length}`).join(', ')})`);
   await captura(tv, '5-impostor-pistas');
+
+  // ── Reconexión: se corta la red de tres celulares y otros tres recargan la página ──
+  const cortados = invitados.slice(0, 3);
+  await Promise.all(cortados.map((p) => p.context().setOffline(true)));
+  await Promise.all(cortados.map((p) => p.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 })));
+  await captura(cortados[0], '5b-sin-conexion');
+  await esperar(3000);
+  await Promise.all(cortados.map((p) => p.context().setOffline(false)));
+  await Promise.all(cortados.map((p) => p.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 30000 })));
+  paso('Reconexión: tres celulares sin red vieron el aviso y volvieron solos');
+  const recargados = invitados.slice(3, 6);
+  const equiposAntes = await Promise.all(recargados.map((p) => p.locator('.invitado-barra .pildora').textContent()));
+  await Promise.all(recargados.map(recargar));
+  for (const [i, p] of recargados.entries()) {
+    await p.locator('.palabra', { hasText: palabras[3 + i] }).waitFor({ timeout: 20000 });
+    const eq = await p.locator('.invitado-barra .pildora').textContent();
+    afirmar(eq === equiposAntes[i], `después de recargar sigue en su equipo (${equiposAntes[i]} → ${eq})`);
+  }
+  paso('Reconexión: tres celulares recargaron y siguen con su equipo y su palabra');
   await host.getByRole('button', { name: 'Abrir votación' }).click();
+  // Wifi conectado pero sin internet: el navegador cree que hay red y Firebase no responde.
+  // Ese celular vota igual; ve el aviso, y el voto llega cuando vuelve internet.
+  const sinInternet = invitados[6];
+  const servidor = /127\.0\.0\.1:8080|localhost:8080/;
+  const bloquear = (r) => r.abort('internetdisconnected');
+  await sinInternet.context().route(servidor, bloquear);
   await Promise.all(invitados.map((p) => p.locator('.btn-voto').first().click()));
+  await sinInternet.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 });
+  await sinInternet.context().unroute(servidor, bloquear);
+  await sinInternet.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 60000 });
+  paso('Reconexión: un celular con wifi pero sin internet vio el aviso y su voto llegó al volver');
   await host.waitForFunction((n) => document.body.textContent.includes(`${n} de ${n}`), N, { timeout: 20000 });
   await host.getByRole('button', { name: 'Cerrar votación y revelar' }).click();
   await tv.getByText(/El impostor era|Los impostores eran/).waitFor();
   await captura(tv, '6-impostor-resultado');
   paso('Impostor: votaron todos y se reveló');
   await terminarJuego(host);
+  await medir('Impostor (con reconexiones)');
 
   // ── Mímica ──
   const antes = await host.locator('.equipo-pts').allTextContents();
@@ -150,6 +207,7 @@ try {
   afirmar(suma === 20, `la mímica sumó 20 puntos (sumó ${suma})`);
   paso(`Mímica: 2 adivinadas y 1 pasada (${p1}, ${p2}), +20 puntos`);
   await terminarJuego(host);
+  await medir('Mímica (un turno)');
 
   // ── Los invitados dicen ──
   await elegirJuego(host, 'Los invitados dicen');
@@ -157,6 +215,7 @@ try {
   await captura(tv, '10-invitados-dicen');
   paso('Los invitados dicen: arrancó con el tablero');
   await terminarJuego(host);
+  await medir('Los invitados dicen (arranque)');
 
   // ── Piezas del código final ──
   await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();
@@ -195,6 +254,7 @@ try {
   await captura(tv, '11b-escape-final');
   paso('Sala de escape: el grupo abrió el candado final con las piezas');
   await terminarJuego(host).catch(() => {});
+  await medir('Piezas y escape');
 
   // ── Podio ──
   await elegirJuego(host, 'Podio final');
@@ -204,11 +264,18 @@ try {
   await captura(tv, '12-podio');
   await captura(invitados[0], '13-podio-celular');
   paso('Podio: revelado hasta el campeón');
+  await medir('Podio');
+
+  console.log('\nUso de Firebase (aprox.):');
+  for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(32)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
+  const t = await usoTotal();
+  console.log(`  ${'Total'.padEnd(32)} ${String(t.lecturas).padStart(6)} lecturas ${String(t.escrituras).padStart(5)} escrituras`);
+  console.log('  Cuota gratis por día: 50000 lecturas, 20000 escrituras.');
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
 }
 
 await browser.close();
-const reales = errores.filter((e) => !/favicon|ERR_TUNNEL|ERR_FAILED|fonts\.g/.test(e));
+const reales = errores.filter((e) => !/favicon|ERR_TUNNEL|ERR_FAILED|ERR_INTERNET_DISCONNECTED|navigator\.vibrate|fonts\.g/.test(e));
 if (reales.length) { console.log('\nErrores:\n' + [...new Set(reales)].join('\n')); process.exit(1); }
 console.log('\nTodo bien ✔');

@@ -7,13 +7,52 @@
 //   salas/{codigo}/secretos/{uid}   → datos que solo ve ese alumno (p. ej. su palabra)
 //   salas/{codigo}/privado/estado   → datos que solo ve el docente (p. ej. respuestas correctas)
 import {
-  db, doc, collection, getDoc, getDocs, setDoc, updateDoc, onSnapshot, writeBatch,
+  db, doc, collection, getDoc as getDocFs, getDocs as getDocsFs, setDoc as setDocFs,
+  updateDoc as updateDocFs, onSnapshot, writeBatch as writeBatchFs,
   increment, deleteField, serverTimestamp, Timestamp, query, where,
 } from './fb.js';
 import { EQUIPOS_BASE, HORAS_SALA } from './config.js';
 import { codigoSala, idAzar } from './util.js';
 
 const refSala = (c) => doc(db, 'salas', c);
+
+// Cuenta aproximada de lecturas y escrituras de este dispositivo, para medir cuánto gasta una
+// noche de la cuota gratis de Firebase (la usa la prueba de carga).
+export const uso = { lecturas: 0, escrituras: 0 };
+if (typeof window !== 'undefined') window.usoFirestore = uso;
+const leidos = (s) => {
+  if (s.metadata?.fromCache) return;
+  uso.lecturas += s.docChanges ? Math.max(1, s.docChanges().length) : 1;
+};
+const getDoc = (r) => getDocFs(r).then((s) => { uso.lecturas++; return s; });
+const getDocs = (q) => getDocsFs(q).then((s) => { uso.lecturas += Math.max(1, s.size); return s; });
+
+// Escrituras que tardan demasiado en llegar al servidor. Si el wifi está conectado pero sin
+// internet, Firebase puede tardar mucho en darse cuenta; una escritura trabada lo delata antes.
+const TRABADA_MS = 4000;
+let trabadas = 0;
+const alTrabarse = new Set();
+const avisarTrabadas = () => alTrabarse.forEach((cb) => cb(trabadas > 0));
+function seguir(promesa) {
+  let trabada = false;
+  const t = setTimeout(() => { trabada = true; trabadas++; avisarTrabadas(); }, TRABADA_MS);
+  const fin = () => { clearTimeout(t); if (trabada) { trabadas--; avisarTrabadas(); } };
+  promesa.then(fin, fin);
+  return promesa;
+}
+
+const setDoc = (...a) => { uso.escrituras++; return seguir(setDocFs(...a)); };
+const updateDoc = (...a) => { uso.escrituras++; return seguir(updateDocFs(...a)); };
+function writeBatch(base) {
+  const lote = writeBatchFs(base);
+  const commit = lote.commit.bind(lote);
+  lote.commit = () => seguir(commit());
+  for (const m of ['set', 'update', 'delete']) {
+    const orig = lote[m].bind(lote);
+    lote[m] = (...a) => { uso.escrituras++; orig(...a); return lote; };
+  }
+  return lote;
+}
 
 export async function crearSala(uid, cantidadEquipos) {
   const equipos = EQUIPOS_BASE.slice(0, cantidadEquipos);
@@ -85,18 +124,21 @@ export class Sala {
   // Escucha los cambios. `opciones` indica qué colecciones hacen falta en este rol.
   escuchar({ jugadores = false, respuestas = false } = {}, alCambiar, alBorrarse) {
     this.subs.push(onSnapshot(refSala(this.codigo), (s) => {
+      leidos(s);
       if (!s.exists()) { alBorrarse?.(); return; }
       this.data = s.data();
       alCambiar('sala');
     }, (e) => console.error('sala', e)));
     if (jugadores) {
       this.subs.push(onSnapshot(collection(db, 'salas', this.codigo, 'jugadores'), (s) => {
+        leidos(s);
         this.jugadores = new Map(s.docs.map((d) => [d.id, d.data()]));
         alCambiar('jugadores');
       }, (e) => console.error('jugadores', e)));
     }
     if (respuestas) {
       this.subs.push(onSnapshot(collection(db, 'salas', this.codigo, 'respuestas'), (s) => {
+        leidos(s);
         this.respuestas = new Map(s.docs.map((d) => [d.id, d.data()]));
         alCambiar('respuestas');
       }, (e) => console.error('respuestas', e)));
@@ -104,10 +146,38 @@ export class Sala {
   }
 
   escucharDoc(sub, id, cb) {
-    const u = onSnapshot(doc(db, 'salas', this.codigo, sub, id), (s) => cb(s.exists() ? s.data() : null),
+    const u = onSnapshot(doc(db, 'salas', this.codigo, sub, id), (s) => { leidos(s); cb(s.exists() ? s.data() : null); },
       (e) => console.error(sub, e));
     this.subs.push(u);
     return u;
+  }
+
+  // Avisa si este dispositivo está conectado con la sala: cb(true) o cb(false). Usa la misma
+  // escucha de la sala (no gasta lecturas de más) y los eventos de red del navegador.
+  vigilarConexion(cb) {
+    let sinRed = typeof navigator !== 'undefined' && navigator.onLine === false;
+    let desdeCache = false;
+    let trabado = trabadas > 0;
+    let ultimo;
+    const avisar = () => {
+      const ok = !sinRed && !desdeCache && !trabado;
+      if (ok !== ultimo) { ultimo = ok; cb(ok); }
+    };
+    const alCortarse = () => { sinRed = true; avisar(); };
+    const alVolver = () => { sinRed = false; avisar(); };
+    const alTrabar = (t) => { trabado = t; avisar(); };
+    window.addEventListener('offline', alCortarse);
+    window.addEventListener('online', alVolver);
+    alTrabarse.add(alTrabar);
+    this.subs.push(() => {
+      window.removeEventListener('offline', alCortarse);
+      window.removeEventListener('online', alVolver);
+      alTrabarse.delete(alTrabar);
+      cb(null);
+    });
+    this.subs.push(onSnapshot(refSala(this.codigo), { includeMetadataChanges: true },
+      (s) => { desdeCache = s.metadata.fromCache; avisar(); },
+      () => { desdeCache = true; avisar(); }));
   }
 
   detener() {
