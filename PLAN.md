@@ -3,7 +3,8 @@
 Hoy es 5 de octubre: quedan cinco semanas. La idea es tener la app **terminada el 1 de
 noviembre** y usar la última semana solo para ensayar y corregir, así llegamos sobrados.
 
-Cada tarea dice quién la hace: **🤖 Claude** (se hace sola, en una rama con PR que se mergea) o
+Las tareas con ✅ ya están hechas (al 5 de octubre: todo lo de Claude de la semana 1 y el
+borrador del guion, en [GUION.md](GUION.md)). Cada tarea dice quién la hace: **🤖 Claude** (se hace sola, en una rama con PR que se mergea) o
 **🙋 Alexis** (solo vos podés: cuentas, datos de la familia, probar con gente real).
 
 ## Resumen
@@ -22,25 +23,25 @@ Cada tarea dice quién la hace: **🤖 Claude** (se hace sola, en una rama con P
 Lo que más puede arruinar la noche no es un juego feo sino que se caiga la conexión, que alguien
 quede afuera o que se corte la tele. Esta semana va todo a eso.
 
-- 🤖 **Indicador de conexión** en el celular, la pantalla grande y el panel: si se corta el wifi,
+- ✅ 🤖 **Indicador de conexión** en el celular, la pantalla grande y el panel: si se corta el wifi,
   aparece «Sin conexión, reconectando…» y desaparece solo al volver. Nadie se queda mirando una
   pantalla congelada sin saber por qué.
-- 🤖 **Reconexión probada**: invitados que recargan la página, que bloquean el celular, que
+- ✅ 🤖 **Reconexión probada**: invitados que recargan la página, que bloquean el celular, que
   pierden señal un minuto o que cierran el navegador vuelven a su equipo y al juego en curso.
   Se agrega a la prueba automática (celulares que se desconectan y vuelven en medio de un juego).
-- 🤖 **Prueba de carga con 40 celulares** (30 + margen) y medición de cuánto gasta una noche
+- ✅ 🤖 **Prueba de carga con 40 celulares** (30 + margen) y medición de cuánto gasta una noche
   entera de la cuota gratis de Firebase (50.000 lecturas y 20.000 escrituras por día). Si da
   justo, se recorta lo que más gasta antes de la fiesta.
 - 🤖 **Panel de control a prueba de accidentes**: si se te apaga el celular o se recarga la
   página, retomás la sala desde otro dispositivo sin perder puntos ni el juego en curso (ya
   existe «Controlar desde acá»; se prueba y se pule).
-- 🤖 **Plan B en papel**: botón para imprimir tarjetas de respaldo desde el banco (palabras de
+- ✅ 🤖 **Plan B en papel**: botón para imprimir tarjetas de respaldo desde el banco (palabras de
   mímica, pares del impostor, encuestas con sus respuestas). Si se cae internet del todo, la
   fiesta sigue con papelitos.
-- 🤖 **Página de diagnóstico** (`?diagnostico`): comprueba en segundos que Firebase responde, que
+- ✅ 🤖 **Página de diagnóstico** (`?diagnostico`): comprueba en segundos que Firebase responde, que
   entran invitados y cuánto tarda. Sirve para verificar el Firebase nuevo y para el día de la
   fiesta, antes de que llegue la gente.
-- 🤖 **Propuestas de trivia**: dos o tres bancos de preguntas con temáticas distintas para que
+- ✅ 🤖 **Propuestas de trivia**: dos o tres bancos de preguntas con temáticas distintas para que
   elijas una (o las combines).
 - 🙋 **Activar GitHub Pages** (2 minutos, pasos en el README). Sin esto no hay dirección para
   entrar desde los celulares.
@@ -71,7 +72,7 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
 
 - 🙋 **Ensayo con 6 a 10 personas reales** (sugerido: sábado 24), en la tele y con el wifi que
   vas a usar. Jugar una ronda de cada juego, en el orden de la noche.
-- 🤖 **Guion de la noche**: orden de juegos, tiempos, qué decir al presentar cada uno, cuándo
+- ✅ 🤖 **Guion de la noche**: orden de juegos, tiempos, qué decir al presentar cada uno, cuándo
   dar cada pieza del código. Una hoja para tener a mano.
 - 🤖 Corregir todo lo que salga del ensayo.
 - 🤖 Pulido de la pantalla grande: legibilidad desde lejos, sonidos, transiciones, cartel de
