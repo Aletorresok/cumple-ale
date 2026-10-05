@@ -146,7 +146,7 @@ export function imprimirTarjetas(escape) {
   const hoja = h('div', { id: 'impresion' },
     h('div', { class: 'imp-cabecera' }, h('b', null, escape.titulo), ' · pistas físicas para esconder en la fiesta'),
     h('div', { class: 'imp-grilla' }, tarjetas.map(([c, i]) => h('div', { class: 'imp-tarjeta' },
-      h('div', { class: 'imp-titulo' }, `🔒 Candado ${i + 1}${c.titulo ? ' · ' + c.titulo : ''}`),
+      h('div', { class: 'imp-titulo' }, `🔒 Candado ${c.n ?? i + 1}${c.titulo ? ' · ' + c.titulo : ''}`),
       qr(c.fisica.trim(), 'qr imp-qr'),
       h('div', { class: 'imp-pie' }, 'Escaneá con la cámara del celular')))));
   document.body.append(hoja);

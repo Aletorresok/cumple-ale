@@ -16,7 +16,7 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 | 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Las encuestas salen del banco o de lo que responden los invitados en el momento. Tres errores y otro equipo puede robar el pozo. |
 | 🕵️ **El impostor** | Pares de palabras | Todos tienen la misma palabra menos uno, que no sabe que es el impostor. Pistas en voz alta y votación desde el celular. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
-| 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos, en carrera o todos juntos. |
+| 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
 
 **🧩 Piezas del código final.** Conectan todo con la sala de escape. En el panel de la sala
@@ -24,6 +24,14 @@ escribís el código del último candado del escape (o tocás «Usar el del esca
 cada juego, tocás **🧩 Dar pieza** en el equipo que ganó: le llega un número del código en su
 posición, que ven en el celular. En el escape final, en modo cooperativo, los equipos tienen que
 juntar sus piezas para abrir el último candado. El escape de ejemplo ya viene preparado así.
+
+**⚖️ Escapes de Lionel Hutz.** En «Mis bancos» se agregan cuatro expedientes de la causa «la
+torta de Ale», uno por equipo (Planta nuclear, Taberna de Moe, Kwik-E-Mart y Escuela primaria),
+y la sentencia final. Se juegan en el modo «Cada equipo su escape»: a cada equipo le toca el
+expediente con su nombre. Cada uno tiene 6 candados de los cuatro tipos; cada candado abierto
+da una letra de la clave y el sexto se abre con la clave entera. Dos candados reparten la
+información entre los celulares del equipo y uno tiene una tarjeta física para esconder. *La
+sentencia* se juega después en modo cooperativo y su último candado es el 0811 de las piezas.
 
 **🍩 Temática Springfield (Los Simpson).** Toda la noche pasa en Springfield: los equipos son
 Krusty Burger, Escuela Primaria, Planta Nuclear y Taberna de Moe (se pueden renombrar), la
@@ -106,6 +114,7 @@ js/sala.js                 estado compartido de una sala
 js/bancos.js               bancos de contenido y su editor
 js/ejemplos.js             banco de ejemplo de la fiesta
 js/escapes.js              candados y editor de escapes
+js/expedientes.js          escapes de Lionel Hutz (uno por equipo y la sentencia)
 js/docente.js              panel de quien organiza
 js/alumno.js               vista del invitado (celular)
 js/tv.js                   pantalla grande

@@ -5,6 +5,7 @@ import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, itemsD
 import { BANCO_FIESTA } from './ejemplos.js';
 import { TRIVIAS } from './trivias.js';
 import { BANCO_SPRINGFIELD } from './springfield.js';
+import { BANCO_HUTZ } from './expedientes.js';
 import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
 import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
@@ -117,6 +118,7 @@ async function inicio(raiz, docente) {
     const trivias = TRIVIAS.map((t) => agregar(t, `⚡ ${t.titulo}`, 'Trivia agregada')).filter(Boolean);
     const catalogo = [
       agregar(BANCO_SPRINGFIELD, '🍩 Agregar el banco Springfield', 'Banco Springfield agregado'),
+      agregar(BANCO_HUTZ, '⚖️ Agregar los escapes de Lionel Hutz', 'Escapes de Lionel Hutz agregados'),
       agregar(BANCO_FIESTA, '🎉 Agregar el banco de ejemplo', 'Banco de ejemplo agregado'),
       trivias.length > 0 && h('div', { class: 'pila-s' },
         h('span', { class: 'muted chico' }, 'Propuestas de temática para la trivia (unas 15 preguntas cada una):'),
