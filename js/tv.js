@@ -3,7 +3,7 @@ import { asegurarSesion, mensajeError } from './fb.js';
 import { Sala } from './sala.js';
 import { juego as buscarJuego } from './juegos/index.js';
 import { marcador } from './juegos/comun.js';
-import { h, montar, urlApp, sonido } from './util.js';
+import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
@@ -35,6 +35,7 @@ export async function iniciarTv(raiz, codigoUrl) {
   });
   pedirPantallaEncendida();
 
+  sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     if (sala.data.cerrada) { sala.detener(); vistaJuego?.destruir(); montar(pie); montar(escena, error('La sala se cerró.')); return; }
     const j = sala.juego;

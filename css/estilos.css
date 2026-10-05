@@ -617,3 +617,10 @@ body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidde
 .podio-lista { width: min(40em, 90%); }
 .piezas-chip { font-size: .85rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); margin-left: 6px; white-space: nowrap; }
 .piezas-grande { font-size: 2rem; font-weight: 700; letter-spacing: .1em; text-align: center; }
+
+/* ── Aviso de conexión ── */
+.banda-conexion { position: fixed; top: 0; left: 0; right: 0; z-index: 70; display: flex; align-items: center; justify-content: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px; background: var(--bad); color: #fff; font-weight: 700; text-align: center; }
+.banda-conexion[hidden] { display: none; }
+.banda-punto { width: 10px; height: 10px; border-radius: 50%; background: #fff; animation: latido 1s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .3; } }
+.modo-tv .banda-conexion { font-size: 1.6rem; padding: 14px; }

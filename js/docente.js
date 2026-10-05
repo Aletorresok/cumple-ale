@@ -5,7 +5,7 @@ import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, itemsD
 import { BANCO_FIESTA } from './ejemplos.js';
 import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
 import { pildoraEquipo } from './juegos/comun.js';
-import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar } from './util.js';
+import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
@@ -185,6 +185,7 @@ function panelSala(raiz, docente, codigo) {
   // Esta pestaña pasa a ser la que controla los juegos.
   sala.actualizar({ controlador: SESION }).catch((e) => toast(mensajeError(e), 'error'));
 
+  sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.jugadores.size;
     if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
