@@ -21,6 +21,7 @@ const sdk = (() => { try { return createRequire(import.meta.url).resolve('fireba
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } : undefined;
 const browser = await chromium.launch({ proxy, executablePath: process.env.CHROMIUM || undefined });
 
+const fuentes = new Map();
 async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
   const ctx = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
   await ctx.addInitScript(() => localStorage.setItem('emulador', '1'));
@@ -31,7 +32,13 @@ async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
       return r.fulfill({ body: readFileSync(archivo), contentType: 'text/javascript' });
     });
     // Las fuentes de Google se cortan para ir más rápido, salvo con FUENTES=1 (para capturas).
+    // Con FUENTES=1 se bajan una sola vez y se reparten a todas las páginas desde memoria.
     if (!process.env.FUENTES) await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    else await ctx.route(/fonts\.(googleapis|gstatic)\.com/, async (r) => {
+      const url = r.request().url();
+      if (!fuentes.has(url)) fuentes.set(url, r.fetch().then(async (res) => ({ status: res.status(), headers: res.headers(), body: await res.body() })));
+      try { await r.fulfill(await fuentes.get(url)); } catch { fuentes.delete(url); await r.abort(); }
+    });
   }
   const p = await ctx.newPage();
   p.on('console', (m) => { if (m.type() === 'error') errores.push(`${nombre}: ${m.text()}`); });
