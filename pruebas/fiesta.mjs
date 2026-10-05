@@ -90,6 +90,8 @@ try {
   await host.getByText('Cumple Ale · ejemplo').waitFor();
   await host.getByRole('button', { name: '🍩 Agregar el banco Springfield' }).click();
   await host.getByText('Springfield · Los Simpson').waitFor();
+  await host.getByRole('button', { name: '⚖️ Agregar los escapes de Lionel Hutz' }).click();
+  await host.getByText('Springfield · Escapes de Lionel Hutz').waitFor();
   await host.getByRole('button', { name: '⚡ Trivia · Bien argentina' }).click();
   await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
@@ -258,6 +260,38 @@ try {
   await terminarJuego(host);
   await medir('Trivia (cinco preguntas)');
 
+  // ── Escapes de Lionel Hutz: cada equipo resuelve su propio expediente ──
+  await elegirJuego(host, 'Sala de escape', () => host.locator('#cfg-modo-escape').selectOption('propio'));
+  await invitados[0].getByText('Escape · el de tu equipo').waitFor({ timeout: 15000 });
+  const expedientes = await Promise.all(invitados.map((p) => p.locator('h2').first().textContent()));
+  const distintos = new Set(expedientes.map((t) => t.replace('🔐', '').trim()));
+  afirmar(distintos.size === 4, `cada equipo ve un expediente distinto (${[...distintos].join(' | ')})`);
+  await tv.locator('.tv-propio').first().waitFor();
+  const deLaPlanta = await tv.locator('.tv-propio', { hasText: 'Planta Nuclear' }).textContent();
+  afirmar(deLaPlanta.includes('La planta nuclear'), `al equipo Planta Nuclear le toca su expediente (${deLaPlanta})`);
+  await captura(tv, '10f-hutz-intro');
+  await captura(invitados[0], '10g-hutz-intro-celular');
+  await host.getByRole('button', { name: /▶ Empezar \(20 min\)/ }).click();
+  // Un equipo abre el primer candado de verdad y recibe la primera letra de la clave.
+  const primero = { 'planta nuclear': '77', 'taberna de Moe': '19', 'Kwik-E-Mart': '12', 'escuela primaria': '50' };
+  const suyo = Object.keys(primero).find((k) => expedientes[0].includes(k));
+  await invitados[0].locator('#escape-codigo').fill(primero[suyo]);
+  await invitados[0].getByRole('button', { name: '🔑 Probar código' }).click();
+  await invitados[0].getByText(/la letra 1 de la clave/).first().waitFor({ timeout: 15000 });
+  await captura(invitados[0], '10h-hutz-letra-celular');
+  // Quien organiza abre el resto de los candados de todos los equipos.
+  const abrir = host.getByRole('button', { name: 'Abrir candado' });
+  for (let k = 0; k < 30 && (await abrir.count()); k++) {
+    await abrir.first().click();
+    await esperar(600);
+    if (k === 8) await captura(tv, '10i-hutz-carrera');
+  }
+  await tv.getByText('¡Se terminó el escape!').waitFor({ timeout: 20000 });
+  await captura(tv, '10j-hutz-fin');
+  paso(`Escapes de Lionel Hutz: 4 expedientes distintos (${[...distintos].join(' | ')}); los 4 equipos escaparon`);
+  await terminarJuego(host).catch(() => {});
+  await medir('Escapes de Lionel Hutz');
+
   // ── Piezas del código final ──
   await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();
   await host.waitForFunction(() => document.querySelector('#codigo-final')?.value === '0811');
@@ -276,7 +310,10 @@ try {
   await captura(invitados[chips.findIndex(Boolean)], '10b-piezas-celular');
 
   // ── Sala de escape cooperativa: el candado final se abre con las piezas ──
-  await elegirJuego(host, 'Sala de escape', () => host.locator('#cfg-modo-escape').selectOption('coop'));
+  await elegirJuego(host, 'Sala de escape', async () => {
+    await host.locator('#cfg-modo-escape').selectOption('coop');
+    await host.locator('#cfg-escape').selectOption({ label: 'La sentencia — 5 candados (Springfield · Escapes de Lionel Hutz)' });
+  });
   await host.getByRole('button', { name: /▶ Empezar/ }).click();
   // Quien organiza abre los candados de cada equipo hasta que aparece el final (que no lo abre).
   const final = () => invitados[0].getByText('Candado final · todo el grupo').count();
@@ -291,9 +328,9 @@ try {
   await captura(conPieza[0], '11-escape-final-celular');
   await conPieza[0].locator('#escape-codigo').fill('0811');
   await conPieza[0].getByRole('button', { name: '🔑 Probar código' }).click();
-  await tv.getByText(/La encontraron/).first().waitFor({ timeout: 20000 });
+  await tv.getByText('¡El grupo escapó!').first().waitFor({ timeout: 20000 });
   await captura(tv, '11b-escape-final');
-  paso('Sala de escape: el grupo abrió el candado final con las piezas');
+  paso('La sentencia (cooperativo): el grupo abrió el candado final con las piezas');
   await terminarJuego(host).catch(() => {});
   await medir('Piezas y escape');
 

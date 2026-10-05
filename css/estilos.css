@@ -646,3 +646,9 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .diag-fila.mal { background: color-mix(in srgb, var(--bad) 14%, var(--surface2)); }
 .diag-fila.aviso { background: color-mix(in srgb, var(--mark) 22%, var(--surface2)); }
 .diag-resumen { font-weight: 800; font-size: 1.15rem; margin: 0; }
+
+/* ── Escape: cada equipo el suyo ── */
+.tv-propios { display: grid; grid-template-columns: repeat(auto-fit, minmax(12em, 1fr)); gap: 1.2vh 1.2vw; width: 100%; max-width: 70em; }
+.tv-propio { display: flex; flex-direction: column; gap: .2em; padding: .7em 1em; border-radius: 12px; background: var(--tv-surface); border-top: 6px solid var(--c); text-align: left; }
+.tv-propio .tv-eq-nombre { color: var(--c); font-family: var(--display); }
+.tv-propio-tit { display: block; font-family: var(--body); font-weight: 400; font-size: .7em; color: var(--tv-muted); }

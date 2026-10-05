@@ -27,6 +27,9 @@
 
 - Temática Springfield para toda la noche: equipos, colores, tipografía, bienvenida y banco Simpson.
 - Trivia «Bien argentina» con la pregunta del contrato, que sale siempre.
+- Escapes de Lionel Hutz: modo «Cada equipo su escape», cuatro expedientes de 6 candados (uno
+  por equipo, con letras de una clave, información repartida y una tarjeta física) y La
+  sentencia cooperativa con las piezas. Probado con 30 invitados.
 
 ## Decisiones de Alexis
 

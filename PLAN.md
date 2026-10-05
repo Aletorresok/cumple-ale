@@ -61,8 +61,9 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
   - 10 a 15 anécdotas o datos tuyos y de la familia para la trivia y el escape.
   - Palabras de mímica propias (chistes internos, lugares, comidas, frases tuyas).
   - Pares para el impostor con cosas de ustedes.
-- 🤖 Armar el **banco real** con todo eso: encuestas, pares, mímica, trivia y un escape propio
-  con la historia de la noche y el código final.
+- 🤖 Armar el **banco real** con todo eso: encuestas, pares, mímica y trivia.
+- ✅ Escapes de Lionel Hutz: cuatro expedientes (uno por equipo) y La sentencia final. Falta
+  pasar el texto de tu carta documento a la intro cuando mandes el PDF.
 - 🤖 **Encuesta previa** (opcional, si te gusta): un enlace que mandás por WhatsApp unos días
   antes; cada invitado responde 8 preguntas cortas y con eso se arma el tablero de «Los
   invitados dicen» con respuestas de verdad de tus invitados.
@@ -116,7 +117,8 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
 3. Abrir `?diagnostico` en la compu y en un celular: todo en verde.
 4. Entrar al panel, **abrir la sala de la fiesta** (4 equipos) y abrir la pantalla grande en la
    compu. Pantalla completa y «Activar sonido».
-5. Escribir el código final del escape en el panel (o «Usar el del escape»).
+5. Escribir el código final del escape en el panel (o «Usar el del escape «La sentencia»»).
+   Esconder las 4 tarjetas de pistas físicas de los expedientes de Lionel Hutz.
 6. Entrar con un celular de prueba, ver que aparece en la tele, y sacarlo.
 7. Panel abierto también en un segundo dispositivo (tablet o celular de alguien de confianza).
 8. Tarjetas de respaldo y guion impresos, al lado de la compu.
@@ -128,7 +130,7 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
 - Recibir con la tele mostrando el QR: la gente entra mientras llega.
 - Selección de equipos cuando estén casi todos (los que llegan tarde se suman solos).
 - Después de cada juego: 🧩 **Dar pieza** al equipo ganador.
-- Escape final y podio para cerrar.
+- Escapes de Lionel Hutz (uno por equipo), La sentencia entre todos y podio para cerrar.
 
 **Si algo falla:** recargar la página que falla; si es la conexión, pasar la compu al hotspot;
 si es todo internet, tarjetas de respaldo.
