@@ -636,3 +636,9 @@ body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidde
 .banda-punto { width: 10px; height: 10px; border-radius: 50%; background: #fff; animation: latido 1s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: .3; } }
 .modo-tv .banda-conexion { font-size: 1.6rem; padding: 14px; }
+
+/* ── Diagnóstico ── */
+.diag-fila { display: flex; gap: 10px; align-items: flex-start; }
+.diag-fila.mal { background: color-mix(in srgb, var(--bad) 14%, var(--surface2)); }
+.diag-fila.aviso { background: color-mix(in srgb, var(--mark) 22%, var(--surface2)); }
+.diag-resumen { font-weight: 800; font-size: 1.15rem; margin: 0; }
