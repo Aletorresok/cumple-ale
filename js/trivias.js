@@ -23,6 +23,8 @@ export const TRIVIAS = [
       q('¿Cuál es la capital de Chubut?', 'Rawson', 'Comodoro Rivadavia', 'Trelew', 'Puerto Madryn'),
       q('¿Quién cantaba «Mi Buenos Aires querido»?', 'Carlos Gardel', 'Julio Sosa', 'Hugo del Carril', 'Edmundo Rivero'),
       q('¿En qué año volvió la democracia a la Argentina?', '1983', '1976', '1989', '1982'),
+      { ...q('¿Qué es un contrato?', 'El diccionario lo define como un acuerdo que no se puede romper, que no se puede romper',
+        'Un papel que nadie lee antes de firmar', 'Algo que se rompe cuando hay asado', 'Una promesa con sello y firma'), fija: true },
     ],
   },
   {

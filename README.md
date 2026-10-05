@@ -26,7 +26,7 @@ posición, que ven en el celular. En el escape final, en modo cooperativo, los e
 juntar sus piezas para abrir el último candado. El escape de ejemplo ya viene preparado así.
 
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
-(15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
+(unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
 música* y *Cultura general*. Se pueden editar o combinar, y sumar preguntas sobre Ale.
 
 También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto apostás?, ☁️ Nube de
