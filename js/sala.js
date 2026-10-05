@@ -228,6 +228,49 @@ export class Sala {
     }
   }
 
+  // ── Piezas del código final ──
+  // Después de cada juego, quien organiza le da al equipo ganador una pieza (un carácter en su
+  // posición) del código del candado final del escape. El código completo vive en «privado».
+  // En la sala solo quedan las piezas ya entregadas: { largo, equipos: { e1: { 2: '1' } } }.
+  piezasDe(eid) { return this.data?.piezas?.equipos?.[eid] || {}; }
+
+  // «_ 1 _ 8» con las piezas que tiene el equipo; vacío si no tiene ninguna.
+  textoPiezas(eid) {
+    const largo = this.data?.piezas?.largo || 0;
+    const mias = this.piezasDe(eid);
+    if (!largo || !Object.keys(mias).length) return '';
+    return Array.from({ length: largo }, (_, i) => mias[i] ?? '_').join(' ');
+  }
+
+  async definirCodigoFinal(codigo) {
+    const limpio = String(codigo).replace(/\s+/g, '').toUpperCase();
+    await setDoc(doc(db, 'salas', this.codigo, 'privado', 'piezas'), { codigo: limpio });
+    await this.actualizar({ piezas: limpio ? { largo: limpio.length, equipos: {} } : deleteField() });
+    return limpio;
+  }
+
+  async codigoFinal() {
+    const s = await getDoc(doc(db, 'salas', this.codigo, 'privado', 'piezas'));
+    return s.exists() ? s.data().codigo : '';
+  }
+
+  // Da una posición que ningún equipo tenga todavía; si ya se repartieron todas, una que a este
+  // equipo le falte. Devuelve la posición, o null si el equipo ya tiene el código completo.
+  async darPieza(eid) {
+    const codigo = await this.codigoFinal();
+    if (!codigo) throw new Error('Primero escribí el código final.');
+    const equipos = this.data?.piezas?.equipos || {};
+    const dadas = new Set(Object.values(equipos).flatMap((m) => Object.keys(m).map(Number)));
+    const mias = this.piezasDe(eid);
+    const faltan = [...codigo].map((_, i) => i).filter((i) => !(i in mias));
+    if (!faltan.length) return null;
+    const nuevas = faltan.filter((i) => !dadas.has(i));
+    const lista = nuevas.length ? nuevas : faltan;
+    const pos = lista[Math.floor(Math.random() * lista.length)];
+    await this.actualizar({ [`piezas.equipos.${eid}.${pos}`]: codigo[pos] });
+    return pos;
+  }
+
   // ── Acciones del alumno ──
   responder(datos) {
     return setDoc(doc(db, 'salas', this.codigo, 'respuestas', this.uid), {

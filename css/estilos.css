@@ -615,3 +615,5 @@ body.modo-tv { background: var(--tv-bg); color: var(--tv-tinta); overflow: hidde
 .ranking li.oculto { opacity: .35; filter: blur(3px); }
 .podio-nuevo { animation: aparece .6s ease-out; }
 .podio-lista { width: min(40em, 90%); }
+.piezas-chip { font-size: .85rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); margin-left: 6px; white-space: nowrap; }
+.piezas-grande { font-size: 2rem; font-weight: 700; letter-spacing: .1em; text-align: center; }

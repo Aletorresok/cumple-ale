@@ -73,7 +73,8 @@ function espera(el, sala) {
       h('div', { class: 'tv-grupos' }, sala.equipos().map((e) => {
         const miembros = sala.miembros(e.id);
         return h('div', { class: 'tv-grupo', style: { '--c': e.color } },
-          h('div', { class: 'tv-grupo-cab' }, h('span', null, e.nombre), h('span', { class: 'mono' }, `${e.puntos} pts`)),
+          h('div', { class: 'tv-grupo-cab' }, h('span', null, e.nombre),
+            h('span', { class: 'mono' }, Object.keys(sala.piezasDe(e.id)).length ? `🧩×${Object.keys(sala.piezasDe(e.id)).length} · ` : '', `${e.puntos} pts`)),
           h('div', { class: 'tv-nombres' }, miembros.map((m) => h('span', { class: 'tv-nombre' }, m.nombre))));
       })))));
 }

@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 05/10/2026. Cumpleaños: 08/11/2026.
+Última actualización: 05/10/2026 (tarde). Cumpleaños: 08/11/2026.
 
 ## Hecho
 
@@ -10,6 +10,8 @@
 - Juegos nuevos: selección de equipos con suspenso, mímica por equipos y podio final.
 - Banco de ejemplo con encuestas, pares para el impostor, 40 palabras de mímica y un escape
   («¿Quién se llevó la torta?»).
+- Piezas del código final: después de cada juego se le da al equipo ganador una pieza del
+  código del último candado del escape; en el escape final cooperativo juntan las piezas.
 - Probado con los emuladores y 30 invitados simulados: selección, impostor, mímica, los
   invitados dicen, escape y podio.
 
@@ -26,6 +28,4 @@
 - Probarlo en una tele y celulares reales.
 - Pasar a un Firebase propio (ver README).
 - Cargar el banco real con cosas de la familia y los amigos.
-- Sala de escape como final de la noche: que cada juego ganado le dé al equipo una pieza del
-  código del candado final.
 - Temática de la trivia.

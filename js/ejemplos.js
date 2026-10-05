@@ -59,7 +59,7 @@ export const BANCO_FIESTA = {
     {
       tipo: 'escape',
       titulo: '¿Quién se llevó la torta?',
-      intro: 'Faltan minutos para soplar las velitas y la torta desapareció. Quien se la llevó dejó la heladera cerrada con candados y pistas por toda la fiesta. Abran todos los candados antes de que se derrita el dulce de leche.',
+      intro: 'Faltan minutos para soplar las velitas y la torta desapareció. Quien se la llevó dejó la heladera cerrada con candados y pistas por toda la fiesta. Abran todos los candados antes de que se derrita el dulce de leche. El último se abre con las piezas del código que ganaron en los juegos.',
       final: '¡La encontraron! Estaba en la heladera de la vecina. Ahora sí: ¡que vengan las velitas!',
       minutos: 15,
       candados: [
@@ -71,6 +71,8 @@ export const BANCO_FIESTA = {
           pistas: ['Son cuatro flechas.', 'La primera es ↑ y la segunda →.'] },
         { titulo: 'Los globos', desafio: 'Los globos de la fiesta están en este orden: el del cielo, el del pasto, el del sol.', tipo: 'color', respuesta: 'azul,verde,amarillo',
           pistas: ['Son tres colores.', 'El cielo es azul.'] },
+        { titulo: 'La heladera', desafio: 'El último candado se abre con el código que fueron ganando en los juegos de la noche. Junten las piezas de todos los equipos.', tipo: 'numero', respuesta: '0811',
+          pistas: ['Es una fecha muy importante para esta fiesta.', 'Día y mes del cumple de Ale, con dos números cada uno.'] },
       ],
     },
   ],
