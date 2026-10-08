@@ -21,6 +21,7 @@ const sdk = (() => { try { return createRequire(import.meta.url).resolve('fireba
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } : undefined;
 const browser = await chromium.launch({ proxy, executablePath: process.env.CHROMIUM || undefined });
 
+const fuentes = new Map();
 async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
   const ctx = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
   await ctx.addInitScript(() => localStorage.setItem('emulador', '1'));
@@ -31,7 +32,13 @@ async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
       return r.fulfill({ body: readFileSync(archivo), contentType: 'text/javascript' });
     });
     // Las fuentes de Google se cortan para ir más rápido, salvo con FUENTES=1 (para capturas).
+    // Con FUENTES=1 se bajan una sola vez y se reparten a todas las páginas desde memoria.
     if (!process.env.FUENTES) await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    else await ctx.route(/fonts\.(googleapis|gstatic)\.com/, async (r) => {
+      const url = r.request().url();
+      if (!fuentes.has(url)) fuentes.set(url, r.fetch().then(async (res) => ({ status: res.status(), headers: res.headers(), body: await res.body() })));
+      try { await r.fulfill(await fuentes.get(url)); } catch { fuentes.delete(url); await r.abort(); }
+    });
   }
   const p = await ctx.newPage();
   p.on('console', (m) => { if (m.type() === 'error') errores.push(`${nombre}: ${m.text()}`); });
@@ -98,6 +105,8 @@ try {
   await host.getByRole('button', { name: 'Abrir una sala' }).click();
   const codigo = (await host.locator('.sala-codigo').textContent()).trim();
   paso(`Sala ${codigo} abierta`);
+  await host.locator('.escaleta-actual').getByText('Llegada').waitFor();
+  await captura(host, '0b-escaleta-panel');
 
   const tv = await pagina('tv', `?tv=${codigo}`, { width: 1600, height: 900 });
 
@@ -334,14 +343,55 @@ try {
   await terminarJuego(host).catch(() => {});
   await medir('Piezas y escape');
 
+  // ── Pausa: noticiero de Springfield con un aviso ──
+  const irAlPaso = async (titulo) => {
+    await host.locator('.escaleta summary').click();
+    await host.locator('.escaleta-lista').getByRole('button', { name: titulo }).click();
+    await host.locator('.escaleta-actual').getByText(titulo.replace(/^\S+ /, '')).waitFor();
+  };
+  await irAlPaso('📺 Pausa · Noticiero de Springfield');
+  await host.getByRole('button', { name: '📺 Poner el noticiero' }).click();
+  await tv.locator('.tv-noticiero').waitFor({ timeout: 15000 });
+  await host.locator('#aviso-tv').fill('Las pizzas salen en 5 minutos');
+  await host.getByRole('button', { name: 'Mandar aviso' }).click();
+  await tv.getByText('Las pizzas salen en 5 minutos').waitFor({ timeout: 20000 });
+  await esperar(800);
+  await captura(tv, '10k-noticiero-aviso');
+  await tv.locator('.nt-cinta', { hasText: /La causa de la torta|Último momento|Testigo clave/ }).waitFor({ timeout: 40000 });
+  await esperar(800);
+  await captura(tv, '10l-noticiero');
+  await captura(host, '10m-escaleta-pausa');
+  await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
+  await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
+  paso('Noticiero: la tele pasó el aviso y los titulares de la noche, y volvió al QR');
+
+  // ── Momento torta: los celulares son velitas ──
+  await irAlPaso('🎂 Momento torta');
+  await host.getByRole('button', { name: '▶ Abrir Momento torta' }).click();
+  await host.getByRole('button', { name: 'Empezar', exact: true }).click();
+  await tv.locator('.tv-velitas').waitFor({ timeout: 15000 });
+  for (const p of invitados) await p.locator('.velita-pantalla').waitFor({ timeout: 15000 });
+  await esperar(500);
+  await captura(tv, '12a-velitas');
+  await captura(invitados[0], '12b-velitas-celular');
+  await host.getByRole('button', { name: '💨 ¡Soplar!' }).click();
+  await tv.locator('.tv-velitas.sopladas').waitFor();
+  await invitados[0].locator('.velita-pantalla.sopladas').waitFor();
+  await esperar(1600);
+  await captura(tv, '12c-velitas-sopladas');
+  await captura(invitados[0], '12d-velitas-celular-sopladas');
+  paso(`Momento torta: ${invitados.length} velitas prendidas en los celulares y sopladas a la vez`);
+  await terminarJuego(host);
+
   // ── Podio ──
   await elegirJuego(host, 'Podio final');
   for (let i = 0; i < 4; i++) await host.getByRole('button', { name: /Revelar/ }).click().then(() => esperar(400));
   await tv.getByText('¡Campeón de la noche!').waitFor();
   await esperar(1500);
   await captura(tv, '12-podio');
+  for (const p of invitados) await p.locator('.sentencia').waitFor({ timeout: 15000 });
   await captura(invitados[0], '13-podio-celular');
-  paso('Podio: revelado hasta el campeón');
+  paso('Podio: revelado hasta el campeón, y cada invitado recibió su sentencia');
   await medir('Podio');
 
   // ── Plan B en papel ──

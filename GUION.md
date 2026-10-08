@@ -1,13 +1,16 @@
 # Guion de la noche
 
 Borrador para ajustar después del ensayo. Son unas **dos horas de juegos** repartidas en dos
-bloques, con la comida o la torta en el medio. Imprimilo y tenelo al lado de la compu.
+bloques, con la comida en el medio y la torta al final. Imprimilo y tenelo al lado de la compu.
 
 Código final del escape: **0811** (4 piezas). En el panel de la sala tocá «Usar el del escape
 «La sentencia»». Después de cada uno de los primeros cuatro juegos le das una pieza al equipo
 ganador con **🧩 Dar pieza**.
 
 ## Antes de empezar
+
+- El panel trae **«La noche, paso a paso»**: el paso actual, qué decir y un botón para abrir el
+  juego. Quien lleve la fiesta solo tiene que seguirlo con «Siguiente paso».
 
 - La tele muestra el QR desde que llega la gente: cada uno entra con su nombre mientras saluda.
 - Ojo con la hora de abrir la sala: dura 12 horas.
@@ -39,9 +42,11 @@ ganador con **🧩 Dar pieza**.
 Antes de la pausa: «Cada equipo que ganó tiene una pieza de un código. Guárdenla: la van a
 necesitar al final de la noche.»
 
-## Pausa · comida, torta, lo que toque
+## Pausa · comida
 
-La tele puede quedar en la sala de espera con los puntos de cada equipo.
+En el panel, «📺 Poner el noticiero»: la tele pasa el *Noticiero de Springfield* con lo que va de
+la noche (quién lidera, las piezas, un testigo al azar). Los avisos («Las pizzas salen en 5
+minutos») se mandan desde el mismo panel. Al volver, «Volver al QR en la tele».
 
 ## Bloque 2 · unos 70 minutos
 
@@ -50,7 +55,8 @@ La tele puede quedar en la sala de espera con los puntos de cada equipo.
 | 5 | ⚡ Trivia | 10 min | 10 preguntas, 20 segundos cada una | 🧩 al ganador |
 | 6 | ⚖️ Escapes de Lionel Hutz | 20 a 25 min | «Cada equipo su escape», banco Hutz | — |
 | 7 | 🔐 La sentencia | 15 min | Modo cooperativo, escape «La sentencia» | — |
-| 8 | 🏆 Podio final | 5 min | Revelar del último al campeón | — |
+| 8 | 🎂 Momento torta | 10 min | Luces apagadas, «Soplar» cuando sopla Ale | — |
+| 9 | 🏆 Podio y sentencias | 5 min | Revelar del último al campeón; cada uno ve su sentencia | — |
 
 **Qué decir**
 
@@ -62,7 +68,9 @@ La tele puede quedar en la sala de espera con los puntos de cada equipo.
    entre los celulares y uno escondido en la fiesta.» Gana el primero en salir.
 7. *La sentencia*: «El juez Snyder va a dictar sentencia. Abran los candados entre todos. El
    último se abre con las piezas que ganaron: júntense con los otros equipos.»
-8. *Podio*: revelar despacio, del último al primero, y dejar el momento para el campeón.
+8. *Torta*: «¡Arriba los celulares! Son las velitas. Cuando Ale sople, se apagan todas.» Apagar
+   las luces, cantar y tocar «💨 ¡Soplar!» justo cuando sopla. Se puede repetir para la foto.
+9. *Podio*: revelar despacio, del último al primero, y dejar el momento para el campeón.
 
 ## Si algo falla
 

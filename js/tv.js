@@ -5,6 +5,7 @@ import { juego as buscarJuego } from './juegos/index.js';
 import { marcador } from './juegos/comun.js';
 import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
+import { noticiero } from './noticiero.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
   const codigo = (codigoUrl || '').toUpperCase();
@@ -49,7 +50,7 @@ export async function iniciarTv(raiz, codigoUrl) {
         vistaJuego = buscarJuego(j.tipo)?.tv(zona, sala) || null;
       }
     }
-    if (!j) espera(escena, sala);
+    if (!j) (sala.data.pantalla === 'noticiero' ? noticiero : espera)(escena, sala);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;
     montar(pie, sinMarcador ? null : marcador(sala));

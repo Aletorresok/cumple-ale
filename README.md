@@ -114,6 +114,8 @@ js/sala.js                 estado compartido de una sala
 js/bancos.js               bancos de contenido y su editor
 js/ejemplos.js             banco de ejemplo de la fiesta
 js/escapes.js              candados y editor de escapes
+js/escaleta.js             la noche paso a paso, en el panel
+js/noticiero.js            noticiero de Springfield para las pausas (tele)
 js/expedientes.js          escapes de Lionel Hutz (uno por equipo y la sentencia)
 js/docente.js              panel de quien organiza
 js/alumno.js               vista del invitado (celular)

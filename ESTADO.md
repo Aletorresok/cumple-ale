@@ -31,6 +31,10 @@
   por equipo, con letras de una clave, información repartida y una tarjeta física) y La
   sentencia cooperativa con las piezas. Probado con 30 invitados.
 
+- La noche entera (08/10, Alexis eligió las 4 propuestas): «La noche, paso a paso» en el panel,
+  Noticiero de Springfield para las pausas, Momento torta con los celulares como velitas sobre
+  una dona rosa, y una sentencia personal de Hutz para cada invitado al final del podio.
+
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.
