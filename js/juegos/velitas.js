@@ -81,7 +81,10 @@ export default {
         montar(el, h('div', { class: 'tv-centro tv-velitas' + (prendidas ? '' : ' sopladas') },
           h('div', { class: 'tv-etiqueta' }, prendidas ? `🕯️ ${sala.jugadores.size} velitas prendidas` : 'Pidió tres deseos'),
           h('h1', { class: 'tv-titulo enorme' }, `¡Feliz cumple, ${j.nombre}!`),
-          h('div', { class: 'tv-velas', style: { '--cols': cuantas <= 16 ? cuantas : Math.ceil(cuantas / 2) } }, Array.from({ length: cuantas }, (_, i) => vela(!prendidas, (i * 137) % 900))),
+          // La torta es una dona rosa de Springfield, con las velitas encima.
+          h('div', { class: 'tv-torta' },
+            h('div', { class: 'tv-velas', style: { '--cols': cuantas <= 16 ? cuantas : Math.ceil(cuantas / 2) } }, Array.from({ length: cuantas }, (_, i) => vela(!prendidas, (i * 137) % 900))),
+            h('div', { class: 'tv-dona', 'aria-hidden': 'true' })),
           prendidas
             ? h('div', { class: 'tv-letra' }, LETRA.map((l) => h('div', null, l.replace('{n}', j.nombre))))
             : h('p', { class: 'tv-sub' }, '🎉 ¡Que vengan las porciones!')));

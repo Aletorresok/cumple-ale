@@ -705,6 +705,15 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .velita-texto { font-family: var(--display); font-size: 2rem; margin: 0; }
 .tv-velitas .tv-velas { display: grid; grid-template-columns: repeat(var(--cols, 10), auto); justify-content: center; gap: 1.6vw 1.2vw; padding: 1vh 0; }
 .tv-velitas .vela { width: 1.1em; height: 4.4em; }
+.tv-torta { display: flex; flex-direction: column; align-items: center; }
+.tv-torta .tv-velas { position: relative; z-index: 1; margin-bottom: -1.2em; }
+.tv-dona { width: min(70vw, 34em); height: 3.2em; border-radius: 50%; position: relative;
+  background: radial-gradient(ellipse 18% 32% at 50% 45%, var(--tv-bg) 96%, transparent 100%),
+    radial-gradient(circle at 20% 40%, #FED90F 0 3px, transparent 4px), radial-gradient(circle at 70% 30%, #4CC3FF 0 3px, transparent 4px),
+    radial-gradient(circle at 35% 70%, #FFFFFF 0 3px, transparent 4px), radial-gradient(circle at 82% 62%, #7CE38B 0 3px, transparent 4px),
+    radial-gradient(circle at 60% 78%, #FED90F 0 3px, transparent 4px), radial-gradient(circle at 12% 66%, #4CC3FF 0 3px, transparent 4px),
+    radial-gradient(ellipse at 50% 40%, #FF7EB6 0 62%, #E0609A 70%, #C98A4B 74%, #9C6232 100%);
+  box-shadow: 0 1.2em 2em -1em rgb(0 0 0 / .6); }
 .tv-letra { font-family: var(--display); font-size: 1.6em; line-height: 1.25; color: #FFE9C2; }
 
 /* ════════ Sentencia personal (podio, en el celular) ════════ */
