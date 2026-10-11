@@ -1,4 +1,4 @@
-// Banco temático «Springfield» (Los Simpson): trivia, mímica, pares para el impostor y encuestas.
+// Banco temático «Springfield» (Los Simpson): trivia, mímica y encuestas.
 // Usa los nombres del doblaje latino. Se agrega desde «Mis bancos» y se edita como cualquier otro.
 const q = (pregunta, correcta, ...incorrectas) => ({ tipo: 'pregunta', pregunta, correcta, incorrectas });
 
@@ -33,17 +33,6 @@ export const BANCO_SPRINGFIELD = {
       'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco']
       .map((palabra) => ({ tipo: 'mimica', palabra })),
 
-    // ── El impostor ──
-    { tipo: 'par', a: 'Homero', b: 'Barney' },
-    { tipo: 'par', a: 'Sr. Burns', b: 'Smithers' },
-    { tipo: 'par', a: 'Ned Flanders', b: 'el Reverendo Alegría' },
-    { tipo: 'par', a: 'Krusty', b: 'Bob Patiño' },
-    { tipo: 'par', a: 'la taberna de Moe', b: 'el Kwik-E-Mart' },
-    { tipo: 'par', a: 'cerveza Duff', b: 'Buzz Cola' },
-    { tipo: 'par', a: 'Marge', b: 'Patty' },
-    { tipo: 'par', a: 'Lisa', b: 'Martin' },
-    { tipo: 'par', a: 'Milhouse', b: 'Ralph' },
-    { tipo: 'par', a: 'Apu', b: 'Moe' },
 
     // ── Los invitados dicen (puntos estimados, para cambiar por los de la encuesta previa) ──
     { tipo: 'encuesta', pregunta: 'Nombrá un personaje de Los Simpson', respuestas: [

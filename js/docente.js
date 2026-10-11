@@ -14,6 +14,7 @@ import { imprimirRespaldo } from './respaldo.js';
 import { panelEscaleta } from './escaleta.js';
 import { panelBotonera } from './botonera.js';
 import { panelNarrador } from './narrador.js';
+import { mantenerPantalla, latidoPanel } from './presencia.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -147,7 +148,7 @@ async function inicio(raiz, docente) {
               await borrarBanco(b.id); inicio(raiz, docente);
             } }, '🗑')))))
         : h('div', { class: 'tarjeta suave pila' },
-          h('p', null, 'Todavía no tenés bancos. Un banco junta lo que usan los juegos: encuestas, pares de palabras para el impostor, palabras de mímica, preguntas y escapes.'),
+          h('p', null, 'Todavía no tenés bancos. Un banco junta lo que usan los juegos: encuestas, palabras de mímica, preguntas y escapes.'),
           h('p', { class: 'muted chico' }, 'Para probar rápido, agregá el banco de ejemplo y después editalo con cosas de la familia y los amigos.')),
       catalogo);
   } catch (e) { montar(zonaBancos, h('p', { class: 'aviso' }, mensajeError(e))); }
@@ -208,9 +209,13 @@ function panelSala(raiz, docente, codigo) {
   // Esta pestaña pasa a ser la que controla los juegos.
   sala.actualizar({ controlador: SESION }).catch((e) => toast(mensajeError(e), 'error'));
 
+  // Los juegos corren en esta pestaña: la pantalla no se apaga y la tele sabe si dejamos de responder.
+  const soltarPantalla = mantenerPantalla();
+  sala.subs.push(soltarPantalla);
+  latidoPanel(sala, () => sala.data?.controlador === SESION);
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
-    contadorAlumnos.textContent = sala.jugadores.size;
+    contadorAlumnos.textContent = sala.activos().length;
     if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
     if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); narrador.refrescar(); }
     dibujarJuego(motivo);

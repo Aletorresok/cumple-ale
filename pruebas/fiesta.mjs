@@ -1,5 +1,5 @@
 // Prueba de punta a punta con los emuladores de Firebase: abre la sala, la pantalla grande y
-// N invitados (30 por defecto), y juega la selección de equipos, el impostor, la mímica y el podio.
+// N invitados (30 por defecto), y juega la selección de equipos, la mímica y el podio.
 // En el medio corta la conexión de algunos celulares y recarga otros, y al final muestra cuántas
 // lecturas y escrituras de Firebase gastó la noche (para compararlo con la cuota gratis).
 //
@@ -166,55 +166,6 @@ try {
   await terminarJuego(host);
   await medir('Selección de equipos');
 
-  // ── Impostor ──
-  await elegirJuego(host, 'El impostor');
-  await host.getByRole('button', { name: 'Abrir votación' }).waitFor({ timeout: 20000 });
-  for (const p of invitados) await p.locator('.palabra', { hasNotText: '…' }).waitFor({ timeout: 15000 });
-  const palabras = await Promise.all(invitados.map((p) => p.locator('.palabra').textContent()));
-  const distintas = [...new Set(palabras)];
-  afirmar(distintas.length === 2, `dos palabras repartidas (${distintas})`);
-  paso(`Impostor: palabras repartidas (${distintas.map((d) => `${d} ×${palabras.filter((x) => x === d).length}`).join(', ')})`);
-  await captura(tv, '5-impostor-pistas');
-  await captura(invitados[0], '5a-impostor-celular');
-
-  // ── Reconexión: se corta la red de tres celulares y otros tres recargan la página ──
-  const cortados = invitados.slice(0, 3);
-  await Promise.all(cortados.map((p) => p.context().setOffline(true)));
-  await Promise.all(cortados.map((p) => p.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 })));
-  await captura(cortados[0], '5b-sin-conexion');
-  await esperar(3000);
-  await Promise.all(cortados.map((p) => p.context().setOffline(false)));
-  await Promise.all(cortados.map((p) => p.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 30000 })));
-  paso('Reconexión: tres celulares sin red vieron el aviso y volvieron solos');
-  const recargados = invitados.slice(3, 6);
-  const equiposAntes = await Promise.all(recargados.map((p) => p.locator('.invitado-barra .pildora').textContent()));
-  await Promise.all(recargados.map(recargar));
-  for (const [i, p] of recargados.entries()) {
-    await p.locator('.palabra', { hasText: palabras[3 + i] }).waitFor({ timeout: 20000 });
-    const eq = await p.locator('.invitado-barra .pildora').textContent();
-    afirmar(eq === equiposAntes[i], `después de recargar sigue en su equipo (${equiposAntes[i]} → ${eq})`);
-  }
-  paso('Reconexión: tres celulares recargaron y siguen con su equipo y su palabra');
-  await host.getByRole('button', { name: 'Abrir votación' }).click();
-  // Wifi conectado pero sin internet: el navegador cree que hay red y Firebase no responde.
-  // Ese celular vota igual; ve el aviso, y el voto llega cuando vuelve internet.
-  const sinInternet = invitados[6];
-  const servidor = /127\.0\.0\.1:8080|localhost:8080/;
-  const bloquear = (r) => r.abort('internetdisconnected');
-  await sinInternet.context().route(servidor, bloquear);
-  await Promise.all(invitados.map((p) => p.locator('.btn-voto').first().click()));
-  await sinInternet.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 });
-  await sinInternet.context().unroute(servidor, bloquear);
-  await sinInternet.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 60000 });
-  paso('Reconexión: un celular con wifi pero sin internet vio el aviso y su voto llegó al volver');
-  await host.waitForFunction((n) => document.body.textContent.includes(`${n} de ${n}`), N, { timeout: 20000 });
-  await host.getByRole('button', { name: 'Cerrar votación y revelar' }).click();
-  await tv.getByText(/El impostor era|Los impostores eran/).waitFor();
-  await captura(tv, '6-impostor-resultado');
-  paso('Impostor: votaron todos y se reveló');
-  await terminarJuego(host);
-  await medir('Impostor (con reconexiones)');
-
   // ── Mímica ──
   const antes = await host.locator('.equipo-pts').allTextContents();
   await elegirJuego(host, 'Mímica por equipos');
@@ -267,7 +218,53 @@ try {
     const pregunta = await tv.locator('.tv-pregunta').textContent();
     const esContrato = pregunta.includes('contrato');
     if (esContrato) { salioContrato = true; await captura(tv, '10c-trivia-contrato'); await captura(invitados[0], '10d-trivia-celular'); }
-    await Promise.all(invitados.map((p) => p.locator('.opcion').nth(n % 2).click()));
+    if (n === 0) {
+      // ── Reconexión: se corta la red de tres celulares y otros tres recargan la página ──
+      const cortados = invitados.slice(0, 3);
+      await Promise.all(cortados.map((p) => p.context().setOffline(true)));
+      await Promise.all(cortados.map((p) => p.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 })));
+      await captura(cortados[0], '5b-sin-conexion');
+      await esperar(3000);
+      await Promise.all(cortados.map((p) => p.context().setOffline(false)));
+      await Promise.all(cortados.map((p) => p.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 30000 })));
+      paso('Reconexión: tres celulares sin red vieron el aviso y volvieron solos');
+      const recargados = invitados.slice(3, 6);
+      const equiposAntes = await Promise.all(recargados.map((p) => p.locator('.invitado-barra .pildora').textContent()));
+      await Promise.all(recargados.map(recargar));
+      for (const [i, p] of recargados.entries()) {
+        await p.locator('.opcion').first().waitFor({ timeout: 20000 });
+        const eq = await p.locator('.invitado-barra .pildora').textContent();
+        afirmar(eq === equiposAntes[i], `después de recargar sigue en su equipo (${equiposAntes[i]} → ${eq})`);
+      }
+      paso('Reconexión: tres celulares recargaron y siguen con su equipo y la pregunta');
+      // Wifi conectado pero sin internet: el navegador cree que hay red y Firebase no responde.
+      // Ese celular responde igual; ve el aviso, y la respuesta llega cuando vuelve internet.
+      const sinInternet = invitados[6];
+      const servidor = /127\.0\.0\.1:8080|localhost:8080/;
+      const bloquear = (r) => r.abort('internetdisconnected');
+      await sinInternet.context().route(servidor, bloquear);
+      await Promise.all(invitados.map((p) => p.locator('.opcion').nth(0).click()));
+      await sinInternet.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 });
+      await sinInternet.context().unroute(servidor, bloquear);
+      await sinInternet.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 60000 });
+      paso('Reconexión: un celular con wifi pero sin internet vio el aviso y su respuesta llegó al volver');
+    } else if (n === 1) {
+      // Presencia: un celular que dejó de avisar (se quedó sin batería) no frena la pregunta.
+      const ausente = invitados[N - 1];
+      const raiz = `http://127.0.0.1:8080/v1/projects/juegos-aula/databases/(default)/documents/salas/${codigo}/jugadores`;
+      const cab = { Authorization: 'Bearer owner', 'Content-Type': 'application/json' };
+      const lista = await (await fetch(raiz, { headers: cab })).json();
+      const doc = lista.documents.find((d) => d.fields.nombre.stringValue === `Invitado ${N}`);
+      afirmar(doc, 'se encontró al invitado que va a quedar ausente');
+      const viejo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const resp = await fetch(`${doc.name.replace(/^projects/, 'http://127.0.0.1:8080/v1/projects')}?updateMask.fieldPaths=visto`, { method: 'PATCH', headers: cab, body: JSON.stringify({ fields: { visto: { timestampValue: viejo } } }) });
+      afirmar(resp.ok, `el emulador aceptó marcar al ausente (${resp.status})`);
+      await esperar(1500);
+      await Promise.all(invitados.filter((p) => p !== ausente).map((p) => p.locator('.opcion').nth(n % 2).click()));
+      paso(`Presencia: ${N - 1} respondieron y la pregunta se reveló sin esperar al celular ausente`);
+    } else {
+      await Promise.all(invitados.map((p) => p.locator('.opcion').nth(n % 2).click()));
+    }
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
     await tv.locator('.tv-opcion.correcta').waitFor();
     if (n === 0) await captura(tv, '10a-trivia');
@@ -453,7 +450,7 @@ try {
   }
   await captura(host, '14-plan-b');
   await host.emulateMedia({ media: 'screen' });
-  paso('Plan B: se imprime el banco con mímica, impostor, encuestas, trivia, escape y hoja de puntos');
+  paso('Plan B: se imprime el banco con mímica, encuestas, trivia, escape y hoja de puntos');
 
   console.log('\nUso de Firebase (aprox.):');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(32)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);

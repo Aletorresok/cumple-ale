@@ -56,8 +56,9 @@ export default {
     async function empezarTurno() {
       const j = sala.juego;
       const equipo = j.fase === 'fin_turno' ? j.siguiente : j.equipo;
-      const miembros = sala.miembros(equipo);
-      if (!miembros.length) { toast('Ese equipo no tiene integrantes', 'error'); return; }
+      // Actúa alguien que siga conectado; si no hay nadie, se avisa.
+      const miembros = sala.miembrosActivos(equipo);
+      if (!miembros.length) { toast('Ese equipo no tiene integrantes conectados', 'error'); return; }
       // Actúa alguien que todavía no actuó (si ya actuaron todos, cualquiera).
       const libres = miembros.filter((m) => !j.actuaron.includes(m.uid));
       const actor = mezclar(libres.length ? libres : miembros)[0];

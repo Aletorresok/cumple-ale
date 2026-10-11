@@ -1,6 +1,7 @@
 // Vista del alumno: entra con código y nombre, y juega desde el celular.
 import { asegurarSesion, mensajeError, db, collection, getDocs, deleteDoc, doc } from './fb.js';
 import { Sala, existeSala, unirse } from './sala.js';
+import { latidoInvitado } from './presencia.js';
 import { juego as buscarJuego } from './juegos/index.js';
 import { esperando, pildoraEquipo } from './juegos/comun.js';
 import { h, montar, urlApp, normalizar, guardarLocal, leerLocal, toast, bandaConexion } from './util.js';
@@ -109,6 +110,7 @@ function enSala(raiz, codigo, uid, nombre) {
       h('a', { class: 'btn', href: urlApp('') }, 'Entrar a otra sala'))));
   };
 
+  latidoInvitado(sala, uid);
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({}, (motivo) => {
     if (sala.data.cerrada) { cerrada(); return; }

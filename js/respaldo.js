@@ -1,14 +1,13 @@
 // Plan B en papel: imprime todo el banco para jugar sin internet (mímica en tarjetas para
-// recortar, pares del impostor, encuestas con sus respuestas, preguntas, escape y hoja de puntos).
+// recortar, encuestas con sus respuestas, preguntas, escape y hoja de puntos).
 import { h, toast } from './util.js';
 import { itemsDe } from './bancos.js';
 import { EQUIPOS_BASE } from './config.js';
 
-const JUEGOS_PUNTOS = ['Los invitados dicen', 'El impostor', 'Mímica', 'Trivia', 'Sala de escape', 'Extra'];
+const JUEGOS_PUNTOS = ['Los invitados dicen', 'Mímica', 'Trivia', 'Sala de escape', 'Extra'];
 
 export function imprimirRespaldo(banco, cantidadEquipos = 4) {
   const mimica = itemsDe(banco, 'mimica');
-  const pares = itemsDe(banco, 'par');
   const encuestas = itemsDe(banco, 'encuesta');
   const preguntas = itemsDe(banco, 'pregunta');
   const afirmaciones = itemsDe(banco, 'afirmacion');
@@ -30,11 +29,6 @@ export function imprimirRespaldo(banco, cantidadEquipos = 4) {
 
     mimica.length > 0 && seccion(`Mímica · ${mimica.length} tarjetas`, 'Recortalas y ponelas en una bolsa. Quien actúa saca una; si su equipo adivina en el minuto, suma 10.',
       h('div', { class: 'imp-recortes' }, mimica.map((m) => h('div', { class: 'imp-recorte' }, m.palabra)))),
-
-    pares.length > 0 && seccion('El impostor', 'En cada ronda: escribí la palabra común en papelitos para todos menos uno, que recibe la del impostor. Pistas en voz alta y votación a mano alzada.',
-      h('table', { class: 'imp-tabla' },
-        h('thead', null, h('tr', null, h('th', null, 'Ronda'), h('th', null, 'Todos'), h('th', null, 'Impostor'))),
-        h('tbody', null, pares.map((p, i) => h('tr', null, h('td', null, i + 1), h('td', null, p.a), h('td', null, p.b)))))),
 
     encuestas.length > 0 && seccion('Los invitados dicen', 'Leé la pregunta; los equipos se turnan para adivinar. Tres errores y el otro equipo puede robar.',
       encuestas.map((e, i) => h('div', { class: 'imp-bloque' },
@@ -63,6 +57,6 @@ export function imprimirRespaldo(banco, cantidadEquipos = 4) {
   document.body.classList.add('imprimiendo');
   const limpiar = () => { hoja.remove(); document.body.classList.remove('imprimiendo'); };
   window.addEventListener('afterprint', limpiar, { once: true });
-  if (!mimica.length && !pares.length && !encuestas.length && !preguntas.length) toast('El banco está casi vacío: solo sale la hoja de puntos');
+  if (!mimica.length && !encuestas.length && !preguntas.length) toast('El banco está casi vacío: solo sale la hoja de puntos');
   setTimeout(() => { window.print(); if (!window.pruebas) setTimeout(limpiar, 1000); }, 100);
 }

@@ -14,9 +14,6 @@ const LINEAS = {
   encuesta: {
     inicio: ['Los invitados dicen. A ver qué respondió la gente… yo diría que donas.', 'Adivinen lo que más respondieron. No es tan difícil.'],
   },
-  impostor: {
-    inicio: ['Hay un impostor entre nosotros. ¡Ay, caramba!', 'Todos tienen la misma palabra menos uno. Yo no fui.'],
-  },
   mimica: {
     inicio: ['Mímica. Hablar es de cobardes.', 'Ahora actúen sin decir una palabra. Qué difícil para mí.'],
   },

@@ -356,7 +356,6 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .tv-palabras .imp b { color: var(--mark); }
 .tv-votos { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .6em; justify-content: center; }
 .tv-votos li { display: flex; gap: .6em; padding: .3em .8em; background: var(--tv-surface); border-radius: 8px; }
-.tv-votos li.es-impostor { outline: 3px solid var(--mark); }
 
 .tv-nube { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 1.4em; }
 .tv-ruleta-nombre { font-family: var(--display); font-weight: 800; font-size: 6em; line-height: 1.05; min-height: 1.1em; text-wrap: balance; }
@@ -640,6 +639,7 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .banda-punto { width: 10px; height: 10px; border-radius: 50%; background: #fff; animation: latido 1s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: .3; } }
 .modo-tv .banda-conexion { font-size: 1.6rem; padding: 14px; }
+.banda-panel { top: auto; bottom: 0; background: #b45309; z-index: 71; }
 
 /* ── Diagnóstico ── */
 .diag-fila { display: flex; gap: 10px; align-items: flex-start; }

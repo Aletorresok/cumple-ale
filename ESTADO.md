@@ -8,11 +8,11 @@
   puntos y bancos de contenido. Se sacaron las clases, los bancos de materias y los juegos
   escolares (rosco, aventura, termómetro, ordenar).
 - Juegos nuevos: selección de equipos con suspenso, mímica por equipos y podio final.
-- Banco de ejemplo con encuestas, pares para el impostor, 40 palabras de mímica y un escape
+- Banco de ejemplo con encuestas, 40 palabras de mímica y un escape
   («¿Quién se llevó la torta?»).
 - Piezas del código final: después de cada juego se le da al equipo ganador una pieza del
   código del último candado del escape; en el escape final cooperativo juntan las piezas.
-- Probado con los emuladores y 30 invitados simulados: selección, impostor, mímica, los
+- Probado con los emuladores y 30 invitados simulados: selección, mímica, los
   invitados dicen, escape y podio.
 - Aviso «Sin conexión · reconectando…» en celulares, pantalla grande y panel. Aparece si se
   corta la red o si el wifi no tiene internet (una escritura que no llega en 4 segundos), y se
@@ -45,7 +45,8 @@
 
 ## Decisiones de Alexis
 
-- Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.
+- Sí: selección de equipos, Los invitados dicen, mímica por equipos, podio.
+- No: el impostor (11/10): con tanta gente se pierde el sentido.
 - Trivia: sí, pero con otra temática. Hay tres propuestas para elegir en «Mis bancos»: Bien
   argentina, Cine tele y música, y Cultura general.
 - A revisar: ¿Cuánto apostás?. Veremos: nube de deseos.

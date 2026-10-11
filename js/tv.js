@@ -9,6 +9,7 @@ import { noticiero } from './noticiero.js';
 import { intro } from './intro.js';
 import { vigilarFrases } from './botonera.js';
 import { vigilarNarrador, afinadorVoz } from './narrador.js';
+import { mantenerPantalla, vigilarPanel } from './presencia.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
   const codigo = (codigoUrl || '').toUpperCase();
@@ -38,11 +39,12 @@ export async function iniciarTv(raiz, codigoUrl) {
     clearTimeout(ocultar);
     ocultar = setTimeout(() => controles.classList.remove('visible'), 2500);
   });
-  pedirPantallaEncendida();
+  mantenerPantalla();
 
   const frases = vigilarFrases();
   const narrador = vigilarNarrador();
   sala.vigilarConexion(bandaConexion());
+  document.body.append(vigilarPanel(sala).cartel);
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     if (sala.data.cerrada) { sala.detener(); vistaJuego?.destruir(); montar(pie); montar(escena, error('La sala se cerró.')); return; }
     const j = sala.juego;
@@ -95,11 +97,3 @@ function error(texto) {
     h('p', { class: 'tv-sub' }, 'Abrí la pantalla grande desde el panel organizador.'));
 }
 
-async function pedirPantallaEncendida() {
-  try {
-    let lock = await navigator.wakeLock?.request('screen');
-    document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible' && (!lock || lock.released)) lock = await navigator.wakeLock?.request('screen').catch(() => null);
-    });
-  } catch { /* no disponible */ }
-}

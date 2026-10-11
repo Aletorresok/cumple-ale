@@ -106,7 +106,15 @@ export async function cerrarSala(codigo) {
 }
 
 export async function unirse(codigo, uid, nombre) {
-  await setDoc(doc(db, 'salas', codigo, 'jugadores', uid), { nombre, unido: serverTimestamp() });
+  await setDoc(doc(db, 'salas', codigo, 'jugadores', uid), { nombre, unido: serverTimestamp(), visto: serverTimestamp() });
+}
+
+// Presencia: cada celular avisa cada tanto que sigue ahí (campo «visto»). Un celular que no avisa
+// hace más de AUSENTE_MS se considera ausente: no cuenta para porcentajes, turnos ni contadores.
+export const AUSENTE_MS = 4 * 60 * 1000;
+export const LATIDO_MS = 100 * 1000;
+export function latir(codigo, uid) {
+  return updateDoc(doc(db, 'salas', codigo, 'jugadores', uid), { visto: serverTimestamp() });
 }
 
 export class Sala {
@@ -133,8 +141,15 @@ export class Sala {
       this.subs.push(onSnapshot(collection(db, 'salas', this.codigo, 'jugadores'), (s) => {
         leidos(s);
         this.jugadores = new Map(s.docs.map((d) => [d.id, d.data()]));
+        this.firmaAusentes = this.ausentes().join();
         alCambiar('jugadores');
       }, (e) => console.error('jugadores', e)));
+      // La ausencia depende del reloj, no de un cambio en Firebase: se revisa cada 30 segundos.
+      const reloj = setInterval(() => {
+        const f = this.ausentes().join();
+        if (f !== this.firmaAusentes) { this.firmaAusentes = f; alCambiar('jugadores'); }
+      }, 30000);
+      this.subs.push(() => clearInterval(reloj));
     }
     if (respuestas) {
       this.subs.push(onSnapshot(collection(db, 'salas', this.codigo, 'respuestas'), (s) => {
@@ -202,11 +217,24 @@ export class Sala {
   listaJugadores() {
     const asig = this.data?.asignaciones || {};
     return [...this.jugadores.entries()]
-      .map(([uid, j]) => ({ uid, nombre: j.nombre, equipo: asig[uid] || null }))
+      .map(([uid, j]) => ({ uid, nombre: j.nombre, equipo: asig[uid] || null, presente: this.presente(uid) }))
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
+  // Un celular sin «visto» (versión vieja o escritura en camino) se da por presente.
+  presente(uid) {
+    const v = this.jugadores.get(uid)?.visto;
+    if (!v || typeof v.toMillis !== 'function') return true;
+    return Date.now() - v.toMillis() < AUSENTE_MS;
+  }
+
+  ausentes() { return [...this.jugadores.keys()].filter((u) => !this.presente(u)).sort(); }
+
   miembros(eid) { return this.listaJugadores().filter((j) => j.equipo === eid); }
+
+  // Solo los que siguen conectados: para porcentajes, quién actúa y contadores.
+  activos() { return this.listaJugadores().filter((j) => j.presente); }
+  miembrosActivos(eid) { return this.activos().filter((j) => j.equipo === eid); }
 
   // Respuestas del juego actual (y de la ronda indicada, si se pasa).
   respuestasJuego(ronda) {
