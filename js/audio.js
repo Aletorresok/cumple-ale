@@ -44,15 +44,30 @@ export const FANFARRIA = [
   [DO, 2.8, 1.4], [MI, 2.8, 1.4], [SOL, 2.8, 1.4], [DO2, 2.8, 1.4],
 ];
 
-// Dice una frase con la voz del navegador (español). Resuelve false si no hay voz disponible.
+// Voz del narrador: la tele la afina (tono, velocidad y voz) y se guarda en ese navegador.
+// `activa` la prende o apaga quien organiza desde el panel (sala.data.narrador).
+export const voz = { activa: false, nombre: '', tono: 0.5, vel: 0.85 };
+export const PRESETS = { homero: { tono: 0.5, vel: 0.85 }, normal: { tono: 1, vel: 1 } };
+
+// Voces en español que tiene este navegador (las argentinas y latinas primero).
+export function vocesEs() {
+  try {
+    const peso = (v) => (/-AR/i.test(v.lang) ? 0 : /-(MX|US|419|CO|CL)/i.test(v.lang) ? 1 : 2);
+    return speechSynthesis.getVoices().filter((v) => /^es/i.test(v.lang)).sort((a, b) => peso(a) - peso(b));
+  } catch { return []; }
+}
+
+// Dice un texto con la voz afinada. Devuelve false si el navegador no puede hablar.
 export function decir(texto) {
   try {
     const s = window.speechSynthesis;
     if (!s) return false;
     const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'es-AR';
-    u.rate = 1.05;
-    u.pitch = 1.1;
+    const v = vocesEs();
+    u.voice = v.find((x) => x.name === voz.nombre) || v[0] || null;
+    u.lang = u.voice?.lang || 'es-AR';
+    u.pitch = voz.tono;
+    u.rate = voz.vel;
     s.cancel();
     s.speak(u);
     return true;

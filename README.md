@@ -14,7 +14,6 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 |---|---|---|
 | 🎩 **Selección de equipos** | Nada | De a uno, cada invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va. Los equipos quedan parejos. Puede pasar solo, uno tras otro. |
 | 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Las encuestas salen del banco o de lo que responden los invitados en el momento. Tres errores y otro equipo puede robar el pozo. |
-| 🕵️ **El impostor** | Pares de palabras | Todos tienen la misma palabra menos uno, que no sabe que es el impostor. Pistas en voz alta y votación desde el celular. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
@@ -36,7 +35,7 @@ sentencia* se juega después en modo cooperativo y su último candado es el 0811
 **🍩 Temática Springfield (Los Simpson).** Toda la noche pasa en Springfield: los equipos son
 Krusty Burger, Escuela Primaria, Planta Nuclear y Taberna de Moe (se pueden renombrar), la
 pantalla grande da la bienvenida a Springfield, y en «Mis bancos» está el banco *Springfield*
-con trivia, mímica, pares del impostor y encuestas de la serie.
+con trivia, mímica y encuestas de la serie.
 
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
 (unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
@@ -46,7 +45,7 @@ También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto a
 deseos y 🎯 ¿A quién le toca? (sorteo).
 
 **🖨 Plan B en papel.** En «Mis bancos», el botón 🖨 de cada banco imprime todo para jugar sin
-internet: tarjetas de mímica para recortar, pares del impostor por ronda, encuestas con sus
+internet: tarjetas de mímica para recortar, encuestas con sus
 respuestas, preguntas con la correcta marcada, el escape con sus respuestas y una hoja de puntos.
 
 **🩺 Diagnóstico.** `…/cumple-ale/?diagnostico` revisa en segundos que el dispositivo llega a

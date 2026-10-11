@@ -1,6 +1,6 @@
-// «El curso dice» (al estilo de 100 argentinos dicen): hay que adivinar las respuestas
+// «Los invitados dicen» (al estilo de 100 argentinos dicen): hay que adivinar las respuestas
 // más dichas de una encuesta. Las encuestas salen de un banco o de lo que responde el
-// propio curso en el momento. Tres errores y otro equipo puede robar el pozo.
+// propio grupo en el momento. Tres errores y otro equipo puede robar el pozo.
 import { h, montar, vista, selectorBanco, selector, ranking, esperando, pildoraEquipo } from './comun.js';
 import { itemsDe } from '../bancos.js';
 import { mezclar, respuestaCorrecta, cuentaRegresiva, toast, sonido, vibrar, idAzar } from '../util.js';
@@ -55,7 +55,7 @@ export default {
     const fuente = selector('cfg-fuente', 'Preguntas', [['banco', 'De un banco (encuestas ya cargadas)'], ['curso', 'Encuesta en vivo: primero responden todos']], 'banco');
     const b = selectorBanco(bancos, 'encuesta', 1);
     const rondas = selector('cfg-rondas', 'Rondas', [[3, '3'], [5, '5'], [0, 'Todas las del banco']], 5);
-    const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá un derecho que tenemos en la escuela' });
+    const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá algo que no puede faltar en una fiesta' });
     const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos']], 30);
     const checks = checksEquipos(sala);
     const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el);

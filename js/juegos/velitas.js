@@ -43,7 +43,7 @@ export default {
         const j = sala.juego;
         const prendidas = j.fase === 'prendidas';
         montar(el,
-          h('p', { class: 'grande' }, prendidas ? `🕯️ ${sala.jugadores.size} velitas prendidas` : '💨 ¡Sopladas!'),
+          h('p', { class: 'grande' }, prendidas ? `🕯️ ${sala.activos().length} velitas prendidas` : '💨 ¡Sopladas!'),
           h('p', { class: 'muted' }, prendidas ? 'Luces apagadas, celulares en alto, y a cantar.' : 'Si querés repetir (para la foto), volvé a prenderlas.'),
           prendidas
             ? h('button', { class: 'btn grande', onclick: () => sala.actualizarJuego({ fase: 'sopladas', soplos: j.soplos + 1 }) }, '💨 ¡Soplar!')
@@ -77,9 +77,9 @@ export default {
       dibujar() {
         const j = sala.juego;
         const prendidas = j.fase === 'prendidas';
-        const cuantas = Math.max(1, Math.min(sala.jugadores.size, 40));
+        const cuantas = Math.max(1, Math.min(sala.activos().length, 40));
         montar(el, h('div', { class: 'tv-centro tv-velitas' + (prendidas ? '' : ' sopladas') },
-          h('div', { class: 'tv-etiqueta' }, prendidas ? `🕯️ ${sala.jugadores.size} velitas prendidas` : 'Pidió tres deseos'),
+          h('div', { class: 'tv-etiqueta' }, prendidas ? `🕯️ ${sala.activos().length} velitas prendidas` : 'Pidió tres deseos'),
           h('h1', { class: 'tv-titulo enorme' }, `¡Feliz cumple, ${j.nombre}!`),
           // La torta es una dona rosa de Springfield, con las velitas encima.
           h('div', { class: 'tv-torta' },

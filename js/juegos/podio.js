@@ -37,9 +37,10 @@ const CONDENA_EQUIPO = {
 };
 
 export function sentencia(nombre, equipo, pos, uid) {
+  // Un invitado sin equipo (llegó tarde o quedó afuera) recibe igual su sentencia, sin puesto.
   return h('div', { class: 'sentencia' },
     h('div', { class: 'sentencia-cab' }, 'Sentencia · Causa «la torta de Ale»'),
-    h('p', null, 'Visto el expediente de ', h('b', null, nombre), ` (${equipo}, ${pos}° puesto), este tribunal resuelve:`),
+    h('p', null, 'Visto el expediente de ', h('b', null, nombre), equipo && pos ? ` (${equipo}, ${pos}° puesto)` : '', ', este tribunal resuelve:'),
     h('p', { class: 'sentencia-fallo' }, FALLOS[indice(uid, FALLOS.length)]),
     CONDENA_EQUIPO[pos] && h('p', null, CONDENA_EQUIPO[pos]),
     h('p', { class: 'sentencia-firma' }, 'Lionel Hutz', h('br'), h('small', null, 'Abogado. Springfield, 8 de noviembre.')));
@@ -92,13 +93,19 @@ export default {
         const mio = sala.data.asignaciones?.[sala.uid];
         const total = j.tabla.length;
         const yo = j.tabla.findIndex((e) => e.id === mio);
-        if (yo < 0 || yo < total - j.revelados) { montar(el, esperando('Revelando el podio…', 'Mirá la pantalla grande.')); return; }
+        const nombreYo = sala.miNombre || sala.jugadores.get(sala.uid)?.nombre || 'Invitado';
+        if (yo < 0) {
+          if (j.revelados >= total) montar(el, sentencia(nombreYo, null, null, sala.uid));
+          else montar(el, esperando('Revelando el podio…', 'Mirá la pantalla grande.'));
+          return;
+        }
+        if (yo < total - j.revelados) { montar(el, esperando('Revelando el podio…', 'Mirá la pantalla grande.')); return; }
         const e = j.tabla[yo];
         if (yo === total - j.revelados) {
           vibrar(e.pos === 1 ? [200, 80, 200, 80, 400] : 120);
           if (e.pos === 1) confeti([e.color, '#F2C94C', '#FFFFFF']);
         }
-        const nombre = sala.miNombre || sala.jugadores.get(sala.uid)?.nombre || 'Invitado';
+        const nombre = nombreYo;
         montar(el, h('div', { class: 'resultado mi-equipo', style: { '--c': e.color } },
           h('div', { class: 'etiqueta' }, e.nombre),
           h('div', { class: 'resultado-titulo' }, `${MEDALLA[e.pos] || ''} ${e.pos}° puesto`),

@@ -67,7 +67,7 @@ export default {
       const porEquipo = {};
       const sumas = {};
       for (const e of sala.equipos()) {
-        const miembros = sala.miembros(e.id);
+        const miembros = sala.miembros(e.id).filter((m) => m.presente || resp.has(m.uid));
         let neto = 0;
         miembros.forEach((m) => {
           const x = leer(resp.get(m.uid)?.valor);
@@ -123,8 +123,8 @@ export default {
       refrescar() {
         const j = sala.juego;
         if (!contador || j.fase !== 'pregunta') return;
-        const total = sala.listaJugadores().filter((x) => x.equipo).length;
-        const n = sala.respuestasJuego(j.n).size;
+        const total = sala.activos().filter((x) => x.equipo).length;
+        const n = [...sala.respuestasJuego(j.n).keys()].filter((uid) => sala.presente(uid)).length;
         contador.textContent = `${n}/${total}`;
         if (total > 0 && n >= total) setTimeout(revelar, 800);
       },
