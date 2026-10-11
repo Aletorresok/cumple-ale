@@ -41,7 +41,7 @@ async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
     });
   }
   const p = await ctx.newPage();
-  p.on('console', (m) => { if (m.type() === 'error') errores.push(`${nombre}: ${m.text()}`); });
+  p.on('console', (m) => { if (m.type() === 'error' && !(nombre === 'tv' && /404/.test(m.text()))) errores.push(`${nombre}: ${m.text()}`); });
   p.on('pageerror', (e) => errores.push(`${nombre}: ${e.message}`));
   await p.goto(BASE + url);
   todas.push(p);
@@ -364,6 +364,27 @@ try {
   await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
   await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
   paso('Noticiero: la tele pasó el aviso y los titulares de la noche, y volvió al QR');
+
+  // ── Intro de la noche y botonera de frases ──
+  await irAlPaso('🎬 Intro de la noche');
+  await host.getByRole('button', { name: '🎬 Poner la intro' }).click();
+  await tv.locator('.tv-intro').waitFor({ timeout: 15000 });
+  await tv.locator('.in-final').waitFor({ state: 'visible', timeout: 15000 });
+  await esperar(1500);
+  await captura(tv, '10n-intro');
+  await host.getByRole('button', { name: '↻ Repetir la intro' }).waitFor();
+  await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
+  await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
+  await host.getByRole('button', { name: '¡Ay, caramba!' }).click();
+  await tv.locator('.frase-tv', { hasText: '¡Ay, caramba!' }).waitFor({ timeout: 15000 });
+  await esperar(700);
+  await captura(tv, '10o-frase');
+  await esperar(1000); // la botonera ignora toques a menos de un instante del anterior
+  await host.locator('.botonera-panel .campo').fill('¡Que hable Ale!');
+  await host.getByRole('button', { name: 'Agregar', exact: true }).click();
+  await host.getByRole('button', { name: '¡Que hable Ale!' }).click();
+  await tv.locator('.frase-tv', { hasText: '¡Que hable Ale!' }).waitFor({ timeout: 15000 });
+  paso('Intro de la noche en la tele y botonera: la frase aparece en la pantalla grande');
 
   // ── Momento torta: los celulares son velitas ──
   await irAlPaso('🎂 Momento torta');

@@ -7,6 +7,7 @@ import { mensajeError } from './fb.js';
 
 export const ESCALETA = [
   { icono: '🚪', titulo: 'Llegada', nota: 'La tele muestra el QR. Cada uno entra con su nombre mientras saluda.', decir: 'Escaneen el QR de la tele y pongan su nombre.' },
+  { icono: '🎬', titulo: 'Intro de la noche', pantalla: 'intro', nota: 'La tele pasa la apertura con fanfarria. Subí el volumen y tocá «Poner la intro».', decir: '¡Mírenla! Empieza la fiesta.' },
   { icono: '🎩', titulo: 'Selección de equipos', juego: 'seleccion', nota: '4 equipos. Tocá «Empezar la ceremonia».', decir: 'El sombrero decide los equipos. Miren la tele.' },
   { icono: '📊', titulo: 'Los invitados dicen', juego: 'encuesta', nota: '5 rondas del banco.', pieza: true, decir: 'Hay que adivinar lo que más respondió la gente. Tres errores y otro equipo roba.' },
   { icono: '🕵️', titulo: 'El impostor', juego: 'impostor', nota: '2 o 3 rondas, impostores automáticos.', pieza: true, decir: 'Todos tienen la misma palabra menos uno. Pistas en voz alta y después se vota.' },
@@ -25,7 +26,7 @@ export function panelEscaleta(sala, { abrirJuego }) {
   const el = h('section', { class: 'tarjeta pila escaleta' }, cuerpo);
   let clave = '';
 
-  const ir = (n) => sala.actualizar({ escaleta: Math.max(0, Math.min(ESCALETA.length - 1, n)) }).catch((e) => toast(mensajeError(e), 'error'));
+  const ir = (n) => sala.actualizar({ escaleta: Math.max(0, Math.min(ESCALETA.length - 1, n)), pantalla: null }).catch((e) => toast(mensajeError(e), 'error'));
   const pantalla = (valor) => sala.actualizar({ pantalla: valor }).catch((e) => toast(mensajeError(e), 'error'));
 
   function refrescar() {
@@ -33,7 +34,8 @@ export function panelEscaleta(sala, { abrirJuego }) {
     const n = sala.data.escaleta || 0;
     const enJuego = !!sala.juego;
     const noticiero = sala.data.pantalla === 'noticiero';
-    const k = `${n}:${enJuego}:${noticiero}:${sala.data.avisoTv || ''}`;
+    const enIntro = sala.data.pantalla === 'intro';
+    const k = `${n}:${enJuego}:${noticiero}:${enIntro}:${sala.data.introT || 0}:${sala.data.avisoTv || ''}`;
     if (k === clave) return;
     clave = k;
     const p = ESCALETA[n];
@@ -54,9 +56,12 @@ export function panelEscaleta(sala, { abrirJuego }) {
         def && !enJuego && h('button', { class: 'btn', onclick: () => abrirJuego(def) }, `▶ Abrir ${def.nombre}`),
         p.pantalla === 'noticiero' && !enJuego && h('button', { class: noticiero ? 'btn sec' : 'btn', onclick: () => pantalla(noticiero ? null : 'noticiero') },
           noticiero ? 'Volver al QR en la tele' : '📺 Poner el noticiero'),
+        p.pantalla === 'intro' && !enJuego && h('button', { class: enIntro ? 'btn sec' : 'btn', onclick: () => sala.actualizar({ pantalla: 'intro', introT: Date.now() }).catch((e) => toast(mensajeError(e), 'error')) },
+          enIntro ? '↻ Repetir la intro' : '🎬 Poner la intro'),
+        p.pantalla === 'intro' && enIntro && h('button', { class: 'btn sec', onclick: () => pantalla(null) }, 'Volver al QR en la tele'),
         h('button', { class: 'btn sec', disabled: n === 0, onclick: () => ir(n - 1) }, '←'),
         h('button', { class: 'btn sec', disabled: n === ESCALETA.length - 1, onclick: () => ir(n + 1) }, 'Siguiente paso →')),
-      (noticiero || p.pantalla) && h('form', { class: 'fila', onsubmit: (ev) => {
+      (noticiero || p.pantalla === 'noticiero') && h('form', { class: 'fila', onsubmit: (ev) => {
         ev.preventDefault();
         sala.actualizar({ avisoTv: aviso.value.trim() }).then(() => toast(aviso.value.trim() ? 'Aviso en la tele' : 'Aviso borrado', 'ok'));
       } }, aviso, h('button', { class: 'btn sec', type: 'submit' }, 'Mandar aviso')),

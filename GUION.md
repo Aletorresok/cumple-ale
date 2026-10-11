@@ -15,9 +15,20 @@ ganador con **🧩 Dar pieza**.
 - La tele muestra el QR desde que llega la gente: cada uno entra con su nombre mientras saluda.
 - Ojo con la hora de abrir la sala: dura 12 horas.
 - Si alguien no tiene celular o batería, juega con el de alguien de su equipo.
+- Probá el sonido de la tele (botón «🔈 Activar sonido») y la botonera: el navegador solo deja sonar después de un toque.
 - Imprimí las tarjetas de pistas físicas de los escapes de Lionel Hutz (🖨 en la pantalla de
   inicio del escape) y escondelas: una por expediente. Si no se imprimen, la segunda pista de ese
   candado trae el dato.
+
+## Intro y botonera
+
+Cuando todos entraron, en el panel: paso «🎬 Intro de la noche» y «🎬 Poner la intro». La tele pasa
+la apertura con fanfarria (subí el volumen y activá el sonido en la tele antes). Se puede repetir.
+Si querés tu propio tema, copialo en `audio/tema.mp3` (ver `audio/LEEME.md`).
+
+Durante toda la noche, la **botonera de frases** del panel hace aparecer una frase grande en la
+tele y la dice en voz alta («¡Ay, caramba!», «¡Objeción, señoría!», «¡Brindis!»…). Podés agregar
+las tuyas. Sirve para los momentos que pintan.
 
 ## Bloque 1 · unos 60 minutos
 

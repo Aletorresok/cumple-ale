@@ -12,6 +12,7 @@ import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexi
 import { qr } from './qr.js';
 import { imprimirRespaldo } from './respaldo.js';
 import { panelEscaleta } from './escaleta.js';
+import { panelBotonera } from './botonera.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -164,6 +165,7 @@ function panelSala(raiz, docente, codigo) {
   const zonaJuego = h('section', { class: 'tarjeta pila' });
   const zonaEquipos = h('section', { class: 'tarjeta pila' });
   const piezas = panelPiezas(sala, () => bancos);
+  const botonera = panelBotonera(sala);
   const escaleta = panelEscaleta(sala, { abrirJuego: (def) => configurarJuego(def) });
   const contadorAlumnos = h('span', null, '0');
   let entrada;
@@ -187,6 +189,7 @@ function panelSala(raiz, docente, codigo) {
             } }, 'Copiar enlace'),
             h('a', { class: 'btn-link', href: urlApp('?diagnostico=' + codigo), target: '_blank', rel: 'noopener' }, '🩺 Diagnóstico')))),
       escaleta.el,
+      botonera.el,
       zonaJuego,
       zonaEquipos,
       piezas.el,
