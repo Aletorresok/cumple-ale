@@ -35,6 +35,10 @@
   Noticiero de Springfield para las pausas, Momento torta con los celulares como velitas sobre
   una dona rosa, y una sentencia personal de Hutz para cada invitado al final del podio.
 
+- Intro de la noche (11/10): la tele pasa la apertura con fanfarria generada (o `audio/tema.mp3` si
+  Alexis lo agrega) y una botonera de frases en el panel que las muestra y dice en la tele. Los
+  audios oficiales no vienen en el repo.
+
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.

@@ -6,6 +6,8 @@ import { marcador } from './juegos/comun.js';
 import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { noticiero } from './noticiero.js';
+import { intro } from './intro.js';
+import { vigilarFrases } from './botonera.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
   const codigo = (codigoUrl || '').toUpperCase();
@@ -36,6 +38,7 @@ export async function iniciarTv(raiz, codigoUrl) {
   });
   pedirPantallaEncendida();
 
+  const frases = vigilarFrases();
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     if (sala.data.cerrada) { sala.detener(); vistaJuego?.destruir(); montar(pie); montar(escena, error('La sala se cerró.')); return; }
@@ -50,7 +53,8 @@ export async function iniciarTv(raiz, codigoUrl) {
         vistaJuego = buscarJuego(j.tipo)?.tv(zona, sala) || null;
       }
     }
-    if (!j) (sala.data.pantalla === 'noticiero' ? noticiero : espera)(escena, sala);
+    frases(sala);
+    if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;
     montar(pie, sinMarcador ? null : marcador(sala));
