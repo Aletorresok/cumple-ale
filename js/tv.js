@@ -8,6 +8,7 @@ import { qr } from './qr.js';
 import { noticiero } from './noticiero.js';
 import { intro } from './intro.js';
 import { vigilarFrases } from './botonera.js';
+import { vigilarNarrador, afinadorVoz } from './narrador.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
   const codigo = (codigoUrl || '').toUpperCase();
@@ -27,8 +28,9 @@ export async function iniciarTv(raiz, codigoUrl) {
     else document.documentElement.requestFullscreen?.().catch(() => {});
   } }, '⛶ Pantalla completa');
 
-  const controles = h('div', { class: 'tv-controles visible' }, botonSonido, botonPantalla);
-  montar(raiz, h('div', { class: 'tv' }, controles, escena, pie));
+  const afinador = afinadorVoz();
+  const controles = h('div', { class: 'tv-controles visible' }, botonSonido, afinador.boton, botonPantalla);
+  montar(raiz, h('div', { class: 'tv' }, controles, afinador.caja, escena, pie));
   // Los botones aparecen al mover el mouse y se esconden solos.
   let ocultar = setTimeout(() => controles.classList.remove('visible'), 6000);
   document.addEventListener('pointermove', () => {
@@ -39,6 +41,7 @@ export async function iniciarTv(raiz, codigoUrl) {
   pedirPantallaEncendida();
 
   const frases = vigilarFrases();
+  const narrador = vigilarNarrador();
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     if (sala.data.cerrada) { sala.detener(); vistaJuego?.destruir(); montar(pie); montar(escena, error('La sala se cerró.')); return; }
@@ -54,6 +57,7 @@ export async function iniciarTv(raiz, codigoUrl) {
       }
     }
     frases(sala);
+    narrador(sala);
     if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;

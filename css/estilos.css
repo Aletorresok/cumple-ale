@@ -759,3 +759,9 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
   animation: frase-in 4.2s ease-out forwards; }
 @keyframes frase-in { 0% { opacity: 0; transform: scale(.4) rotate(-4deg); } 8% { opacity: 1; transform: scale(1.06) rotate(1deg); } 14% { transform: none; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-1em); } }
 @media (prefers-reduced-motion: reduce) { .in-nubes i { animation: none; } .in-antes, .in-titulo, .in-equipo, .in-final { animation-duration: .01s; } }
+
+/* ════════ Afinador de la voz del narrador (tele) ════════ */
+.afinador { position: fixed; bottom: 52px; right: 12px; z-index: 6; width: min(360px, 90vw); display: flex; flex-direction: column; gap: 10px; padding: 12px;
+  background: var(--tv-surface); color: var(--tv-tinta); border: 1px solid var(--tv-surface2); border-radius: 12px; font-size: 14px; }
+.afinador label { display: flex; flex-direction: column; gap: 4px; }
+.afinador select { background: var(--tv-surface2); color: var(--tv-tinta); border: 0; border-radius: 6px; padding: 6px; }

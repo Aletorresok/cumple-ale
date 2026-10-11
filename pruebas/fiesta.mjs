@@ -25,6 +25,16 @@ const fuentes = new Map();
 async function pagina(nombre, url, viewport = { width: 390, height: 800 }) {
   const ctx = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
   await ctx.addInitScript(() => localStorage.setItem('emulador', '1'));
+  // Voz de mentira: guarda lo que se «dice» en window.__dichos para poder comprobarlo.
+  await ctx.addInitScript(() => {
+    const dichos = (window.__dichos = []);
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+      getVoices: () => [{ name: 'Voz de prueba', lang: 'es-AR' }],
+      speak: (u) => dichos.push({ texto: u.text, tono: u.pitch, vel: u.rate }),
+      cancel() {}, addEventListener() {},
+    } });
+    window.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } };
+  });
   if (sdk && process.env.SDK_LOCAL) {
     await ctx.route('https://www.gstatic.com/firebasejs/**', (r) => {
       const archivo = sdk + new URL(r.request().url()).pathname.split('/').pop();
@@ -386,11 +396,26 @@ try {
   await tv.locator('.frase-tv', { hasText: '¡Que hable Ale!' }).waitFor({ timeout: 15000 });
   paso('Intro de la noche en la tele y botonera: la frase aparece en la pantalla grande');
 
+  // ── Narrador con voz tipo Homero ──
+  await tv.getByRole('button', { name: '🎙 Voz' }).click();
+  await tv.locator('.afinador select').selectOption({ label: 'Voz de prueba (es-AR)' });
+  await tv.getByRole('button', { name: '▶ Probar' }).click();
+  await tv.waitForFunction(() => window.__dichos.some((d) => /donas/.test(d.texto) && d.tono === 0.5 && d.vel === 0.85));
+  await tv.getByRole('button', { name: '🎙 Voz' }).click();
+  await host.getByRole('button', { name: '🎙 Prender el narrador' }).click();
+  await host.getByRole('button', { name: /Narrador prendido/ }).waitFor();
+  await host.getByPlaceholder(/Que diga/).fill('Las pizzas salen en cinco minutos');
+  await host.getByRole('button', { name: '🗣 Decir' }).click();
+  await tv.waitForFunction(() => window.__dichos.some((d) => /pizzas salen/.test(d.texto)), null, { timeout: 15000 });
+  paso('Narrador: la tele dice con voz grave y lenta lo que escribe el organizador');
+
   // ── Momento torta: los celulares son velitas ──
   await irAlPaso('🎂 Momento torta');
   await host.getByRole('button', { name: '▶ Abrir Momento torta' }).click();
   await host.getByRole('button', { name: 'Empezar', exact: true }).click();
   await tv.locator('.tv-velitas').waitFor({ timeout: 15000 });
+  await tv.waitForFunction(() => window.__dichos.some((d) => /luces|torta/i.test(d.texto)), null, { timeout: 15000 });
+  paso('Narrador: comentó el momento torta al empezar');
   for (const p of invitados) await p.locator('.velita-pantalla').waitFor({ timeout: 15000 });
   await esperar(500);
   await captura(tv, '12a-velitas');

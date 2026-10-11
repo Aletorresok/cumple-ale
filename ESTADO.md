@@ -39,6 +39,10 @@
   Alexis lo agrega) y una botonera de frases en el panel que las muestra y dice en la tele. Los
   audios oficiales no vienen en el repo.
 
+- Narrador tipo Homero (11/10): voz de síntesis del navegador, grave y lenta, que comenta cada
+  juego, lee el noticiero y dice lo que escribe el organizador. Se afina desde la tele («🎙 Voz»).
+  No es la voz real del actor.
+
 ## Decisiones de Alexis
 
 - Sí: selección de equipos, Los invitados dicen, impostor, mímica por equipos, podio.

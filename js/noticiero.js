@@ -3,6 +3,7 @@
 // Abajo corre la tabla de puntos y queda un QR chico para los que llegan tarde.
 import { h, montar, urlApp } from './util.js';
 import { qr } from './qr.js';
+import { voz, decir } from './audio.js';
 
 const CADA_MS = 8000;
 
@@ -78,6 +79,7 @@ export function noticiero(el, sala) {
       cinta.style.setProperty('--c', x.color || (x.aviso ? 'var(--mark)' : '#E03A3A'));
       cinta.classList.toggle('aviso', !!x.aviso);
       texto.textContent = x.texto;
+      if (voz.activa) decir(`${x.cinta}. ${x.texto}`);
       texto.classList.remove('entra'); void texto.offsetWidth; texto.classList.add('entra');
     };
     const reloj = setInterval(pasar, CADA_MS);

@@ -13,6 +13,7 @@ import { qr } from './qr.js';
 import { imprimirRespaldo } from './respaldo.js';
 import { panelEscaleta } from './escaleta.js';
 import { panelBotonera } from './botonera.js';
+import { panelNarrador } from './narrador.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -166,6 +167,7 @@ function panelSala(raiz, docente, codigo) {
   const zonaEquipos = h('section', { class: 'tarjeta pila' });
   const piezas = panelPiezas(sala, () => bancos);
   const botonera = panelBotonera(sala);
+  const narrador = panelNarrador(sala);
   const escaleta = panelEscaleta(sala, { abrirJuego: (def) => configurarJuego(def) });
   const contadorAlumnos = h('span', null, '0');
   let entrada;
@@ -190,6 +192,7 @@ function panelSala(raiz, docente, codigo) {
             h('a', { class: 'btn-link', href: urlApp('?diagnostico=' + codigo), target: '_blank', rel: 'noopener' }, '🩺 Diagnóstico')))),
       escaleta.el,
       botonera.el,
+      narrador.el,
       zonaJuego,
       zonaEquipos,
       piezas.el,
@@ -209,7 +212,7 @@ function panelSala(raiz, docente, codigo) {
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.jugadores.size;
     if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
-    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); }
+    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); narrador.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
 

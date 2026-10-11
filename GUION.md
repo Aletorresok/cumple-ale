@@ -26,6 +26,12 @@ Cuando todos entraron, en el panel: paso «🎬 Intro de la noche» y «🎬 Pon
 la apertura con fanfarria (subí el volumen y activá el sonido en la tele antes). Se puede repetir.
 Si querés tu propio tema, copialo en `audio/tema.mp3` (ver `audio/LEEME.md`).
 
+**Narrador tipo Homero.** En el panel, «🎙 Prender el narrador»: con voz grave y lenta comenta cuando
+empieza cada juego, lee los titulares del noticiero y dice lo que escribas en «🗣 Decir». La voz se
+afina en la tele con el botón «🎙 Voz» (aparece al mover el mouse): elegí una voz en español,
+probala y ajustá tono y velocidad. Depende de las voces del navegador de la tele; probalo antes en
+ese mismo dispositivo.
+
 Durante toda la noche, la **botonera de frases** del panel hace aparecer una frase grande en la
 tele y la dice en voz alta («¡Ay, caramba!», «¡Objeción, señoría!», «¡Brindis!»…). Podés agregar
 las tuyas. Sirve para los momentos que pintan.
