@@ -45,6 +45,7 @@ export async function iniciarTv(raiz, codigoUrl) {
   const narrador = vigilarNarrador();
   sala.vigilarConexion(bandaConexion());
   document.body.append(vigilarPanel(sala).cartel);
+  sala.escucharDoc('recursos', 'tv', (d) => { sala.tv = d || {}; frases(sala); narrador(sala); });
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     if (sala.data.cerrada) { sala.detener(); vistaJuego?.destruir(); montar(pie); montar(escena, error('La sala se cerró.')); return; }
     const j = sala.juego;

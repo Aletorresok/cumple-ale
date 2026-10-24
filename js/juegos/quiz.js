@@ -74,8 +74,7 @@ export default {
         sumas[e.id] = pts;
       }
       try {
-        await sala.actualizarJuego({ fase: 'revelada', correcta, conteo, porEquipo });
-        await sala.sumar(sumas);
+        await sala.actualizarJuego({ fase: 'revelada', correcta, conteo, porEquipo }, sumas);
       } catch (e) { revelando = -1; toast('No se pudo revelar: ' + e.message, 'error'); }
     }
 

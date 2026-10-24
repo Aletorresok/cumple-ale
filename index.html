@@ -11,6 +11,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lilita+One&family=JetBrains+Mono:wght@500;700&display=swap">
 <link rel="stylesheet" href="css/estilos.css">
+<!-- Se piden en paralelo con la app, en vez de esperar a descubrirlos al final de la cadena de imports. -->
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js">
+<link rel="modulepreload" href="js/fb.js">
+<link rel="modulepreload" href="js/sala.js">
+<link rel="modulepreload" href="js/util.js">
 <script type="module" src="js/app.js"></script>
 </head>
 <body>
