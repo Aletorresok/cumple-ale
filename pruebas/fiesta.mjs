@@ -111,7 +111,7 @@ try {
   await host.getByText('Springfield · Los Simpson').waitFor();
   await host.getByRole('button', { name: '⚖️ Agregar los escapes de Lionel Hutz' }).click();
   await host.getByText('Springfield · Escapes de Lionel Hutz').waitFor();
-  await host.getByRole('button', { name: '⚡ Trivia · Springfield' }).click();
+  await host.getByRole('button', { name: '⚡ Trivia · Springfield', exact: true }).click();
   await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
   await host.getByRole('button', { name: 'Abrir una sala' }).click();
@@ -214,7 +214,7 @@ try {
 
   // ── Trivia ──
   await elegirJuego(host, 'Trivia por equipos', async () => {
-    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Springfield — 21 preguntas' });
+    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Springfield — 31 preguntas' });
     await host.locator('#cfg-cantidad').selectOption('5');
     await host.locator('#cfg-modo').selectOption('castigo');
   });
