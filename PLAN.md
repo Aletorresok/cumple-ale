@@ -36,7 +36,7 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
   página, retomás la sala desde otro dispositivo sin perder puntos ni el juego en curso (ya
   existe «Controlar desde acá»; se prueba y se pule).
 - ✅ 🤖 **Plan B en papel**: botón para imprimir tarjetas de respaldo desde el banco (palabras de
-  mímica, pares del impostor, encuestas con sus respuestas). Si se cae internet del todo, la
+  mímica, encuestas con sus respuestas). Si se cae internet del todo, la
   fiesta sigue con papelitos.
 - ✅ 🤖 **Página de diagnóstico** (`?diagnostico`): comprueba en segundos que Firebase responde, que
   entran invitados y cuánto tarda. Sirve para verificar el Firebase nuevo y para el día de la
@@ -60,8 +60,7 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
   - Lista de invitados (nombres o apodos) para armar equipos y mensajes.
   - 10 a 15 anécdotas o datos tuyos y de la familia para la trivia y el escape.
   - Palabras de mímica propias (chistes internos, lugares, comidas, frases tuyas).
-  - Pares para el impostor con cosas de ustedes.
-- 🤖 Armar el **banco real** con todo eso: encuestas, pares, mímica y trivia.
+- 🤖 Armar el **banco real** con todo eso: encuestas, mímica y trivia.
 - ✅ Escapes de Lionel Hutz: cuatro expedientes (uno por equipo) y La sentencia final. Falta
   pasar el texto de tu carta documento a la intro cuando mandes el PDF.
 - 🤖 **Encuesta previa** (opcional, si te gusta): un enlace que mandás por WhatsApp unos días
@@ -100,7 +99,7 @@ quede afuera o que se corte la tele. Esta semana va todo a eso.
 | Riesgo | Prevención | Si pasa igual |
 |---|---|---|
 | Se corta el wifi del lugar | Los invitados juegan con sus datos móviles; la compu de la tele va con cable o con hotspot de un celular cargado | Hotspot del celular para la tele; la app reconecta sola |
-| Se cae internet del todo | Tarjetas de respaldo impresas | Mímica, impostor y encuestas en papel; puntos a mano |
+| Se cae internet del todo | Tarjetas de respaldo impresas | Mímica y encuestas en papel; puntos a mano |
 | Un invitado recarga o se le apaga el celular | Vuelve solo a su equipo (queda guardado en el celular) | Si cambió de celular, entra con otro nombre y lo movés de equipo desde el panel |
 | Se te apaga el celular con el panel | Panel abierto también en otra pestaña o dispositivo | «Controlar desde acá» en el otro dispositivo |
 | Se acaba la cuota gratis de Firebase | Firebase propio, medido con la prueba de carga | Pasar el proyecto a plan Blaze con tope de gasto (centavos) |

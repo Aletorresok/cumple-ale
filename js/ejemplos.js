@@ -22,19 +22,6 @@ export const BANCO_FIESTA = {
       { texto: 'cumbia', puntos: 25 }, { texto: 'despacito', puntos: 20 }, { texto: 'la bamba', puntos: 15 },
       { texto: 'macarena', puntos: 12 }, { texto: 'el cuarteto / cuarteto', puntos: 10 }] },
 
-    // ── El impostor ──
-    { tipo: 'par', a: 'playa', b: 'pileta' },
-    { tipo: 'par', a: 'asado', b: 'choripán' },
-    { tipo: 'par', a: 'mate', b: 'tereré' },
-    { tipo: 'par', a: 'Navidad', b: 'Año Nuevo' },
-    { tipo: 'par', a: 'perro', b: 'lobo' },
-    { tipo: 'par', a: 'guitarra', b: 'violín' },
-    { tipo: 'par', a: 'avión', b: 'helicóptero' },
-    { tipo: 'par', a: 'torta', b: 'flan' },
-    { tipo: 'par', a: 'Harry Potter', b: 'El señor de los anillos' },
-    { tipo: 'par', a: 'cine', b: 'teatro' },
-    { tipo: 'par', a: 'bicicleta', b: 'monopatín' },
-    { tipo: 'par', a: 'casamiento', b: 'cumpleaños' },
 
     // ── Mímica ──
     ...['Titanic', 'Lavar los platos', 'Hacer un asado', 'Shakira', 'Spiderman', 'Manejar en la ruta', 'Sacarse una selfie',

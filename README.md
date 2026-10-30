@@ -14,7 +14,6 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 |---|---|---|
 | 🎩 **Selección de equipos** | Nada | De a uno, cada invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va. Los equipos quedan parejos. Puede pasar solo, uno tras otro. |
 | 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Las encuestas salen del banco o de lo que responden los invitados en el momento. Tres errores y otro equipo puede robar el pozo. |
-| 🕵️ **El impostor** | Pares de palabras | Todos tienen la misma palabra menos uno, que no sabe que es el impostor. Pistas en voz alta y votación desde el celular. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
@@ -36,7 +35,7 @@ sentencia* se juega después en modo cooperativo y su último candado es el 0811
 **🍩 Temática Springfield (Los Simpson).** Toda la noche pasa en Springfield: los equipos son
 Krusty Burger, Escuela Primaria, Planta Nuclear y Taberna de Moe (se pueden renombrar), la
 pantalla grande da la bienvenida a Springfield, y en «Mis bancos» está el banco *Springfield*
-con trivia, mímica, pares del impostor y encuestas de la serie.
+con trivia, mímica y encuestas de la serie.
 
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
 (unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
@@ -46,7 +45,7 @@ También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto a
 deseos y 🎯 ¿A quién le toca? (sorteo).
 
 **🖨 Plan B en papel.** En «Mis bancos», el botón 🖨 de cada banco imprime todo para jugar sin
-internet: tarjetas de mímica para recortar, pares del impostor por ronda, encuestas con sus
+internet: tarjetas de mímica para recortar, encuestas con sus
 respuestas, preguntas con la correcta marcada, el escape con sus respuestas y una hoja de puntos.
 
 **🩺 Diagnóstico.** `…/cumple-ale/?diagnostico` revisa en segundos que el dispositivo llega a
@@ -66,8 +65,9 @@ invitados, código final). Está enlazado desde el panel de la sala.
 ## Puesta en marcha
 
 La app es una página estática con Firebase (plan gratuito) para las salas en tiempo real.
-**Por ahora usa el proyecto de Firebase de juegos-aula**, que ya está configurado y tiene las
-mismas reglas, así que funciona sin hacer nada más que publicar la página.
+Usa el proyecto de Firebase propio de la fiesta (`cumple-ale-7f78e`, configurado en
+[`js/config.js`](js/config.js)). Si cambiás las reglas, volvé a publicar
+[`firestore.rules`](firestore.rules) en la consola de ese proyecto.
 
 ### Publicar con GitHub Pages
 
@@ -75,9 +75,7 @@ En GitHub: *Settings → Pages → Build and deployment → Source: Deploy from 
 `main`, carpeta `/ (root)`, **Save**. A los minutos queda en
 `https://aletorresok.github.io/cumple-ale/`.
 
-### (Recomendado antes del cumple) Firebase propio
-
-Para no mezclar con juegos-aula ni compartir su cuota:
+### Armar otro proyecto de Firebase (si hiciera falta)
 
 1. Creá un proyecto en la [consola de Firebase](https://console.firebase.google.com) (por ejemplo
    `cumple-ale`) y agregale una app web. Copiá sus datos en [`js/config.js`](js/config.js).
@@ -92,7 +90,7 @@ Con los emuladores de Firebase (hace falta Java):
 
 ```
 npm i -D firebase-tools playwright firebase
-npx firebase emulators:start --only auth,firestore --project juegos-aula
+npx firebase emulators:start --only auth,firestore --project cumple-ale-7f78e
 python3 -m http.server 5173
 node pruebas/fiesta.mjs 30 capturas      # 30 invitados simulados juegan una noche entera
 ```

@@ -53,7 +53,7 @@ export default {
     let revelando = -1;
     sala.privadoDelJuego().then((p) => { privado = p; v.actualizar(); });
 
-    const participantes = () => sala.listaJugadores().filter((j) => j.equipo);
+    const participantes = () => sala.activos().filter((j) => j.equipo);
 
     async function revelar() {
       const j = sala.juego;
@@ -66,7 +66,8 @@ export default {
       const porEquipo = {};
       const sumas = {};
       for (const e of sala.equipos()) {
-        const miembros = sala.miembros(e.id);
+        // Cuentan los que siguen conectados, o los que respondieron aunque ya se hayan ido.
+        const miembros = sala.miembros(e.id).filter((m) => m.presente || resp.has(m.uid));
         const ok = miembros.filter((m) => resp.get(m.uid)?.valor === correcta).length;
         const pts = miembros.length ? Math.round((PUNTOS * ok) / miembros.length) : 0;
         porEquipo[e.id] = { ok, n: miembros.length, pts };
@@ -123,7 +124,7 @@ export default {
         const j = sala.juego;
         if (!privado || j.fase !== 'pregunta' || !contador) return;
         const total = participantes().length;
-        const resp = [...sala.respuestasJuego(j.n).keys()].filter((uid) => sala.data.asignaciones?.[uid]).length;
+        const resp = [...sala.respuestasJuego(j.n).keys()].filter((uid) => sala.data.asignaciones?.[uid] && sala.presente(uid)).length;
         contador.textContent = `${resp}/${total}`;
         if (total > 0 && resp >= total) setTimeout(revelar, 800);
       },
@@ -219,7 +220,7 @@ export default {
         if (!barras || j.fase !== 'pregunta') return;
         const resp = sala.respuestasJuego(j.n);
         montar(barras, sala.equipos().map((e) => {
-          const m = sala.miembros(e.id);
+          const m = sala.miembros(e.id).filter((x) => x.presente || resp.has(x.uid));
           const r = m.filter((x) => resp.has(x.uid)).length;
           return h('div', { class: 'tv-eq', style: { '--c': e.color } },
             h('span', { class: 'tv-eq-nombre' }, e.nombre),

@@ -1,15 +1,13 @@
-// Configuración de Firebase. Por ahora usa el proyecto «juegos-aula» (ya configurado y con
-// las mismas reglas), así la app funciona desde el primer día. Antes del cumple conviene
-// pasar a un proyecto propio: ver «Puesta en marcha» en el README.
+// Configuración de Firebase: proyecto propio de la fiesta («cumple-ale-7f78e»).
 // Estos datos son públicos por diseño: lo que protege la información son las
-// reglas de seguridad (firestore.rules).
+// reglas de seguridad (firestore.rules), publicadas en ese proyecto.
 export const firebaseConfig = {
-  apiKey: 'AIzaSyBYu6rGFqYHm47hHEM0WwlVwtt0CnJzibA',
-  authDomain: 'juegos-aula.firebaseapp.com',
-  projectId: 'juegos-aula',
-  storageBucket: 'juegos-aula.firebasestorage.app',
-  messagingSenderId: '499149116773',
-  appId: '1:499149116773:web:c23f116e301a3f2fbf7d8c',
+  apiKey: 'AIzaSyDEOuR38FnR_vG5-L2jYrLq7TmThZRWkVY',
+  authDomain: 'cumple-ale-7f78e.firebaseapp.com',
+  projectId: 'cumple-ale-7f78e',
+  storageBucket: 'cumple-ale-7f78e.firebasestorage.app',
+  messagingSenderId: '334198047994',
+  appId: '1:334198047994:web:68b0672accd3953d237543',
 };
 
 // Equipos disponibles al crear una sala (se usan los primeros N).

@@ -48,7 +48,7 @@ service cloud.firestore {
       match /jugadores/{uid} {
         allow read: if conSesion();
         allow create, update: if conSesion() && request.auth.uid == uid && vigente()
-                              && request.resource.data.keys().hasOnly(['nombre', 'unido'])
+                              && request.resource.data.keys().hasOnly(['nombre', 'unido', 'visto'])
                               && request.resource.data.nombre is string
                               && request.resource.data.nombre.size() > 0
                               && request.resource.data.nombre.size() <= 20;
