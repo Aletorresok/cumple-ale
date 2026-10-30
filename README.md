@@ -65,8 +65,9 @@ invitados, código final). Está enlazado desde el panel de la sala.
 ## Puesta en marcha
 
 La app es una página estática con Firebase (plan gratuito) para las salas en tiempo real.
-**Por ahora usa el proyecto de Firebase de juegos-aula**, que ya está configurado y tiene las
-mismas reglas, así que funciona sin hacer nada más que publicar la página.
+Usa el proyecto de Firebase propio de la fiesta (`cumple-ale-7f78e`, configurado en
+[`js/config.js`](js/config.js)). Si cambiás las reglas, volvé a publicar
+[`firestore.rules`](firestore.rules) en la consola de ese proyecto.
 
 ### Publicar con GitHub Pages
 
@@ -74,9 +75,7 @@ En GitHub: *Settings → Pages → Build and deployment → Source: Deploy from 
 `main`, carpeta `/ (root)`, **Save**. A los minutos queda en
 `https://aletorresok.github.io/cumple-ale/`.
 
-### (Recomendado antes del cumple) Firebase propio
-
-Para no mezclar con juegos-aula ni compartir su cuota:
+### Armar otro proyecto de Firebase (si hiciera falta)
 
 1. Creá un proyecto en la [consola de Firebase](https://console.firebase.google.com) (por ejemplo
    `cumple-ale`) y agregale una app web. Copiá sus datos en [`js/config.js`](js/config.js).
@@ -91,7 +90,7 @@ Con los emuladores de Firebase (hace falta Java):
 
 ```
 npm i -D firebase-tools playwright firebase
-npx firebase emulators:start --only auth,firestore --project juegos-aula
+npx firebase emulators:start --only auth,firestore --project cumple-ale-7f78e
 python3 -m http.server 5173
 node pruebas/fiesta.mjs 30 capturas      # 30 invitados simulados juegan una noche entera
 ```

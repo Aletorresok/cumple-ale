@@ -14,6 +14,8 @@ const BASE = process.env.BASE || 'http://localhost:5173/';
 const N = Number(process.argv[2] || 30);
 const CAPTURAS = process.argv[3] || '';
 const errores = [];
+// El proyecto de Firebase de la app (el emulador acepta cualquiera en modo de un solo proyecto).
+const PROYECTO = (readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/projectId: '([^']+)'/) || [])[1] || 'juegos-aula';
 
 // Si la red no deja bajar Firebase de gstatic, se sirve desde el paquete «firebase» de npm.
 const sdk = (() => { try { return createRequire(import.meta.url).resolve('firebase/package.json').replace(/package\.json$/, ''); } catch { return null; } })();
@@ -251,7 +253,7 @@ try {
     } else if (n === 1) {
       // Presencia: un celular que dejó de avisar (se quedó sin batería) no frena la pregunta.
       const ausente = invitados[N - 1];
-      const raiz = `http://127.0.0.1:8080/v1/projects/juegos-aula/databases/(default)/documents/salas/${codigo}/jugadores`;
+      const raiz = `http://127.0.0.1:8080/v1/projects/${PROYECTO}/databases/(default)/documents/salas/${codigo}/jugadores`;
       const cab = { Authorization: 'Bearer owner', 'Content-Type': 'application/json' };
       const lista = await (await fetch(raiz, { headers: cab })).json();
       const doc = lista.documents.find((d) => d.fields.nombre.stringValue === `Invitado ${N}`);
