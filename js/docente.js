@@ -216,10 +216,18 @@ function panelSala(raiz, docente, codigo) {
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.activos().length;
-    if (motivo === 'jugadores' || motivo === 'sala') autoAsignar();
+    if (motivo === 'jugadores' || motivo === 'sala') pedirAsignar();
     if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); narrador.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
+
+  // Junta a los que entran casi juntos (al escanear el QR entran de a varios) en una sola escritura.
+  let esperaAsignar = null;
+  const pedirAsignar = () => {
+    if (esperaAsignar) return;
+    esperaAsignar = setTimeout(() => { esperaAsignar = null; autoAsignar(); }, 800);
+  };
+  sala.subs.push(() => clearTimeout(esperaAsignar));
 
   // Los invitados nuevos van al equipo con menos integrantes.
   // Durante la selección de equipos no: ahí los reparte la ceremonia.

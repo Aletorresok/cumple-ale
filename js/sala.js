@@ -6,6 +6,7 @@
 //   salas/{codigo}/respuestas/{uid} → la última respuesta de cada alumno
 //   salas/{codigo}/secretos/{uid}   → datos que solo ve ese alumno (p. ej. su palabra)
 //   salas/{codigo}/privado/estado   → datos que solo ve el docente (p. ej. respuestas correctas)
+//   salas/{codigo}/recursos/tv      → lo que solo mira la tele (frases de la botonera, narrador)
 import {
   db, doc, collection, getDoc as getDocFs, getDocs as getDocsFs, setDoc as setDocFs,
   updateDoc as updateDocFs, onSnapshot, writeBatch as writeBatchFs,
@@ -115,6 +116,12 @@ export const AUSENTE_MS = 4 * 60 * 1000;
 export const LATIDO_MS = 100 * 1000;
 export function latir(codigo, uid) {
   return updateDoc(doc(db, 'salas', codigo, 'jugadores', uid), { visto: serverTimestamp() });
+}
+
+function camposPuntos(puntosPorEquipo) {
+  const campos = {};
+  for (const [eid, n] of Object.entries(puntosPorEquipo)) if (n) campos['puntos.' + eid] = increment(n);
+  return campos;
 }
 
 export class Sala {
@@ -251,8 +258,10 @@ export class Sala {
   // ── Acciones del docente ──
   actualizar(campos) { return updateDoc(refSala(this.codigo), campos); }
 
-  actualizarJuego(patch) {
-    const campos = {};
+  // Con `puntos` ({ e1: 30 }) suma los puntos en la misma escritura: así el resultado y los puntos
+  // llegan juntos (o ninguno) y los celulares leen la sala una sola vez.
+  actualizarJuego(patch, puntos = {}) {
+    const campos = camposPuntos(puntos);
     for (const [k, v] of Object.entries(patch)) campos['juego.' + k] = v === undefined ? deleteField() : v;
     return this.actualizar(campos);
   }
@@ -265,8 +274,7 @@ export class Sala {
   terminarJuego() { return this.actualizar({ juego: null }); }
 
   sumar(puntosPorEquipo) {
-    const campos = {};
-    for (const [eid, n] of Object.entries(puntosPorEquipo)) if (n) campos['puntos.' + eid] = increment(n);
+    const campos = camposPuntos(puntosPorEquipo);
     return Object.keys(campos).length ? this.actualizar(campos) : Promise.resolve();
   }
 
@@ -311,6 +319,10 @@ export class Sala {
 
   // Recursos del juego que todos pueden leer pero solo escribe el docente (p. ej. imágenes).
   guardarRecurso(id, datos) { return setDoc(doc(db, 'salas', this.codigo, 'recursos', id), datos); }
+
+  // Lo que solo mira la tele (frases de la botonera, lo que dice el narrador) va en recursos/tv y
+  // no en la sala: así cada frase no les cuesta una lectura a todos los celulares.
+  aTv(campos) { return setDoc(doc(db, 'salas', this.codigo, 'recursos', 'tv'), campos, { merge: true }); }
 
   async leerRecurso(id) {
     const s = await getDoc(doc(db, 'salas', this.codigo, 'recursos', id));

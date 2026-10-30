@@ -147,6 +147,9 @@ try {
   }
   await host.waitForFunction((n) => document.querySelector('.entrada')?.textContent.includes(`${n} invitados conectados`), N, { timeout: 30000 });
   paso(`${N} invitados conectados`);
+  // Los celulares bajan solo lo que usan: ni el panel ni los bancos de ejemplo.
+  const bajados = await invitados[0].evaluate(() => performance.getEntriesByType('resource').map((r) => r.name));
+  afirmar(!bajados.some((u) => /\/js\/(docente|ejemplos|trivias|expedientes|respaldo|diagnostico)\.js/.test(u)), 'el celular no baja el panel');
   await medir('Entrada de los invitados');
   await captura(tv, '1-espera');
 
@@ -255,7 +258,8 @@ try {
       const ausente = invitados[N - 1];
       const raiz = `http://127.0.0.1:8080/v1/projects/${PROYECTO}/databases/(default)/documents/salas/${codigo}/jugadores`;
       const cab = { Authorization: 'Bearer owner', 'Content-Type': 'application/json' };
-      const lista = await (await fetch(raiz, { headers: cab })).json();
+      // pageSize: sin él, la API devuelve una sola página y el invitado puede no estar en ella.
+      const lista = await (await fetch(raiz + "?pageSize=300", { headers: cab })).json();
       const doc = lista.documents.find((d) => d.fields.nombre.stringValue === `Invitado ${N}`);
       afirmar(doc, 'se encontró al invitado que va a quedar ausente');
       const viejo = new Date(Date.now() - 10 * 60 * 1000).toISOString();

@@ -1,5 +1,5 @@
 // Botonera de frases: botones en el panel que hacen aparecer una frase en la tele (con su sonido)
-// cuando "pinta". El panel escribe sala.data.frase = { id, texto, t }; la tele la muestra al cambiar.
+// cuando "pinta". El panel escribe frase = { id, texto, t } en recursos/tv; la tele la muestra al cambiar.
 // Sonido: audio/frases/<id>.mp3 si existe; si no, un tilín y la voz del navegador.
 import { h, montar, toast, leerLocal, guardarLocal, vibrar } from './util.js';
 import { reproducir, tocar, decir } from './audio.js';
@@ -37,7 +37,7 @@ export function panelBotonera(sala) {
     if (ahora - ultimo < ESPERA_MS) return;
     ultimo = ahora;
     vibrar(30);
-    sala.actualizar({ frase: { id: f.id, texto: f.texto, t: ahora } }).catch((e) => toast(mensajeError(e), 'error'));
+    sala.aTv({ frase: { id: f.id, texto: f.texto, t: ahora } }).catch((e) => toast(mensajeError(e), 'error'));
   };
 
   function dibujar() {
@@ -69,7 +69,8 @@ export function vigilarFrases() {
   let globo = null;
   let quitar;
   return (sala) => {
-    const f = sala.data?.frase;
+    if (!sala.tv) return; // todavía no llegó recursos/tv
+    const f = sala.tv.frase;
     const marca = f?.t ?? 0;
     if (visto === null) { visto = marca; return; }
     if (!f || marca === visto) return;

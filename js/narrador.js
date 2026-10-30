@@ -50,7 +50,7 @@ export function panelNarrador(sala) {
       const texto = campo.value.trim();
       if (!texto) return;
       campo.value = '';
-      sala.actualizar({ decir: { texto, t: Date.now() } }).catch((e) => toast(mensajeError(e), 'error'));
+      sala.aTv({ decir: { texto, t: Date.now() } }).catch((e) => toast(mensajeError(e), 'error'));
     } }, campo, h('button', { class: 'btn', type: 'submit' }, '🗣 Decir')));
   const refrescar = () => { boton.textContent = sala.data?.narrador ? '🎙 Narrador prendido (tocá para apagar)' : '🎙 Prender el narrador'; boton.className = sala.data?.narrador ? 'btn' : 'btn sec'; };
   refrescar();
@@ -65,9 +65,11 @@ export function vigilarNarrador() {
   let decirVisto = null;
   return (sala) => {
     voz.activa = !!sala.data?.narrador;
-    const d = sala.data?.decir;
-    if (decirVisto === null) decirVisto = d?.t ?? 0;
-    else if (d && d.t !== decirVisto) { decirVisto = d.t; decir(d.texto); }
+    if (sala.tv) { // lo que escribe el organizador llega por recursos/tv
+      const d = sala.tv.decir;
+      if (decirVisto === null) decirVisto = d?.t ?? 0;
+      else if (d && d.t !== decirVisto) { decirVisto = d.t; decir(d.texto); }
+    }
     const id = sala.juego?.id || null;
     if (juegoVisto === undefined) { juegoVisto = id; tipoAntes = sala.juego?.tipo || null; return; }
     if (id === juegoVisto) return;

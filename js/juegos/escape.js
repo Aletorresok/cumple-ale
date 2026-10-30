@@ -350,8 +350,7 @@ export default {
       if (j.fase === 'fin' || terminado) return;
       terminado = true;
       const puntos = puntosFinales(j);
-      await sala.actualizarJuego({ fase: 'fin', puntos });
-      await sala.sumar(puntos);
+      await sala.actualizarJuego({ fase: 'fin', puntos }, puntos);
     }
 
     const v = vista({

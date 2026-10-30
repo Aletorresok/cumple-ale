@@ -110,10 +110,10 @@ export default {
     const excluidas = new Set();
     sala.privadoDelJuego().then((p) => { privado = p; v.actualizar('privado'); });
 
-    async function guardar(j) {
+    async function guardar(j, puntos) {
       const campos = {};
       for (const k of ['fase', 'reveladas', 'strikes', 'turno', 'pozo', 'paso', 'ultimo', 'gano', 'todas', 'terminaEn']) campos[k] = j[k] ?? null;
-      try { await sala.actualizarJuego(campos); } catch (e) { toast('No se pudo guardar: ' + e.message, 'error'); }
+      try { await sala.actualizarJuego(campos, puntos); } catch (e) { toast('No se pudo guardar: ' + e.message, 'error'); }
     }
 
     async function cerrarRonda(j) {
@@ -121,8 +121,7 @@ export default {
       j.todas = privado.actual.map((r) => ({ texto: visible(r.texto), puntos: r.puntos }));
       j.terminaEn = 0;
       j.paso++;
-      await guardar(j);
-      if (j.gano && j.pozo) await sala.sumar({ [j.gano]: j.pozo });
+      await guardar(j, j.gano && j.pozo ? { [j.gano]: j.pozo } : {});
       sonido('fin');
     }
 

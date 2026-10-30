@@ -96,8 +96,7 @@ export default {
       const j = sala.juego;
       if (j.fase !== 'actuando') return;
       const siguiente = j.turno < j.total ? j.orden[j.turno % j.orden.length] : null;
-      await sala.sumar({ [j.equipo]: j.aciertos * PUNTOS_ACIERTO });
-      await sala.actualizarJuego({ fase: siguiente ? 'fin_turno' : 'fin', ultimas: privado.turnoPalabras, siguiente });
+      await sala.actualizarJuego({ fase: siguiente ? 'fin_turno' : 'fin', ultimas: privado.turnoPalabras, siguiente }, { [j.equipo]: j.aciertos * PUNTOS_ACIERTO });
       await sala.repartirSecretos({ [j.actor.uid]: { juego: j.id, ronda: j.turno, n: -1, palabra: '' } });
     }
 
