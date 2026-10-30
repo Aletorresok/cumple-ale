@@ -765,3 +765,8 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
   background: var(--tv-surface); color: var(--tv-tinta); border: 1px solid var(--tv-surface2); border-radius: 12px; font-size: 14px; }
 .afinador label { display: flex; flex-direction: column; gap: 4px; }
 .afinador select { background: var(--tv-surface2); color: var(--tv-tinta); border: 0; border-radius: 6px; padding: 6px; }
+
+/* Trivia con castigo */
+.prenda { margin: 6px 0; padding: 8px 12px; border-radius: 10px; background: var(--mark); color: #1b1b1b; font-weight: 700; }
+.tv-eq.penado { outline: 3px solid var(--mark); border-radius: 12px; }
+.tv-prenda { grid-column: 1 / -1; font-size: 1.5rem; font-weight: 800; color: var(--mark); }

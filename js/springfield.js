@@ -30,7 +30,15 @@ export const BANCO_SPRINGFIELD = {
       'Lisa tocando el saxofón', 'Maggie con el chupete', 'El Sr. Burns diciendo «Excelente»', 'Ned Flanders saludando',
       'Apu atendiendo el Kwik-E-Mart', 'Moe sirviendo cerveza', 'Krusty el payaso', 'El jefe Wiggum comiendo',
       'Nelson burlándose', 'Homero durmiendo en la planta', 'Barney eructando', 'El abuelo contando una historia',
-      'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco']
+      'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco',
+      // Episodios famosos
+      'Homero viaja al espacio como astronauta', 'Homero come los ajíes picantes de la feria y alucina',
+      'Homero engorda a propósito para trabajar desde casa', 'Lisa se hace vegetariana',
+      'Bart le corta la cabeza a la estatua de Jebediah Springfield', 'Homero va a la universidad',
+      'Los Simpson viajan a Japón', 'Bart se hace famoso con la frase «Yo no fui»',
+      'Homero recupera el pelo con un tónico milagroso', 'Lisa toca el saxofón con Encías Sangrantes Murphy',
+      'Marge se hace policía', 'Homero se convierte en boxeador', 'Bart se gana un elefante',
+      'Homero forma un cuarteto vocal y se hace famoso', 'El Sr. Burns tapa el sol', 'Los Simpson viajan a Brasil']
       .map((palabra) => ({ tipo: 'mimica', palabra })),
 
 

@@ -38,11 +38,8 @@ pantalla grande da la bienvenida a Springfield, y en «Mis bancos» está el ban
 con trivia, mímica y encuestas de la serie.
 
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
-(unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
-música* y *Cultura general*. Se pueden editar o combinar, y sumar preguntas sobre Ale.
-
-También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto apostás?, ☁️ Nube de
-deseos y 🎯 ¿A quién le toca? (sorteo).
+(unas 15 a 20 preguntas cada una): *Springfield* (cultura Simpson), *Cine, tele y
+música* y *Cultura general*. Con el modo «Con castigo», el equipo que se equivoca paga una prenda. Se pueden editar o combinar, y sumar preguntas sobre Ale.
 
 **🖨 Plan B en papel.** En «Mis bancos», el botón 🖨 de cada banco imprime todo para jugar sin
 internet: tarjetas de mímica para recortar, encuestas con sus
