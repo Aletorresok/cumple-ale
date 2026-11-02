@@ -17,6 +17,9 @@ const LINEAS = {
   mimica: {
     inicio: ['Mímica. Hablar es de cobardes.', 'Ahora actúen sin decir una palabra. Qué difícil para mí.'],
   },
+  dibujo: {
+    inicio: ['Dibujá en Springfield. Si no sabés qué es, decí «dona».', 'A dibujar. Yo dibujo igual que Maggie, pero con más hambre.'],
+  },
   quiz: {
     inicio: ['Trivia. Que nadie mire el celular del de al lado.', 'Preguntas, preguntas… yo prefiero las donas.'],
   },

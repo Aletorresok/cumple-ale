@@ -24,6 +24,14 @@ export const TIPOS = {
     ejemploPegado: 'Titanic\nLavar los platos\nShakira',
     nota: 'Mezclá cosas fáciles y difíciles: películas, oficios, famosos, situaciones.',
   },
+  dibujo: {
+    nombre: 'Para dibujar', singular: 'palabra para dibujar', plural: 'palabras para dibujar',
+    ayuda: 'Cosas fáciles de reconocer en un dibujo. Las usa «Dibujá en Springfield».',
+    campos: [['palabra', 'Palabra o cosa', 'Una dona']],
+    formato: 'una palabra o cosa por línea',
+    ejemploPegado: 'Una dona\nLa planta nuclear\nEl pelo de Marge',
+    nota: 'Que se pueda dibujar en un minuto: objetos, lugares, personajes con algo que los distinga.',
+  },
   encuesta: {
     nombre: 'Encuestas', singular: 'encuesta',
     ayuda: 'Una pregunta con las respuestas más dichas y sus puntos. La usa «Los invitados dicen».',
@@ -105,7 +113,7 @@ export function leerPegado(tipo, texto) {
     if (!linea.trim()) return;
     const sep = linea.includes('\t') ? '\t' : linea.includes('|') ? '|' : ';';
     const c = linea.split(sep).map((x) => x.trim());
-    if (tipo === 'mimica' && c[0]) items.push({ tipo, palabra: c.join(' ').trim() });
+    if ((tipo === 'mimica' || tipo === 'dibujo') && c[0]) items.push({ tipo, palabra: c.join(' ').trim() });
     else if (tipo === 'afirmacion' && c[0] && /^[vf]/i.test(c[1] || '')) items.push({ tipo, texto: c[0], verdadera: /^v/i.test(c[1]), explicacion: c.slice(2).join(' ').trim() });
     else if (tipo === 'encuesta' && c[0] && c[1]) items.push({ tipo, pregunta: c[0], respuestas: leerRespuestas(c.slice(1)) });
     else if (tipo === 'pregunta' && c[0] && c[1] && c[2]) {
@@ -116,7 +124,7 @@ export function leerPegado(tipo, texto) {
 }
 
 function textoItem(it) {
-  if (it.tipo === 'mimica') return [h('b', null, it.palabra)];
+  if (it.tipo === 'mimica' || it.tipo === 'dibujo') return [h('b', null, it.palabra)];
   if (it.tipo === 'afirmacion') return [h('b', null, it.texto), h('br'), h('span', { class: it.verdadera ? 'ok-txt' : 'mal-txt' }, it.verdadera ? 'Verdadera' : 'Falsa'), it.explicacion ? h('span', { class: 'muted' }, ' · ' + it.explicacion) : null];
   if (it.tipo === 'escape') return [h('b', null, '🔐 ' + it.titulo), h('br'), h('span', { class: 'muted' }, `${it.candados.length} candados · ${it.minutos} minutos`)];
   if (it.tipo === 'encuesta') return [h('b', null, it.pregunta), h('br'), h('span', { class: 'muted' }, it.respuestas.map((r) => `${r.texto} (${r.puntos})`).join(' · '))];
@@ -125,7 +133,7 @@ function textoItem(it) {
 }
 
 function itemDesdeForm(tipo, v) {
-  if (tipo === 'mimica') return v.palabra ? { tipo, palabra: v.palabra } : null;
+  if (tipo === 'mimica' || tipo === 'dibujo') return v.palabra ? { tipo, palabra: v.palabra } : null;
   if (tipo === 'afirmacion') return v.texto && /^[vf]/i.test(v.vf) ? { tipo, texto: v.texto, verdadera: /^v/i.test(v.vf), explicacion: v.explicacion || '' } : null;
   if (tipo === 'encuesta') {
     const respuestas = leerRespuestas(v.respuestas.split(/\r?\n/));

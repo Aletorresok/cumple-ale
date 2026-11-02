@@ -765,3 +765,27 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
   background: var(--tv-surface); color: var(--tv-tinta); border: 1px solid var(--tv-surface2); border-radius: 12px; font-size: 14px; }
 .afinador label { display: flex; flex-direction: column; gap: 4px; }
 .afinador select { background: var(--tv-surface2); color: var(--tv-tinta); border: 0; border-radius: 6px; padding: 6px; }
+
+/* ── Dibujá en Springfield ── */
+.lienzo { display: block; width: 100%; aspect-ratio: 4 / 3; background: #fff; touch-action: none; user-select: none; -webkit-user-select: none; }
+.dibujo-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.dibujo-palabra { font-family: var(--display); font-size: clamp(1.3rem, 6vw, 1.8rem); line-height: 1.1; overflow-wrap: anywhere; }
+.dibujo-marco { border-radius: 12px; overflow: hidden; border: 3px solid var(--mi-color); box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+.pz-barra { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pz-color { width: 32px; height: 32px; border-radius: 50%; background: var(--c); border: 2px solid var(--line); padding: 0; font-size: 1rem; line-height: 1; }
+.pz-color.goma { background: var(--surface); }
+.pz-color.activo { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pz-grosor { width: 40px; height: 36px; border-radius: 8px; background: var(--surface2); border: 2px solid transparent; display: grid; place-items: center; padding: 0; }
+.pz-grosor span { display: block; border-radius: 50%; background: var(--ink); }
+.pz-grosor.activo { border-color: var(--accent); }
+.dibujo-botones .btn { min-height: 64px; }
+.tv-dibujo { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1.6vh; height: 100%; }
+.tv-dibujo-cab { width: min(100%, calc(66vh * 4 / 3)); display: flex; justify-content: space-between; align-items: flex-end; gap: 1em; }
+.tv-dibujo-quien { font-family: var(--display); font-size: 2.2em; line-height: 1; }
+.tv-dibujo-datos { display: flex; gap: 2em; align-items: flex-end; }
+.tv-dibujo-cuenta { font-family: var(--display); font-size: 2.6em; line-height: 1; }
+.tv-dibujo-marco { position: relative; width: min(100%, calc(66vh * 4 / 3)); border-radius: 18px; overflow: hidden; border: 8px solid var(--c, var(--mark)); box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.tv-dibujo-cartel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--ok); color: #fff; font-family: var(--display); font-size: 2.4em; padding: .3em .9em; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); width: max-content; max-width: 88%; text-align: center; line-height: 1.15; }
+.tv-dibujo-cartel.sale { animation: cartel-dibujo 2.2s ease forwards; }
+@keyframes cartel-dibujo { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tv-dibujo-cartel.sale { animation: none; } }

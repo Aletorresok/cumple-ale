@@ -2,6 +2,20 @@
 // Usa los nombres del doblaje latino. Se agrega desde «Mis bancos» y se edita como cualquier otro.
 const q = (pregunta, correcta, ...incorrectas) => ({ tipo: 'pregunta', pregunta, correcta, incorrectas });
 
+// Para «Dibujá en Springfield»: cosas que se reconocen en un dibujo de un minuto.
+// Vienen con el juego (no hace falta agregar el banco) y se pueden cambiar desde «Mis bancos».
+export const PALABRAS_DIBUJO = [
+  'Una dona con chispitas', 'Una lata de Duff', 'La planta nuclear', 'El pelo de Marge', 'Plopper, el cerdo araña',
+  'El sillón de los Simpson', 'La patineta de Bart', 'El saxofón de Lisa', 'El chupete de Maggie', 'Blinky, el pez de tres ojos',
+  'El Kwik-E-Mart', 'La taberna de Moe', 'El auto de Homero', 'El micro escolar de Otto', 'El monorriel',
+  'La casa del árbol', 'Bola de Nieve, el gato', 'Ayudante de Santa, el perro', 'Krusty el payaso', 'El bigote de Flanders',
+  'Los anteojos de Milhouse', 'La gomera de Bart', 'Una barra de plutonio', 'Itchy y Scratchy', 'El Hombre Abeja',
+  'La estatua de Jebediah Springfield', 'El Sr. Burns diciendo «Excelente»', 'El Sr. Quitanieves', 'Una chuleta de cerdo',
+  'El pizarrón de los castigos de Bart', 'Homero astronauta', 'El collar de perlas de Marge', 'Bob Patiño pisando un rastrillo',
+  'Homero en la hamaca', 'La dentadura del abuelo', 'Duffman', 'La sirena del patrullero de Wiggum', 'El ojo morado de Moe',
+  'Lisa vegetariana comiendo una ensalada', 'La familia en el sillón mirando la tele',
+];
+
 export const BANCO_SPRINGFIELD = {
   id: 'springfield',
   titulo: 'Springfield · Los Simpson',
@@ -32,6 +46,9 @@ export const BANCO_SPRINGFIELD = {
       'Nelson burlándose', 'Homero durmiendo en la planta', 'Barney eructando', 'El abuelo contando una historia',
       'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco']
       .map((palabra) => ({ tipo: 'mimica', palabra })),
+
+    // ── Para dibujar ──
+    ...PALABRAS_DIBUJO.map((palabra) => ({ tipo: 'dibujo', palabra })),
 
 
     // ── Los invitados dicen (puntos estimados, para cambiar por los de la encuesta previa) ──
