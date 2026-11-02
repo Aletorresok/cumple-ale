@@ -172,7 +172,7 @@ try {
   }
   await tv.getByText('¡Roba!').waitFor({ timeout: 10000 });
   await captura(tv, 'r1-robo');
-  const ladron = await celularCon(invitados, '#encuesta-juego:not([disabled])');
+  const ladron = await celularCon(invitados, 'text=¡Pueden robar el pozo!');
   await ladron.locator('#encuesta-juego').fill(respuestas[0]);
   await ladron.getByRole('button', { name: 'Responder' }).click();
   await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 });
