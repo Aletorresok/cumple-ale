@@ -209,8 +209,11 @@ try {
   await host.getByRole('button', { name: /^Saltear: gana / }).first().click();
   await host.getByRole('button', { name: /^Pasan: juega / }).click();
   const antes3 = await puntos(host);
-  const filas = await host.getByRole('button', { name: 'Acertó' }).count();
-  for (let k = 0; k < filas; k++) { await host.getByRole('button', { name: 'Acertó' }).first().click(); await esperar(700); }
+  await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).waitFor();
+  while (!(await host.getByText('(doble)').count()) && await host.getByRole('button', { name: 'Acertó' }).count()) {
+    await host.getByRole('button', { name: 'Acertó' }).first().click();
+    await esperar(700);
+  }
   await host.getByText('(doble)').waitFor({ timeout: 10000 });
   const pozo = Number((await host.locator('p.grande').first().textContent()).match(/(\d+) puntos/)[1]);
   afirmar(await puntos(host) - antes3 === pozo, 'la ronda doble sumó lo que dice');
@@ -221,23 +224,23 @@ try {
   await medir('Rondas 2 y 3 (panel)');
   await terminarJuego(host);
 
-  // ── Con timbre físico: los celulares no muestran botones y todo se marca desde el panel ──
+  // ── Con globos: los celulares no muestran botones y todo se marca desde el panel ──
   await elegirJuego(host, 'Los invitados dicen', async () => {
     await host.locator('#cfg-rondas').selectOption('3');
     await host.locator('#cfg-seg').selectOption('0');
-    afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'el timbre físico viene elegido');
+    afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'los globos vienen elegidos');
   });
-  await tv.getByText('¡Al timbre!').waitFor({ timeout: 15000 });
-  await captura(tv, 'f-al-timbre');
+  await tv.getByText('¡A explotar el globo!').waitFor({ timeout: 15000 });
+  await captura(tv, 'f-a-explotar');
   await esperar(1000);
   let alFrente = null;
   for (const p of invitados) {
-    afirmar(!(await p.locator('.pulsador, #encuesta-juego').count()), 'con timbre físico el celular no muestra pulsador ni respuesta');
-    if (await p.getByText('¡Pasá al frente, al timbre!').count()) alFrente = p;
+    afirmar(!(await p.locator('.pulsador, #encuesta-juego').count()), 'con globos el celular no muestra pulsador ni respuesta');
+    if (await p.getByText('¡Pasá al frente a explotar el globo!').count()) alFrente = p;
   }
   afirmar(alFrente, 'el representante ve que pasa al frente');
   await captura(alFrente, 'f-celular-al-frente');
-  await host.getByRole('button', { name: /^Tocó / }).first().click();
+  await host.getByRole('button', { name: /^Explotó / }).first().click();
   await host.getByRole('button', { name: 'Acertó' }).first().click();
   await host.getByRole('button', { name: /^Juega / }).click();
   const habla = await celularCon(invitados, 'text=¡Te toca! Decí tu respuesta en voz alta');
@@ -245,7 +248,7 @@ try {
   for (let k = 0; k < 3; k++) { await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).click(); await esperar(700); }
   await host.getByRole('button', { name: 'Acertó' }).first().click();
   await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 });
-  paso('Timbre físico: ' + await host.locator('p.grande').first().textContent());
+  paso('Con globos: ' + await host.locator('p.grande').first().textContent());
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);

@@ -1,7 +1,7 @@
 // «Los invitados dicen» (al estilo de 100 argentinos dicen): hay que adivinar las respuestas
 // más dichas de una encuesta. Cada ronda se enfrentan dos equipos:
 //   1. Cara a cara: un integrante de cada equipo; el primero que toca el pulsador responde.
-//      El pulsador puede ser un timbre físico (y todo se dice en voz alta y se marca en el panel)
+//      El pulsador puede ser un globo que hay que explotar (y todo se dice en voz alta y se marca en el panel)
 //      o un botón en el celular de cada representante.
 //      Si acierta la más dicha gana; si no, responde el otro y gana la respuesta más alta.
 //   2. El que gana el cara a cara elige si su equipo juega o pasa.
@@ -104,7 +104,7 @@ function frente(sala, j, { tv = false } = {}) {
     const rep = j.duelo?.reps?.[eid];
     const pulso = j.duelo?.primero === eid;
     return h('div', { class: 'duelo-lado' + (pulso ? ' pulso' : '') }, pildoraEquipo(sala.equipo(eid)),
-      h('span', { class: 'duelo-nombre' }, rep?.nombre || 'alguien del equipo'), pulso && h('span', { class: 'duelo-marca' }, '¡Pulsó!'));
+      h('span', { class: 'duelo-nombre' }, rep?.nombre || 'alguien del equipo'), pulso && h('span', { class: 'duelo-marca' }, j.voz ? '¡Lo explotó!' : '¡Pulsó!'));
   };
   return h('div', { class: 'duelo' + (tv ? ' en-tv' : '') }, lado(j.par[0]), h('span', { class: 'duelo-vs' }, 'vs'), lado(j.par[1]));
 }
@@ -125,7 +125,7 @@ export default {
     const dobleUltima = h('input', { type: 'checkbox', id: 'cfg-doble', checked: true });
     const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá algo que no puede faltar en una fiesta' });
     const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
-      ['fisico', 'Timbre físico y respuestas en voz alta (las marcás vos en el panel)'],
+      ['fisico', 'Globos: el primero que lo explota responde en voz alta (lo marcás vos en el panel)'],
       ['celular', 'Pulsador y respuestas en el celular']], 'fisico');
     const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 20);
     const checks = checksEquipos(sala);
@@ -505,8 +505,8 @@ export default {
             frente(sala, j),
             pulso
               ? h('div', { class: 'fila entre' }, h('span', null, 'Responde ', h('b', null, rep?.nombre || 'alguien'), ' de ', pildoraEquipo(eq)), j.terminaEn ? reloj : null)
-              : h('div', { class: 'pila-s' }, h('p', { class: 'muted' }, j.voz ? 'Leé la pregunta. ¿Quién tocó el timbre primero?' : 'Esperando el pulsador de los celulares. Si alguno no anda, marcalo vos:'),
-                h('div', { class: 'fila' }, j.par.map((e) => h('button', { class: j.voz ? 'btn' : 'btn sec', onclick: () => pulsar(e) }, `${j.voz ? 'Tocó' : 'Pulsó'} ${sala.equipo(e)?.nombre}`)))),
+              : h('div', { class: 'pila-s' }, h('p', { class: 'muted' }, j.voz ? 'Leé la pregunta. ¿Quién explotó el globo primero?' : 'Esperando el pulsador de los celulares. Si alguno no anda, marcalo vos:'),
+                h('div', { class: 'fila' }, j.par.map((e) => h('button', { class: j.voz ? 'btn' : 'btn sec', onclick: () => pulsar(e) }, `${j.voz ? 'Explotó' : 'Pulsó'} ${sala.equipo(e)?.nombre}`)))),
             ultimo,
             lista(!!pulso),
             pulso && h('button', { class: 'btn peligro', onclick: () => jugar({ error: true }) }, '✗ No está en el tablero'),
@@ -603,14 +603,14 @@ export default {
           return;
         }
         if (j.voz) {
-          // Timbre físico: el celular solo acompaña; todo se dice en voz alta.
+          // Con globos: el celular solo acompaña; todo se dice en voz alta.
           const yo = sala.uid;
           let titulo = '', sub = j.pregunta;
           if (j.fase === 'duelo') {
             const rep = j.duelo?.reps?.[mio];
             const r = j.duelo.primero && j.duelo.reps[j.turno];
             if (r) titulo = r.uid === yo ? '¡Decí tu respuesta en voz alta!' : `Responde ${r.nombre} (${eq?.nombre})`;
-            else if (rep?.uid === yo) { titulo = '¡Pasá al frente, al timbre!'; sub = 'El primero que toca el timbre dice la respuesta en voz alta.'; }
+            else if (rep?.uid === yo) { titulo = '¡Pasá al frente a explotar el globo!'; sub = 'El primero que lo explota dice la respuesta en voz alta.'; }
             else {
               titulo = `Cara a cara: ${j.par.map((e) => sala.equipo(e)?.nombre).join(' vs ')}`;
               if (j.par.includes(mio)) sub = `Pasa al frente ${rep?.nombre || 'alguien de tu equipo'}.`;
@@ -710,7 +710,7 @@ export default {
         if (j.fase === 'duelo') {
           const rep = j.duelo.primero && j.duelo.reps[j.turno];
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Cara a cara'),
-            h('div', { class: 'tv-sub centro' }, rep ? `Responde ${rep.nombre}` : j.voz ? '¡Al timbre!' : '¡Al pulsador!'), conReloj ? reloj : null);
+            h('div', { class: 'tv-sub centro' }, rep ? `Responde ${rep.nombre}` : j.voz ? '¡A explotar el globo!' : '¡Al pulsador!'), conReloj ? reloj : null);
         } else if (j.fase === 'elegir') {
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Ganó el cara a cara'), pildoraEquipo(eq),
             h('div', { class: 'tv-sub centro' }, '¿Juegan o pasan?'));
