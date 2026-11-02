@@ -10,14 +10,14 @@ export const ESCENAS = [
   {
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
-    consigna: 'Cleto llama a todos sus hijos, uno por uno. ¿Cuántos nombres se acuerdan?',
+    consigna: 'Cleto le regala a Marge los cupones de pretzels y llama a todos sus hijos, uno por uno. ¿Cuántos nombres se acuerdan?',
     fija: true,
     items: [
       ['Tiffany', 'Tifany', 'Tiffani'], ['Heather', 'Heder', 'Hether'], ['Cody', 'Kody', 'Codi'],
-      ['Dylan', 'Dilan'], ['Dermot', 'Dermott'], ['Jordan', 'Jordán'], ['Taylor', 'Tailor', 'Teylor'],
+      ['Dylan', 'Dilan'], ['Dermot', 'Dermott'], ['Jacob', 'Jakob', 'Yacob'], ['Jordan', 'Jordán'], ['Taylor', 'Tailor', 'Teylor'],
       ['Brittany', 'Britany', 'Britney', 'Brittney'], ['Wesley', 'Wesly', 'Uesley'], ['Rumer', 'Rumor', 'Rummer'],
       ['Scout', 'Skaut', 'Scaut'], ['Cassidy', 'Casidy', 'Cassidi'], ['Zoe', 'Zoey', 'Zoé'], ['Chloe', 'Cloe', 'Cloé', 'Kloe'],
-      ['Max'], ['Hunter', 'Jonter', 'Hanter'], ['Kendall', 'Kendal'], ['Katlin', 'Caitlin', 'Kaitlin', 'Kaitlyn', 'Catlin'],
+      ['Max'], ['Hunter', 'Jonter', 'Hanter'], ['Kendall', 'Kendal'], ['Caitlin', 'Katlin', 'Kaitlin', 'Kaitlyn', 'Catlin'],
       ['Noah', 'Noa', 'Noé'], ['Sasha', 'Sacha'], ['Morgan'], ['Kyra', 'Kira', 'Kaira'], ['Ian', 'Ían'],
       ['Lauren', 'Loren'], ['Q-bert', 'Qbert', 'Kiubert', 'Cubert', 'Q bert'], ['Phil', 'Fil'],
     ],
@@ -49,8 +49,7 @@ export const ESCENAS = [
     fija: true,
     items: [
       ['Smithers', 'Waylon Smithers'], ['Homero'], ['Moe'], ['Barney'], ['Willie', 'Jardinero Willie'],
-      ['Skinner', 'Director Skinner'], ['Abuelo', 'Abe', 'Abraham', 'Abuelo Simpson'], ['Bart'], ['Lisa'],
-      ['Tito Puente', 'Tito'], ['Maggie'],
+      ['Skinner', 'Director Skinner'], ['Bart'], ['Lisa'], ['Tito Puente', 'Tito'], ['Maggie (¡fue ella!)', 'Maggie'],
     ],
   },
   {
@@ -62,7 +61,7 @@ export const ESCENAS = [
       ['Ayudante de Santa', 'Ayudante de Santa Claus', 'Santa\'s Little Helper', 'Ayudante'], ['Bola de Nieve', 'Bola de Nieve II', 'Snowball'],
       ['Pinchy', 'la langosta', 'Pinchi'], ['Mojo', 'el mono'], ['Plopper', 'Cerdo Araña', 'Spider Cerdo', 'Spider Pig'],
       ['Stampy', 'el elefante', 'Estampy'], ['Princesa', 'el poni', 'el pony'], ['Laddie', 'Ladi', 'Lady'],
-      ['Bart Junior', 'el lagarto'], ['Strangles', 'la serpiente', 'la víbora'],
+      ['Bart Junior', 'la rana', 'el sapo'], ['Strangles', 'la serpiente', 'la víbora'],
     ],
   },
   {
@@ -77,7 +76,7 @@ export const ESCENAS = [
     consigna: 'Selma se casó varias veces. ¿Con quiénes?',
     items: [
       ['Bob Patiño', 'Actor Secundario Bob', 'Sideshow Bob', 'Bob'], ['Troy McClure', 'Troy', 'McClure'], ['Lionel Hutz', 'Hutz'],
-      ['Disco Stu', 'Disco Stu'], ['Abe Simpson', 'Abuelo', 'Abe', 'Abraham'], ['Gordo Tony', 'Fat Tony', 'Tony'],
+      ['Disco Stu'], ['Abe Simpson', 'Abuelo', 'Abe', 'Abraham'],
     ],
   },
   {
@@ -86,8 +85,8 @@ export const ESCENAS = [
     consigna: 'Homero se hizo llamar de muchas formas. ¿Cuáles se acuerdan?',
     items: [
       ['Max Power'], ['El Señor Quitanieves', 'Señor Quitanieves', 'Sr. Quitanieves', 'Mr. Plow', 'Quitanieves'],
-      ['Hombre Pay', 'Pie Man', 'el hombre pastel'], ['Homero Thompson', 'Thompson'], ['El Barto'],
-      ['Sr. X', 'Señor X', 'Mr. X'], ['Guy Incognito', 'Guy Incógnito'],
+      ['Hombre Pay', 'Pie Man', 'el hombre pastel'], ['Homero Thompson', 'Thompson'],
+      ['Sr. X', 'Señor X', 'Mr. X'],
     ],
   },
   {

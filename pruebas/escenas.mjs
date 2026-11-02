@@ -199,14 +199,14 @@ try {
   await captura(host, 'e1-revisar');
   await host.getByRole('button', { name: '📺 Revelar en la tele' }).click();
   await tv.locator('.tv-escena-items li').first().waitFor();
-  afirmar(await tv.locator('.tv-escena-items li').count() === 26, 'la tele muestra los 26 hijos');
+  afirmar(await tv.locator('.tv-escena-items li').count() === 27, 'la tele muestra los 27 hijos');
   await esperar(7500);
   await captura(tv, 'e1-revelada');
   const pts = await host.locator('.equipo-pts').allTextContents();
   const total = pts.reduce((a, x) => a + Number(x), 0);
   afirmar(total === 100 + 60 + 40, `puntos por puesto 100+60+40+0 (${pts})`);
   const cel = porEquipo[nombres[0]][0];
-  await cel.getByText('8 de 26').waitFor();
+  await cel.getByText('8 de 27').waitFor();
   await captura(cel, 'e1-celular-resultado');
   paso(`Escena 1 revelada: ${nombres.map((e, k) => `${e} ${[8, 5, 3, 0][k]}`).join(', ')} → ${pts.join(' / ')}`);
   await medir('Escena 1: revisar y revelar');
