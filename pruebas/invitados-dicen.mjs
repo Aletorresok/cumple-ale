@@ -229,8 +229,12 @@ try {
     await host.locator('#cfg-seg').selectOption('0');
     afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'los globos vienen elegidos');
     afirmar(await host.locator('#cfg-rondas').inputValue() === 'llaves', 'las llaves vienen elegidas');
+    // Elige dos preguntas en orden: la 3.ª de la lista primero y la 1.ª después.
+    await host.locator('.cfg-pregunta-banco input').nth(2).check();
+    await host.locator('.cfg-pregunta-banco input').nth(0).check();
   });
   await tv.getByText('¡A explotar el globo!').waitFor({ timeout: 15000 });
+  afirmar((await tv.locator('.tv-pregunta').textContent()).includes('lugar de Springfield'), 'sale primero la pregunta elegida primero');
   await captura(tv, 'f-a-explotar');
   await esperar(1000);
   let alFrente = null;
@@ -260,7 +264,13 @@ try {
     const gano = par.find((e) => texto.startsWith(e));
     llaves.push({ par, gano, perdio: par.find((e) => e !== gano) });
     if (r === 4) await captura(tv, 'f-final');
+    if (r === 1) {
+      const sel = await host.locator('#prox-pregunta option').nth(0).textContent();
+      afirmar(sel.includes('personaje'), `la próxima sugerida es la segunda elegida (${sel})`);
+      await host.locator('#prox-pregunta').selectOption({ label: 'Nombrá un hijo de Cleto' });
+    }
     if (r < 4) await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+    if (r === 1) await tv.getByText('Nombrá un hijo de Cleto').waitFor({ timeout: 10000 });
   }
   const mismos = (a, b) => [...a].sort().join() === [...b].sort().join();
   afirmar(mismos(llaves[2].par, [llaves[0].perdio, llaves[1].perdio]), `la ronda 3 es entre los perdedores (${llaves[2].par})`);

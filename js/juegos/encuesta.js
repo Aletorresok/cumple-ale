@@ -145,7 +145,26 @@ export default {
       ['celular', 'Pulsador y respuestas en el celular']], 'fisico');
     const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 20);
     const checks = checksEquipos(sala);
-    const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el, h('label', { class: 'check' }, dobleUltima, 'La última ronda vale doble'));
+    // Qué preguntas salen y en qué orden (en el orden en que se tocan). Las que falten salen al azar.
+    let elegidas = [];
+    const zonaPreguntas = h('div', { class: 'pila-s' });
+    const pintarPreguntas = () => {
+      const banco = b.banco();
+      const lista = banco ? itemsDe(banco, 'encuesta').map((e) => e.pregunta) : [];
+      elegidas = elegidas.filter((q) => lista.includes(q));
+      montar(zonaPreguntas, h('span', { class: 'etq' }, 'Preguntas que salen (tocalas en orden; si no elegís, salen al azar)'),
+        h('div', { class: 'pila-s' }, lista.map((q) => {
+          const n = elegidas.indexOf(q);
+          const input = h('input', { type: 'checkbox', checked: n >= 0, onchange: () => {
+            elegidas = input.checked ? [...elegidas, q] : elegidas.filter((x) => x !== q);
+            pintarPreguntas();
+          } });
+          return h('label', { class: 'check cfg-pregunta-banco' }, input, h('span', { class: 'mono' }, n >= 0 ? `${n + 1}.` : '·'), q);
+        })));
+    };
+    b.el.querySelector?.('select')?.addEventListener('change', () => { elegidas = []; pintarPreguntas(); });
+    pintarPreguntas();
+    const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el, zonaPreguntas, h('label', { class: 'check' }, dobleUltima, 'La última ronda vale doble'));
     const zonaCurso = h('div', { class: 'pila', hidden: true },
       h('label', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Primera pregunta'), pregunta),
       h('p', { class: 'muted chico' }, 'Cada invitado responde desde su celular. Con las respuestas más repetidas se arma el tablero: cada una vale tantos puntos como personas la dijeron.'));
@@ -169,7 +188,7 @@ export default {
         if (!banco) return null;
         const llaves = rondas.valor() === 'llaves';
         if (llaves && equipos.length !== 4) { toast('Las llaves son para 4 equipos: elegí otra cantidad de rondas', 'error'); return null; }
-        return { ...base, banco, llaves, rondas: llaves ? 4 : Number(rondas.valor()), doble: dobleUltima.checked };
+        return { ...base, banco, llaves, rondas: llaves ? 4 : Number(rondas.valor()), doble: dobleUltima.checked, elegidas };
       },
     };
   },
@@ -183,12 +202,14 @@ export default {
       await sala.iniciarJuego({ ...base, titulo: 'Encuesta en vivo', total: 0, fase: 'encuesta', ronda: 1, pregunta: cfg.pregunta, casilleros: 0, reveladas: {}, strikes: 0, pozo: 0, mult: 1 }, id);
       return;
     }
-    let encuestas = mezclar(itemsDe(cfg.banco, 'encuesta')).map((e) => ({
+    // Primero las elegidas (en su orden) y después el resto al azar, de repuesto.
+    const todas = itemsDe(cfg.banco, 'encuesta').map((e) => ({
       pregunta: e.pregunta, respuestas: [...e.respuestas].sort((a, b) => b.puntos - a.puntos).slice(0, MAX_CASILLEROS),
     }));
-    if (cfg.rondas) encuestas = encuestas.slice(0, cfg.rondas);
-    base.total = encuestas.length;
-    await sala.guardarPrivado({ juego: id, fuente: 'banco', encuestas, actual: encuestas[0].respuestas });
+    const elegidas = (cfg.elegidas || []).map((q) => todas.find((e) => e.pregunta === q)).filter(Boolean);
+    const encuestas = [...elegidas, ...mezclar(todas.filter((e) => !elegidas.includes(e)))];
+    base.total = cfg.rondas ? Math.min(cfg.rondas, encuestas.length) : encuestas.length;
+    await sala.guardarPrivado({ juego: id, fuente: 'banco', encuestas, usadas: [0], actual: encuestas[0].respuestas });
     await sala.iniciarJuego({ ...base, titulo: cfg.banco.titulo,
       ...armarRonda(sala, base, 1, encuestas[0].pregunta, encuestas[0].respuestas) }, id);
   },
@@ -377,11 +398,17 @@ export default {
       await sala.actualizarJuego({ mult: (j.mult || 1) > 1 ? 1 : 2 });
     }
 
+    // La próxima pregunta: la que eligió quien organiza o la primera que no salió.
+    let proximaPregunta = null;
+    const sinUsar = () => privado.encuestas.map((e, i) => i).filter((i) => !(privado.usadas || []).includes(i));
     async function siguiente() {
       const j = sala.juego;
-      if (j.ronda >= privado.encuestas.length) { await sala.actualizarJuego({ fase: 'fin' }); return; }
-      const e = privado.encuestas[j.ronda];
-      privado = { ...privado, actual: e.respuestas };
+      const libres = sinUsar();
+      if (j.ronda >= (j.total || privado.encuestas.length) || !libres.length) { await sala.actualizarJuego({ fase: 'fin' }); return; }
+      const k = libres.includes(proximaPregunta) ? proximaPregunta : libres[0];
+      proximaPregunta = null;
+      const e = privado.encuestas[k];
+      privado = { ...privado, actual: e.respuestas, usadas: [...(privado.usadas || []), k] };
       await sala.guardarPrivado(privado);
       const r = armarRonda(sala, structuredClone(j), j.ronda + 1, e.pregunta, e.respuestas);
       await sala.actualizarJuego(r);
@@ -449,6 +476,14 @@ export default {
     }
 
     // En «fin de ronda»: qué dos equipos se enfrentan en la próxima.
+    function elegirPregunta() {
+      const libres = sinUsar();
+      if (!libres.includes(proximaPregunta)) proximaPregunta = libres[0];
+      const sel = h('select', { class: 'campo', id: 'prox-pregunta', onchange: () => { proximaPregunta = Number(sel.value); } },
+        libres.map((i) => h('option', { value: i, selected: i === proximaPregunta }, privado.encuestas[i].pregunta)));
+      return h('label', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Próxima pregunta'), sel);
+    }
+
     function elegirProximo(j) {
       if ((j.orden || []).length < 3) return null;
       const r = j.ronda + 1;
@@ -503,12 +538,13 @@ export default {
           h('button', { class: 'btn-link', onclick: alternarDoble }, j.mult > 1 ? '×2 activado (sacar)' : 'Hacer que valga doble'));
         if (j.fase === 'fin_ronda') {
           const ganador = sala.equipo(j.gano);
-          const ultimaRonda = j.fuente === 'banco' && j.ronda >= privado.encuestas.length;
+          const ultimaRonda = j.fuente === 'banco' && (j.ronda >= (j.total || privado.encuestas.length) || !sinUsar().length);
           const otra = h('input', { class: 'campo', id: 'otra-pregunta', maxlength: 120, placeholder: 'Siguiente pregunta para el grupo' });
           montar(el, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
             h('p', { class: 'grande' }, ganador ? `${ganador.nombre} se lleva ${j.pozo * (j.mult || 1)} puntos${j.mult > 1 ? ' (doble)' : ''}` : 'Nadie suma en esta ronda'),
             tablero(j),
             !ultimaRonda && elegirProximo(j),
+            !ultimaRonda && j.fuente === 'banco' && elegirPregunta(),
             j.fuente === 'banco'
               ? h('button', { class: 'btn grande', onclick: siguiente }, ultimaRonda ? 'Ver resultados' : 'Siguiente ronda →')
               : h('form', { class: 'pila', onsubmit: (e) => { e.preventDefault(); const t = otra.value.trim(); if (t) nuevaPreguntaCurso(t); } },
