@@ -765,3 +765,18 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
   background: var(--tv-surface); color: var(--tv-tinta); border: 1px solid var(--tv-surface2); border-radius: 12px; font-size: 14px; }
 .afinador label { display: flex; flex-direction: column; gap: 4px; }
 .afinador select { background: var(--tv-surface2); color: var(--tv-tinta); border: 0; border-radius: 6px; padding: 6px; }
+
+/* ── ¿Te acordás de la escena? ── */
+.escena-opcion { gap: 8px; align-items: baseline; }
+.escena-equipo { border-left: 6px solid var(--c); }
+.escena-chips { gap: 6px; flex-wrap: wrap; }
+.chip.escena-ok { background: color-mix(in srgb, var(--ok) 28%, var(--surface)); border-color: var(--ok); font-weight: 700; }
+.escena-sueltas { color: var(--ink); }
+.tv-escena-items { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: .8vh 1vw; flex: 1; align-content: center; }
+.tv-escena-items li { display: flex; align-items: center; justify-content: space-between; gap: .6em; padding: .35em .8em; border-radius: 10px; background: var(--tv-surface); font-weight: 700; font-size: 1.1em; opacity: 0; animation: escena-aparece .45s ease-out forwards; }
+.tv-escena-items li.nadie { color: var(--tv-muted); font-weight: 400; }
+.tv-escena-items li.nadie small { font-size: .7em; }
+.tv-escena-puntos { display: flex; gap: .25em; }
+.tv-escena-puntos i, .tv-escena-punto { display: inline-block; width: .8em; height: .8em; border-radius: 50%; background: var(--c); }
+@keyframes escena-aparece { from { opacity: 0; transform: translateY(.4em) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tv-escena-items li { animation: none; opacity: 1; } }
