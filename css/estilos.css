@@ -416,6 +416,20 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .tv .cruces b.on { color: var(--bad); }
 .tv-strike { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: min(40vh, 30vw); color: var(--bad); text-shadow: 0 0 40px rgb(0 0 0 / .8); pointer-events: none; animation: golpe 1.3s ease-out forwards; }
 @keyframes golpe { 0% { transform: scale(1.4); opacity: 0; } 15% { transform: scale(1); opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+/* Cara a cara de «Los invitados dicen» */
+.duelo { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.duelo-lado { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; border-radius: 10px; border: 2px solid transparent; text-align: center; }
+.duelo-lado.pulso { border-color: var(--mark); background: color-mix(in srgb, var(--mark) 14%, transparent); }
+.duelo-nombre { font-weight: 700; }
+.duelo-marca { font-size: .8em; font-weight: 800; color: var(--mark-ink, #000); background: var(--mark); padding: 1px 8px; border-radius: 99px; }
+.duelo-vs { font-family: var(--display); font-weight: 800; font-size: 1.4em; opacity: .7; }
+.duelo.en-tv { font-size: 1.3em; margin: .2em 0 .6em; }
+.duelo.en-tv .duelo-nombre { font-size: 1.2em; }
+.duelo.en-tv .duelo-vs { font-size: 2em; color: var(--mark); opacity: 1; }
+.pulsador { display: block; width: min(70vw, 260px); aspect-ratio: 1; margin: 18px auto; border-radius: 50%; border: 0; background: radial-gradient(circle at 35% 30%, #ff6b6b, var(--bad) 60%, #7a1010); color: #fff; font-family: var(--display); font-weight: 800; font-size: 2rem; box-shadow: 0 10px 0 #5a0b0b, 0 14px 24px rgb(0 0 0 / .35); cursor: pointer; touch-action: manipulation; }
+.pulsador:active:not(:disabled) { transform: translateY(8px); box-shadow: 0 2px 0 #5a0b0b; }
+.pulsador:disabled { filter: grayscale(.6); opacity: .8; }
+.doble { display: inline-block; font-weight: 800; background: var(--mark); color: var(--mark-ink, #000); padding: 2px 10px; border-radius: 99px; }
 @media (max-width: 800px) and (orientation: portrait) {
   .tv-encuesta { grid-template-columns: 1fr; }
   .tablero.en-tv { grid-template-columns: 1fr; }

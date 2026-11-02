@@ -30,7 +30,7 @@ export function imprimirRespaldo(banco, cantidadEquipos = 4) {
     mimica.length > 0 && seccion(`Mímica · ${mimica.length} tarjetas`, 'Recortalas y ponelas en una bolsa. Quien actúa saca una; si su equipo adivina en el minuto, suma 10.',
       h('div', { class: 'imp-recortes' }, mimica.map((m) => h('div', { class: 'imp-recorte' }, m.palabra)))),
 
-    encuestas.length > 0 && seccion('Los invitados dicen', 'Leé la pregunta; los equipos se turnan para adivinar. Tres errores y el otro equipo puede robar.',
+    encuestas.length > 0 && seccion('Los invitados dicen', 'Leé la pregunta a dos equipos. Cara a cara: uno de cada equipo, el primero que levanta la mano responde y el que dice la más alta elige si juega o pasa. Tres errores y el otro equipo puede robar.',
       encuestas.map((e, i) => h('div', { class: 'imp-bloque' },
         h('b', null, `${i + 1}. ${e.pregunta}`),
         h('ol', null, e.respuestas.map((r) => h('li', null, `${r.texto} — ${r.puntos}`)))))),

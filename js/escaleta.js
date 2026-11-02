@@ -9,7 +9,7 @@ export const ESCALETA = [
   { icono: '🚪', titulo: 'Llegada', nota: 'La tele muestra el QR. Cada uno entra con su nombre mientras saluda.', decir: 'Escaneen el QR de la tele y pongan su nombre.' },
   { icono: '🎬', titulo: 'Intro de la noche', pantalla: 'intro', nota: 'La tele pasa la apertura con fanfarria. Subí el volumen y tocá «Poner la intro».', decir: '¡Mírenla! Empieza la fiesta.' },
   { icono: '🎩', titulo: 'Selección de equipos', juego: 'seleccion', nota: '4 equipos. Tocá «Empezar la ceremonia».', decir: 'El sombrero decide los equipos. Miren la tele.' },
-  { icono: '📊', titulo: 'Los invitados dicen', juego: 'encuesta', nota: '5 rondas del banco.', pieza: true, decir: 'Hay que adivinar lo que más respondió la gente. Tres errores y otro equipo roba.' },
+  { icono: '📊', titulo: 'Los invitados dicen', juego: 'encuesta', nota: '5 rondas del banco Springfield. Cada ronda se enfrentan dos equipos; la última vale doble.', pieza: true, decir: 'Dos equipos por ronda. Cara a cara: el primero que pulsa responde. El que gana elige si juega o pasa. Tres errores y el otro equipo roba.' },
   { icono: '🎭', titulo: 'Mímica por equipos', juego: 'mimica', nota: '1 minuto por turno, 2 vueltas.', pieza: true, decir: 'Uno ve la palabra en el celular y la actúa sin hablar.' },
   { icono: '📺', titulo: 'Pausa · Noticiero de Springfield', pantalla: 'noticiero', nota: 'Comida. La tele pasa el noticiero con lo que va de la noche. Podés mandar avisos.', decir: 'Cada equipo que ganó tiene una pieza de un código. Guárdenla para el final.' },
   { icono: '⚡', titulo: 'Trivia · Bien argentina', juego: 'quiz', nota: '10 preguntas, 20 segundos. La del contrato sale siempre.', pieza: true, decir: 'Pregunta en la tele, todos responden desde el celular.' },

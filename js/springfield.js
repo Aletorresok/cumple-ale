@@ -34,7 +34,7 @@ export const BANCO_SPRINGFIELD = {
       .map((palabra) => ({ tipo: 'mimica', palabra })),
 
 
-    // ── Los invitados dicen (puntos estimados, para cambiar por los de la encuesta previa) ──
+    // ── Los invitados dicen (puntos estimados: con la encuesta en vivo salen los del grupo) ──
     { tipo: 'encuesta', pregunta: 'Nombrá un personaje de Los Simpson', respuestas: [
       { texto: 'Homero', puntos: 30 }, { texto: 'Bart', puntos: 24 }, { texto: 'Marge', puntos: 15 },
       { texto: 'Lisa', puntos: 12 }, { texto: 'Sr. Burns / Burns', puntos: 9 }, { texto: 'Maggie', puntos: 6 }] },
@@ -45,5 +45,25 @@ export const BANCO_SPRINGFIELD = {
       { texto: 'la taberna de Moe / bar de Moe / Moe', puntos: 30 }, { texto: 'la planta nuclear / planta', puntos: 25 },
       { texto: 'Kwik-E-Mart / el almacén de Apu', puntos: 18 }, { texto: 'la escuela / escuela primaria', puntos: 14 },
       { texto: 'la casa de los Simpson / Avenida Siempreviva', puntos: 13 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que dice Homero', respuestas: [
+      { texto: "D'oh / Doh / Dou", puntos: 38 }, { texto: 'Mmm… rosquillas / mmm donas / mmm', puntos: 22 },
+      { texto: 'Wuju / Woohoo / Yuju', puntos: 16 }, { texto: 'Pequeño demonio / maldito demonio', puntos: 12 },
+      { texto: 'Cállate Flanders / Flanders', puntos: 8 }, { texto: 'Marge', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que tiene Marge', respuestas: [
+      { texto: 'el pelo azul / pelo / peinado', puntos: 48 }, { texto: 'collar de perlas / collar / perlas', puntos: 18 },
+      { texto: 'vestido verde / vestido', puntos: 14 }, { texto: 'paciencia', puntos: 10 },
+      { texto: 'tres hijos / hijos', puntos: 6 }, { texto: 'Homero / marido', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que hace Bart', respuestas: [
+      { texto: 'travesuras / maldades', puntos: 30 }, { texto: 'andar en patineta / patineta / skate', puntos: 24 },
+      { texto: 'bromas telefónicas a Moe / bromas / llamar a Moe', puntos: 16 }, { texto: 'escribir en el pizarrón / pizarrón / castigo', puntos: 14 },
+      { texto: 'decir ay caramba / ay caramba', puntos: 10 }, { texto: 'usar la gomera / gomera / honda', puntos: 6 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que hay en la casa de los Simpson', respuestas: [
+      { texto: 'el sillón / sofá', puntos: 34 }, { texto: 'la tele / televisión', puntos: 26 },
+      { texto: 'el cuadro del barco / cuadro / barco', puntos: 12 }, { texto: 'el sótano', puntos: 10 },
+      { texto: 'la cocina', puntos: 8 }, { texto: 'el garaje / el auto', puntos: 6 }, { texto: 'la casita del árbol / casa del árbol', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá un animal de Los Simpson', respuestas: [
+      { texto: 'Ayudante de Santa / el perro / galgo', puntos: 44 }, { texto: 'Bola de Nieve / el gato', puntos: 28 },
+      { texto: 'el cerdo de Homero / cerdo / chancho / Plopper / Spider-Cerdo', puntos: 16 },
+      { texto: 'el elefante de Bart / elefante / Stampy', puntos: 8 }, { texto: 'la tortuga / tortuga', puntos: 4 }] },
   ],
 };
