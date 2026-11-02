@@ -789,3 +789,5 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .tv-dibujo-cartel.sale { animation: cartel-dibujo 2.2s ease forwards; }
 @keyframes cartel-dibujo { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .tv-dibujo-cartel.sale { animation: none; } }
+.dibujo-botones.todos .btn { min-height: 52px; }
+.dibujo-botones.todos .btn.sec { grid-column: 1 / -1; }

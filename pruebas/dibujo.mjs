@@ -236,6 +236,39 @@ try {
   await tv.getByText('¡Terminó Dibujá en Springfield!').waitFor({ timeout: 10000 });
   paso('Cuatro turnos (uno por equipo) y ranking final');
   await medir('Resto de los turnos');
+  await terminarJuego(host);
+
+  // ── Modo «adivinan todos»: el primero que acierta se lleva 10 y el que dibuja, 5 ──
+  const antesTodos = await puntos(host);
+  await elegirJuego(host, 'Dibujá en Springfield', async () => {
+    await host.locator('#cfg-modo').selectOption('todos');
+    await host.locator('#cfg-vueltas').selectOption('1');
+  });
+  await host.getByRole('button', { name: '✏️ Empezar turno' }).click();
+  const dibujaT = await celularCon(invitados, 'canvas.lienzo-cel');
+  const suEquipo = (await dibujaT.locator('.invitado-barra .pildora').textContent()).split('·')[0].trim();
+  await tv.getByText(/adivinan todos/i).waitFor({ timeout: 10000 });
+  // Todos los demás celulares (de cualquier equipo) invitan a adivinar.
+  for (const p of invitados) if (p !== dibujaT) await p.locator('.resultado.bien').waitFor({ timeout: 10000 });
+  const botonesEq = await dibujaT.locator('.dibujo-botones button.ok').allTextContents();
+  afirmar(botonesEq.length === 4, `quien dibuja tiene un botón por equipo (${botonesEq})`);
+  const otroEq = botonesEq.map((t) => t.replace('✓', '').trim()).find((t) => t !== suEquipo);
+  const pT = await dibujaT.locator('.dibujo-palabra').textContent();
+  await trazo(dibujaT, [[0.2, 0.2], [0.8, 0.8]]);
+  await dibujaT.getByRole('button', { name: '✓ ' + otroEq }).click();
+  await tv.locator('.tv-dibujo-cartel', { hasText: otroEq }).waitFor({ timeout: 5000 });
+  await captura(tv, '7-tv-todos-adivino-otro');
+  await captura(dibujaT, '8-celular-todos');
+  await dibujaT.locator('.dibujo-palabra', { hasNotText: pT }).waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: '✓ ' + suEquipo }).click();
+  await host.getByText('2 adivinadas · 0 pasadas').waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: 'Terminar el turno ya' }).click();
+  await tv.locator('.tv-mimica-lista li', { hasText: otroEq }).waitFor({ timeout: 10000 });
+  await captura(tv, '9-tv-todos-fin-turno');
+  const pts = Object.fromEntries((await host.locator('.equipo').evaluateAll((els) => els.map((e) => [e.querySelector('.equipo-nombre, b, h3')?.textContent?.trim(), Number(e.querySelector('.equipo-pts')?.textContent)]))));
+  afirmar(await puntos(host) - antesTodos === 25, `adivinan todos: 10 + 10 + 5 por dibujar (sumó ${await puntos(host) - antesTodos}; ${JSON.stringify(pts)})`);
+  paso(`Adivinan todos: ${otroEq} +10, ${suEquipo} +15 (10 propia + 5 por dibujar)`);
+  await medir('Modo adivinan todos');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
