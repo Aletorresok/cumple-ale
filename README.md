@@ -15,6 +15,7 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 | 🎩 **Selección de equipos** | Nada | De a uno, cada invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va. Los equipos quedan parejos. Puede pasar solo, uno tras otro. |
 | 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Las encuestas salen del banco o de lo que responden los invitados en el momento. Tres errores y otro equipo puede robar el pozo. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
+| 🧉 **Frases en argentino** | Su propio banco (`js/frases.js`) | La tele muestra una frase famosa de Los Simpson dicha en argentino y los equipos adivinan la original: eligiendo entre 4 opciones en el celular o a los gritos (el panel marca qué equipo la dijo primero). Con 💡 la tele da la pista de quién la dice. |
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
 
@@ -121,6 +122,7 @@ js/tv.js                   pantalla grande
 js/juegos/*.js             un archivo por juego (configurar, iniciar, host, alumno, tv)
 firestore.rules            reglas de seguridad de la base de datos
 pruebas/fiesta.mjs         prueba de punta a punta con invitados simulados
+pruebas/frases.mjs         prueba del juego «Frases en argentino»
 ```
 
 Para agregar un juego: crear `js/juegos/mijuego.js` con la misma forma que los demás y sumarlo
