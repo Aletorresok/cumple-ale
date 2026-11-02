@@ -1,6 +1,8 @@
 // «Los invitados dicen» (al estilo de 100 argentinos dicen): hay que adivinar las respuestas
 // más dichas de una encuesta. Cada ronda se enfrentan dos equipos:
 //   1. Cara a cara: un integrante de cada equipo; el primero que toca el pulsador responde.
+//      El pulsador puede ser un timbre físico (y todo se dice en voz alta y se marca en el panel)
+//      o un botón en el celular de cada representante.
 //      Si acierta la más dicha gana; si no, responde el otro y gana la respuesta más alta.
 //   2. El que gana el cara a cara elige si su equipo juega o pasa.
 //   3. El equipo que juega responde por turnos hasta completar el tablero o sumar 3 errores.
@@ -122,6 +124,9 @@ export default {
     const rondas = selector('cfg-rondas', 'Rondas', [[3, '3'], [4, '4'], [5, '5'], [6, '6'], [0, 'Todas las del banco']], 5);
     const dobleUltima = h('input', { type: 'checkbox', id: 'cfg-doble', checked: true });
     const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá algo que no puede faltar en una fiesta' });
+    const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
+      ['fisico', 'Timbre físico y respuestas en voz alta (las marcás vos en el panel)'],
+      ['celular', 'Pulsador y respuestas en el celular']], 'fisico');
     const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 20);
     const checks = checksEquipos(sala);
     const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el, h('label', { class: 'check' }, dobleUltima, 'La última ronda vale doble'));
@@ -131,14 +136,14 @@ export default {
     const selFuente = fuente.el.querySelector('select');
     selFuente.addEventListener('change', () => { zonaBanco.hidden = selFuente.value !== 'banco'; zonaCurso.hidden = selFuente.value !== 'curso'; });
     return {
-      el: h('div', { class: 'pila' }, fuente.el, zonaBanco, zonaCurso, seg.el,
+      el: h('div', { class: 'pila' }, fuente.el, zonaBanco, zonaCurso, pulsador.el, seg.el,
         h('fieldset', { class: 'pila-s' }, h('legend', { class: 'etq' }, 'Equipos que juegan'),
           h('div', { class: 'fila' }, checks.map(({ e, input }) => h('label', { class: 'check' }, input, pildoraEquipo(e))))),
         h('p', { class: 'muted chico' }, `Cada ronda se enfrentan dos equipos, rotando. Cara a cara con pulsador, el ganador elige si juega o pasa, y con ${STRIKES} errores el otro equipo puede robar el pozo.`)),
       leer: () => {
         const equipos = checks.filter((c) => c.input.checked).map((c) => c.e.id);
         if (!equipos.length) { toast('Elegí al menos un equipo', 'error'); return null; }
-        const base = { fuente: fuente.valor(), seg: Number(seg.valor()), equipos };
+        const base = { fuente: fuente.valor(), seg: Number(seg.valor()), equipos, voz: pulsador.valor() === 'fisico' };
         if (base.fuente === 'curso') {
           const q = pregunta.value.trim();
           if (!q) { toast('Escribí la pregunta', 'error'); pregunta.focus(); return null; }
@@ -154,7 +159,7 @@ export default {
   async iniciar(sala, cfg) {
     const id = idAzar();
     const orden = mezclar(cfg.equipos);
-    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, paso: 0, giro: {}, doble: !!cfg.doble, proximo: null };
+    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, voz: !!cfg.voz, paso: 0, giro: {}, doble: !!cfg.doble, proximo: null };
     if (cfg.fuente === 'curso') {
       await sala.guardarPrivado({ juego: id, fuente: 'curso', actual: [] });
       await sala.iniciarJuego({ ...base, titulo: 'Encuesta en vivo', total: 0, fase: 'encuesta', ronda: 1, pregunta: cfg.pregunta, casilleros: 0, reveladas: {}, strikes: 0, pozo: 0, mult: 1 }, id);
@@ -390,7 +395,7 @@ export default {
     // Lo que llega de los celulares: pulsador, respuestas y «jugamos / pasamos».
     function procesarRespuestas() {
       const j = sala.juego;
-      if (!privado || !activa(j) || procesado === j.paso) return;
+      if (!privado || !activa(j) || j.voz || procesado === j.paso) return;
       const rs = [...sala.respuestasJuego().entries()].map(([uid, r]) => ({ uid, ...r }))
         .filter((x) => x.paso === j.paso).sort((a, b) => a.t - b.t);
       const de = (eid) => j.duelo?.reps?.[eid]?.uid;
@@ -500,8 +505,8 @@ export default {
             frente(sala, j),
             pulso
               ? h('div', { class: 'fila entre' }, h('span', null, 'Responde ', h('b', null, rep?.nombre || 'alguien'), ' de ', pildoraEquipo(eq)), j.terminaEn ? reloj : null)
-              : h('div', { class: 'pila-s' }, h('p', { class: 'muted' }, 'Esperando el pulsador de los celulares. Si alguno no anda, marcalo vos:'),
-                h('div', { class: 'fila' }, j.par.map((e) => h('button', { class: 'btn sec', onclick: () => pulsar(e) }, `Pulsó ${sala.equipo(e)?.nombre}`)))),
+              : h('div', { class: 'pila-s' }, h('p', { class: 'muted' }, j.voz ? 'Leé la pregunta. ¿Quién tocó el timbre primero?' : 'Esperando el pulsador de los celulares. Si alguno no anda, marcalo vos:'),
+                h('div', { class: 'fila' }, j.par.map((e) => h('button', { class: j.voz ? 'btn' : 'btn sec', onclick: () => pulsar(e) }, `${j.voz ? 'Tocó' : 'Pulsó'} ${sala.equipo(e)?.nombre}`)))),
             ultimo,
             lista(!!pulso),
             pulso && h('button', { class: 'btn peligro', onclick: () => jugar({ error: true }) }, '✗ No está en el tablero'),
@@ -514,7 +519,7 @@ export default {
           const otro = sala.equipo(rival(j, j.turno));
           montar(el, etiqueta, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
             h('p', { class: 'grande' }, `${eq?.nombre} ganó el cara a cara. ¿Juegan o pasan?`),
-            h('p', { class: 'muted' }, `Lo elige ${j.duelo?.reps?.[j.turno]?.nombre || 'el equipo'} desde el celular, o tocalo vos.`),
+            h('p', { class: 'muted' }, j.voz ? `Que lo diga ${j.duelo?.reps?.[j.turno]?.nombre || 'el equipo'} y tocá lo que elijan.` : `Lo elige ${j.duelo?.reps?.[j.turno]?.nombre || 'el equipo'} desde el celular, o tocalo vos.`),
             h('div', { class: 'fila' },
               h('button', { class: 'btn', onclick: () => elegir(true) }, `Juega ${eq?.nombre}`),
               h('button', { class: 'btn sec', onclick: () => elegir(false) }, `Pasan: juega ${otro?.nombre}`)),
@@ -597,6 +602,34 @@ export default {
             g && h('p', null, `+${j.pozo * (j.mult || 1)} puntos`)), tablero(j));
           return;
         }
+        if (j.voz) {
+          // Timbre físico: el celular solo acompaña; todo se dice en voz alta.
+          const yo = sala.uid;
+          let titulo = '', sub = j.pregunta;
+          if (j.fase === 'duelo') {
+            const rep = j.duelo?.reps?.[mio];
+            const r = j.duelo.primero && j.duelo.reps[j.turno];
+            if (r) titulo = r.uid === yo ? '¡Decí tu respuesta en voz alta!' : `Responde ${r.nombre} (${eq?.nombre})`;
+            else if (rep?.uid === yo) { titulo = '¡Pasá al frente, al timbre!'; sub = 'El primero que toca el timbre dice la respuesta en voz alta.'; }
+            else {
+              titulo = `Cara a cara: ${j.par.map((e) => sala.equipo(e)?.nombre).join(' vs ')}`;
+              if (j.par.includes(mio)) sub = `Pasa al frente ${rep?.nombre || 'alguien de tu equipo'}.`;
+            }
+          } else if (j.fase === 'elegir') {
+            titulo = j.duelo?.reps?.[j.turno]?.uid === yo ? '¡Ganaste! Decí si juegan o pasan' : `${eq?.nombre} ganó el cara a cara`;
+            sub = '¿Juegan o pasan? Se decide en voz alta.';
+          } else if (j.turno !== mio) {
+            titulo = j.fase === 'robo' ? `${eq?.nombre} intenta robar el pozo` : `Juega ${eq?.nombre}`;
+          } else if (j.fase === 'robo') {
+            titulo = '¡Pueden robar el pozo!'; sub = 'Pónganse de acuerdo y digan una sola respuesta en voz alta.';
+          } else if (j.responde?.uid === yo) {
+            titulo = '¡Te toca! Decí tu respuesta en voz alta'; vibrar(60);
+          } else {
+            titulo = `Le toca responder a ${j.responde?.nombre || 'tu equipo'}`; sub = '¡Ayudalo! Pero responde solo él.';
+          }
+          montar(el, ultimo, esperando(titulo, sub), resumen, tablero(j));
+          return;
+        }
         if (j.fase === 'duelo') {
           const rep = j.duelo?.reps?.[mio];
           const soyRep = rep?.uid === sala.uid;
@@ -677,7 +710,7 @@ export default {
         if (j.fase === 'duelo') {
           const rep = j.duelo.primero && j.duelo.reps[j.turno];
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Cara a cara'),
-            h('div', { class: 'tv-sub centro' }, rep ? `Responde ${rep.nombre}` : '¡Al pulsador!'), conReloj ? reloj : null);
+            h('div', { class: 'tv-sub centro' }, rep ? `Responde ${rep.nombre}` : j.voz ? '¡Al timbre!' : '¡Al pulsador!'), conReloj ? reloj : null);
         } else if (j.fase === 'elegir') {
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Ganó el cara a cara'), pildoraEquipo(eq),
             h('div', { class: 'tv-sub centro' }, '¿Juegan o pasan?'));

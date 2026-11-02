@@ -49,7 +49,7 @@ las tuyas. Sirve para los momentos que pintan.
 1. *Selección*: «Antes de jugar, el sombrero decide los equipos. Miren la tele: van saliendo de a
    uno.» Los que lleguen tarde se suman solos al equipo más chico.
 2. *Los invitados dicen*: «Como en 100 argentinos dicen: hay que adivinar lo que más respondió
-   la gente. Cada ronda juegan dos equipos. Cara a cara: el primero que pulsa responde, y el que
+   la gente. Cada ronda juegan dos equipos. Cara a cara: el primero que toca el timbre responde, y el que
    gana elige si juega o pasa. Tres errores y el otro equipo puede robar. La última vale doble.»
 3. *Mímica*: «Uno del equipo ve la palabra en su celular y la actúa sin hablar. Un minuto para
    adivinar todas las que puedan.»

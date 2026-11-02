@@ -13,7 +13,7 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 | Juego | Qué usa del banco | Cómo se juega |
 |---|---|---|
 | 🎩 **Selección de equipos** | Nada | De a uno, cada invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va. Los equipos quedan parejos. Puede pasar solo, uno tras otro. |
-| 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Dos equipos por ronda: cara a cara con pulsador en el celular, el ganador elige si juega o pasa, tres errores y el otro equipo roba el pozo. La última ronda puede valer doble. Las encuestas salen del banco o de lo que responden los invitados en el momento. |
+| 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Dos equipos por ronda: cara a cara con un timbre físico (o un pulsador en el celular), el ganador elige si juega o pasa, tres errores y el otro equipo roba el pozo. La última ronda puede valer doble. Las encuestas salen del banco o de lo que responden los invitados en el momento. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |

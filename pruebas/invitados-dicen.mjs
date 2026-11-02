@@ -139,6 +139,7 @@ try {
     if (banco) await host.locator('#cfg-banco').selectOption({ label: banco });
     await host.locator('#cfg-rondas').selectOption('3');
     await host.locator('#cfg-seg').selectOption('0');
+    await host.locator('#cfg-pulsador').selectOption('celular');
   });
 
   // ── Ronda 1: todo desde los celulares ──
@@ -218,6 +219,33 @@ try {
   await host.getByRole('button', { name: 'Ver resultados' }).click();
   await tv.getByText('¡Terminó el juego!').waitFor();
   await medir('Rondas 2 y 3 (panel)');
+  await terminarJuego(host);
+
+  // ── Con timbre físico: los celulares no muestran botones y todo se marca desde el panel ──
+  await elegirJuego(host, 'Los invitados dicen', async () => {
+    await host.locator('#cfg-rondas').selectOption('3');
+    await host.locator('#cfg-seg').selectOption('0');
+    afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'el timbre físico viene elegido');
+  });
+  await tv.getByText('¡Al timbre!').waitFor({ timeout: 15000 });
+  await captura(tv, 'f-al-timbre');
+  await esperar(1000);
+  let alFrente = null;
+  for (const p of invitados) {
+    afirmar(!(await p.locator('.pulsador, #encuesta-juego').count()), 'con timbre físico el celular no muestra pulsador ni respuesta');
+    if (await p.getByText('¡Pasá al frente, al timbre!').count()) alFrente = p;
+  }
+  afirmar(alFrente, 'el representante ve que pasa al frente');
+  await captura(alFrente, 'f-celular-al-frente');
+  await host.getByRole('button', { name: /^Tocó / }).first().click();
+  await host.getByRole('button', { name: 'Acertó' }).first().click();
+  await host.getByRole('button', { name: /^Juega / }).click();
+  const habla = await celularCon(invitados, 'text=¡Te toca! Decí tu respuesta en voz alta');
+  await captura(habla, 'f-celular-te-toca');
+  for (let k = 0; k < 3; k++) { await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).click(); await esperar(700); }
+  await host.getByRole('button', { name: 'Acertó' }).first().click();
+  await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 });
+  paso('Timbre físico: ' + await host.locator('p.grande').first().textContent());
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
