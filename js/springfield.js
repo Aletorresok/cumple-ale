@@ -71,5 +71,9 @@ export const BANCO_SPRINGFIELD = {
       { texto: 'Multiplícate por cero', puntos: 24 }, { texto: "D'oh / Doh / Dou", puntos: 20 }, { texto: 'Ay, caramba / ay caramba', puntos: 16 },
       { texto: 'Excelente', puntos: 12 }, { texto: 'Ja-ja / jaja', puntos: 10 }, { texto: 'Yo no fui', puntos: 8 },
       { texto: 'Mmm… rosquillas / mmm donas', puntos: 6 }, { texto: 'Un contrato es un acuerdo que no se puede romper', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá un invitado famoso de Los Simpson', respuestas: [
+      { texto: 'Michael Jackson', puntos: 18 }, { texto: 'Paul McCartney / McCartney', puntos: 15 }, { texto: 'Stephen Hawking / Hawking', puntos: 13 },
+      { texto: 'Lady Gaga', puntos: 11 }, { texto: 'Mel Gibson', puntos: 10 }, { texto: 'U2 / Bono', puntos: 9 },
+      { texto: 'Aerosmith', puntos: 8 }, { texto: 'Los Ramones / Ramones', puntos: 7 }] },
   ],
 };

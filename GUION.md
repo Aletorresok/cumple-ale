@@ -41,7 +41,7 @@ las tuyas. Sirve para los momentos que pintan.
 | # | Juego | Tiempo | Configuración | Pieza |
 |---|---|---|---|---|
 | 1 | 🎩 Selección de equipos | 10 min | 4 equipos, «Empezar la ceremonia» | — |
-| 2 | 📊 Los invitados dicen | 15 a 20 min | 5 rondas, del banco | 🧩 al ganador |
+| 2 | 📊 Los invitados dicen | 20 min | 4 rondas en llaves: dos cruces, perdedores entre sí y final doble | 🧩 al ganador |
 | 3 | 🎭 Mímica por equipos | 15 min | 1 minuto por turno, 2 vueltas | 🧩 al ganador |
 
 **Qué decir**

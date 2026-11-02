@@ -224,11 +224,11 @@ try {
   await medir('Rondas 2 y 3 (panel)');
   await terminarJuego(host);
 
-  // ── Con globos: los celulares no muestran botones y todo se marca desde el panel ──
+  // ── Con globos y en llaves: los celulares no muestran botones y todo se marca desde el panel ──
   await elegirJuego(host, 'Los invitados dicen', async () => {
-    await host.locator('#cfg-rondas').selectOption('3');
     await host.locator('#cfg-seg').selectOption('0');
     afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'los globos vienen elegidos');
+    afirmar(await host.locator('#cfg-rondas').inputValue() === 'llaves', 'las llaves vienen elegidas');
   });
   await tv.getByText('¡A explotar el globo!').waitFor({ timeout: 15000 });
   await captura(tv, 'f-a-explotar');
@@ -240,15 +240,33 @@ try {
   }
   afirmar(alFrente, 'el representante ve que pasa al frente');
   await captura(alFrente, 'f-celular-al-frente');
-  await host.getByRole('button', { name: /^Explotó / }).first().click();
-  await host.getByRole('button', { name: 'Acertó' }).first().click();
-  await host.getByRole('button', { name: /^Juega / }).click();
-  const habla = await celularCon(invitados, 'text=¡Te toca! Decí tu respuesta en voz alta');
-  await captura(habla, 'f-celular-te-toca');
-  for (let k = 0; k < 3; k++) { await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).click(); await esperar(700); }
-  await host.getByRole('button', { name: 'Acertó' }).first().click();
-  await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 });
-  paso('Con globos: ' + await host.locator('p.grande').first().textContent());
+  const llaves = [];
+  for (let r = 1; r <= 4; r++) {
+    await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 10000 });
+    const par = await host.locator('.duelo .pildora').allTextContents();
+    await host.getByRole('button', { name: /^Explotó / }).first().click();
+    await host.getByRole('button', { name: 'Acertó' }).first().click();
+    await host.getByRole('button', { name: /^Juega / }).click();
+    if (r === 1) {
+      const habla = await celularCon(invitados, 'text=¡Te toca! Decí tu respuesta en voz alta');
+      await captura(habla, 'f-celular-te-toca');
+    }
+    await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).waitFor();
+    while (!(await host.getByText(/se lleva \d+ puntos/).count()) && await host.getByRole('button', { name: 'Acertó' }).count()) {
+      await host.getByRole('button', { name: 'Acertó' }).first().click();
+      await esperar(700);
+    }
+    const texto = await host.locator('p.grande').first().textContent();
+    const gano = par.find((e) => texto.startsWith(e));
+    llaves.push({ par, gano, perdio: par.find((e) => e !== gano) });
+    if (r === 4) await captura(tv, 'f-final');
+    if (r < 4) await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+  }
+  const mismos = (a, b) => [...a].sort().join() === [...b].sort().join();
+  afirmar(mismos(llaves[2].par, [llaves[0].perdio, llaves[1].perdio]), `la ronda 3 es entre los perdedores (${llaves[2].par})`);
+  afirmar(mismos(llaves[3].par, [llaves[0].gano, llaves[1].gano]), `la final es entre los ganadores (${llaves[3].par})`);
+  afirmar(await host.getByText('(doble)').count(), 'la final vale doble');
+  paso('Con globos y en llaves: ' + llaves.map((l, i) => `${i + 1}) ${l.par.join(' vs ')} → ${l.gano}`).join(' · '));
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);

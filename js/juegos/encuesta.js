@@ -16,7 +16,23 @@ import { contarPalabras, ofensiva } from './nube.js';
 const MAX_CASILLEROS = 8;
 const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
-  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo'];
+  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial'];
+
+// Con llaves (4 equipos): dos cruces, después los perdedores entre sí y la final.
+const ETAPAS = ['Primer cruce', 'Segundo cruce', 'Por el tercer puesto', 'Final'];
+const etapa = (j, ronda = j.ronda) => (j.llaves && ETAPAS[ronda - 1] ? ' · ' + ETAPAS[ronda - 1] : '');
+
+// Qué dos equipos se enfrentan en una ronda (si quien organiza no eligió otros).
+function parDe(j, ronda) {
+  if (j.proximo?.length) return j.proximo;
+  const hist = j.historial || [];
+  if (j.llaves && ronda > 2 && hist.length >= 2) {
+    const ganadores = hist.slice(0, 2).map((r) => r.gano);
+    const perdedores = hist.slice(0, 2).map((r) => (r.par || []).find((e) => e !== r.gano));
+    return (ronda === 3 ? perdedores : ganadores).filter(Boolean);
+  }
+  return String(j.pares?.[(ronda - 1) % (j.pares?.length || 1)] || '').split('|').filter(Boolean);
+}
 
 const visible = (t) => String(t).split('/')[0].trim();
 const enJuego = (j) => j.fase === 'jugando' || j.fase === 'robo';
@@ -63,7 +79,7 @@ function nuevoDuelo(sala, j, intento = 1) {
 
 // Arma una ronda nueva: elige los dos equipos y arranca el cara a cara.
 function armarRonda(sala, j, ronda, pregunta, respuestas) {
-  const par = j.proximo?.length ? j.proximo : String(j.pares?.[(ronda - 1) % (j.pares?.length || 1)] || '').split('|').filter(Boolean);
+  const par = parDe(j, ronda);
   const r = {
     ronda, pregunta, casilleros: respuestas.length, reveladas: {}, strikes: 0, pozo: 0, paso: (j.paso || 0) + 1,
     ultimo: null, gano: null, todas: null, par, proximo: null, giro: { ...(j.giro || {}) },
@@ -121,7 +137,7 @@ export default {
   configurar({ bancos, sala }) {
     const fuente = selector('cfg-fuente', 'Preguntas', [['banco', 'De un banco (encuestas ya cargadas)'], ['curso', 'Encuesta en vivo: primero responden todos']], 'banco');
     const b = selectorBanco(bancos, 'encuesta', 1);
-    const rondas = selector('cfg-rondas', 'Rondas', [[3, '3'], [4, '4'], [5, '5'], [6, '6'], [0, 'Todas las del banco']], 5);
+    const rondas = selector('cfg-rondas', 'Rondas', [['llaves', '4 rondas en llaves: dos cruces, perdedores entre sí y final (4 equipos)'], [3, '3, rotando'], [4, '4, rotando'], [5, '5, rotando'], [6, '6, rotando'], [0, 'Todas las del banco, rotando']], 'llaves');
     const dobleUltima = h('input', { type: 'checkbox', id: 'cfg-doble', checked: true });
     const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá algo que no puede faltar en una fiesta' });
     const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
@@ -151,7 +167,9 @@ export default {
         }
         const banco = b.banco();
         if (!banco) return null;
-        return { ...base, banco, rondas: Number(rondas.valor()), doble: dobleUltima.checked };
+        const llaves = rondas.valor() === 'llaves';
+        if (llaves && equipos.length !== 4) { toast('Las llaves son para 4 equipos: elegí otra cantidad de rondas', 'error'); return null; }
+        return { ...base, banco, llaves, rondas: llaves ? 4 : Number(rondas.valor()), doble: dobleUltima.checked };
       },
     };
   },
@@ -159,7 +177,7 @@ export default {
   async iniciar(sala, cfg) {
     const id = idAzar();
     const orden = mezclar(cfg.equipos);
-    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, voz: !!cfg.voz, paso: 0, giro: {}, doble: !!cfg.doble, proximo: null };
+    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, voz: !!cfg.voz, paso: 0, giro: {}, doble: !!cfg.doble, llaves: !!cfg.llaves, historial: [], proximo: null };
     if (cfg.fuente === 'curso') {
       await sala.guardarPrivado({ juego: id, fuente: 'curso', actual: [] });
       await sala.iniciarJuego({ ...base, titulo: 'Encuesta en vivo', total: 0, fase: 'encuesta', ronda: 1, pregunta: cfg.pregunta, casilleros: 0, reveladas: {}, strikes: 0, pozo: 0, mult: 1 }, id);
@@ -198,6 +216,7 @@ export default {
 
     async function cerrarRonda(j) {
       j.fase = 'fin_ronda';
+      j.historial = [...(j.historial || []), { ronda: j.ronda, par: j.par || [], gano: j.gano || null }];
       j.todas = privado.actual.map((r) => ({ texto: visible(r.texto), puntos: r.puntos }));
       j.terminaEn = 0;
       j.responde = null;
@@ -433,7 +452,7 @@ export default {
     function elegirProximo(j) {
       if ((j.orden || []).length < 3) return null;
       const r = j.ronda + 1;
-      const sugerido = j.proximo?.length ? j.proximo : String(j.pares[(r - 1) % j.pares.length]).split('|');
+      const sugerido = parDe(j, r);
       const sel = (id, valor) => h('select', { class: 'campo', id }, j.orden.map((e) => h('option', { value: e, selected: e === valor }, sala.equipo(e)?.nombre || e)));
       const a = sel('prox-a', sugerido[0]), b = sel('prox-b', sugerido[1]);
       const cambio = () => {
@@ -442,7 +461,7 @@ export default {
       };
       a.addEventListener('change', cambio);
       b.addEventListener('change', cambio);
-      return h('div', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Próximo cara a cara'), h('div', { class: 'fila' }, a, h('span', null, 'vs'), b));
+      return h('div', { class: 'pila-s' }, h('span', { class: 'etq' }, `Próximo cara a cara${etapa(j, r)}`), h('div', { class: 'fila' }, a, h('span', null, 'vs'), b));
     }
 
     const v = vista({
@@ -480,7 +499,7 @@ export default {
             botones && !rev && h('button', { class: 'btn sec chico', onclick: () => jugar({ idx: i }) }, 'Acertó'));
         }));
         const etiqueta = h('div', { class: 'fila entre' },
-          h('span', { class: 'etiqueta' }, `Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''} · pozo ${j.pozo}`),
+          h('span', { class: 'etiqueta' }, `Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''}${etapa(j)} · pozo ${j.pozo}`),
           h('button', { class: 'btn-link', onclick: alternarDoble }, j.mult > 1 ? '×2 activado (sacar)' : 'Hacer que valga doble'));
         if (j.fase === 'fin_ronda') {
           const ganador = sala.equipo(j.gano);
@@ -691,7 +710,7 @@ export default {
           return;
         }
         const cabecera = h('div', { class: 'tv-cabecera' },
-          h('span', { class: 'tv-etiqueta' }, `Los invitados dicen · Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''}${j.fase === 'encuesta' ? ' · Encuesta' : ''}`),
+          h('span', { class: 'tv-etiqueta' }, `Los invitados dicen · Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''}${etapa(j)}${j.fase === 'encuesta' ? ' · Encuesta' : ''}`),
           doble(j));
         if (j.fase === 'encuesta') {
           contador = h('div', { class: 'tv-contador enorme' }, '0');
