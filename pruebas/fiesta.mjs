@@ -111,7 +111,7 @@ try {
   await host.getByText('Springfield · Los Simpson').waitFor();
   await host.getByRole('button', { name: '⚖️ Agregar los escapes de Lionel Hutz' }).click();
   await host.getByText('Springfield · Escapes de Lionel Hutz').waitFor();
-  await host.getByRole('button', { name: '⚡ Trivia · Bien argentina' }).click();
+  await host.getByRole('button', { name: '⚡ Trivia · Springfield', exact: true }).click();
   await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
   await host.getByRole('button', { name: 'Abrir una sala' }).click();
@@ -214,10 +214,12 @@ try {
 
   // ── Trivia ──
   await elegirJuego(host, 'Trivia por equipos', async () => {
-    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Bien argentina — 16 preguntas' });
+    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Springfield — 31 preguntas' });
     await host.locator('#cfg-cantidad').selectOption('5');
+    await host.locator('#cfg-modo').selectOption('castigo');
   });
   let salioContrato = false;
+  let penados = 0;
   for (let n = 0; n < 5; n++) {
     await invitados[0].locator('.opcion').first().waitFor({ timeout: 15000 });
     const pregunta = await tv.locator('.tv-pregunta').textContent();
@@ -273,12 +275,15 @@ try {
     }
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
     await tv.locator('.tv-opcion.correcta').waitFor();
+    penados += await tv.locator('.tv-prenda').count();
+    if (n === 0) await invitados[0].locator('.resultado').waitFor();
     if (n === 0) await captura(tv, '10a-trivia');
     if (esContrato) await captura(tv, '10e-trivia-contrato-revelada');
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).click();
   }
+  afirmar(penados > 0, `en el modo con castigo algún equipo pagó prenda (${penados})`);
   afirmar(salioContrato, 'la pregunta del contrato sale siempre, aunque se sorteen 5');
-  paso('Trivia: cinco preguntas respondidas por todos, con la del contrato');
+  paso(`Trivia con castigo: cinco preguntas, ${penados} prendas repartidas, con la del contrato`);
   await terminarJuego(host);
   await medir('Trivia (cinco preguntas)');
 

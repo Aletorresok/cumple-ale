@@ -26,7 +26,7 @@
 - Plan B en papel: el botón 🖨 de cada banco imprime todo para jugar sin internet.
 
 - Temática Springfield para toda la noche: equipos, colores, tipografía, bienvenida y banco Simpson.
-- Trivia «Bien argentina» con la pregunta del contrato, que sale siempre.
+- Trivia «Springfield» (cultura Simpson) con la pregunta del contrato, que sale siempre. Modo «Con castigo»: cada integrante vota, la opción más votada es la del equipo (empata el capitán) y el que se equivoca paga una prenda. Fuera del menú: apuesta, nube de deseos y ruleta (30/10).
 - Escapes de Lionel Hutz: modo «Cada equipo su escape», cuatro expedientes de 6 candados (uno
   por equipo, con letras de una clave, información repartida y una tarjeta física) y La
   sentencia cooperativa con las piezas. Probado con 30 invitados.

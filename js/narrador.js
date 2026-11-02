@@ -31,9 +31,6 @@ const LINEAS = {
     inicio: ['Y ahora, el podio. Redoble de tambores.'],
     fin: ['Eso fue todo. ¡Felicitaciones a los campeones y gracias por venir!'],
   },
-  ruleta: { inicio: ['Gira la ruleta. Ojalá me toque a mí… o que no.'] },
-  apuesta: { inicio: ['Hora de apostar. En lo de Moe nos conocen.'] },
-  nube: { inicio: ['Escriban lo que quieran. Yo escribiría «donas».'] },
 };
 const AL_AZAR = (l) => l[Math.floor(Math.random() * l.length)];
 
