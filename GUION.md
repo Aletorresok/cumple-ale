@@ -3,9 +3,7 @@
 Borrador para ajustar después del ensayo. Son unas **dos horas de juegos** repartidas en dos
 bloques, con la comida en el medio y la torta al final. Imprimilo y tenelo al lado de la compu.
 
-Código final del escape: **0811** (4 piezas). En el panel de la sala tocá «Usar el del escape
-«La sentencia»». Después de cada uno de los cuatro juegos con 🧩 (Los invitados dicen, Mímica, Trivia y
-Escapes de Hutz) le das una pieza al equipo ganador con **🧩 Dar pieza**.
+Los puntos de todos los juegos se suman al marcador de cada equipo y se revelan en el podio.
 
 ## Antes de empezar
 
@@ -16,9 +14,9 @@ Escapes de Hutz) le das una pieza al equipo ganador con **🧩 Dar pieza**.
 - Ojo con la hora de abrir la sala: dura 12 horas.
 - Si alguien no tiene celular o batería, juega con el de alguien de su equipo.
 - Probá el sonido de la tele (botón «🔈 Activar sonido») y la botonera: el navegador solo deja sonar después de un toque.
-- Imprimí las tarjetas de pistas físicas de los escapes de Lionel Hutz (🖨 en la pantalla de
-  inicio del escape) y escondelas: una por expediente. Si no se imprimen, la segunda pista de ese
-  candado trae el dato.
+- Para Los invitados dicen: 12 a 15 globos inflados y una mesita frente a la tele.
+- Si mergeaste «Dibujá en Springfield», volvé a publicar `firestore.rules` en Firebase: sin eso el
+  dibujo no llega a la tele.
 
 ## Intro y botonera
 
@@ -36,52 +34,48 @@ Durante toda la noche, la **botonera de frases** del panel hace aparecer una fra
 tele y la dice en voz alta («¡Ay, caramba!», «¡Objeción, señoría!», «¡Brindis!»…). Podés agregar
 las tuyas. Sirve para los momentos que pintan.
 
-## Bloque 1 · unos 60 minutos
+## Bloque 1 · unos 50 minutos
 
-| # | Juego | Tiempo | Configuración | Pieza |
-|---|---|---|---|---|
-| 1 | 🎩 Selección de equipos | 10 min | 4 equipos, «Empezar la ceremonia» | — |
-| 2 | 📊 Los invitados dicen | 15 a 20 min | 5 rondas, del banco | 🧩 al ganador |
-| 3 | 🎭 Mímica por equipos | 15 min | 1 minuto por turno, 2 vueltas | 🧩 al ganador |
+| # | Juego | Tiempo | Configuración |
+|---|---|---|---|
+| 1 | 🎩 Selección de equipos | 10 min | 4 equipos, «Empezar la ceremonia» |
+| 2 | 📊 Los invitados dicen | 20 min | 4 rondas en llaves: dos cruces, perdedores entre sí y final doble. Globos |
+| 3 | ✏️ Dibujá en Springfield | 15 a 18 min | 1 minuto y medio por turno, 2 vueltas |
 
 **Qué decir**
 
 1. *Selección*: «Antes de jugar, el sombrero decide los equipos. Miren la tele: van saliendo de a
    uno.» Los que lleguen tarde se suman solos al equipo más chico.
 2. *Los invitados dicen*: «Como en 100 argentinos dicen: hay que adivinar lo que más respondió
-   la gente. Tres errores y otro equipo puede robar.»
-3. *Mímica*: «Uno del equipo ve la palabra en su celular y la actúa sin hablar. Un minuto para
-   adivinar todas las que puedan.»
-
-Antes de la pausa: «Cada equipo que ganó tiene una pieza de un código. Guárdenla: la van a
-necesitar al final de la noche.»
+   la gente. Cada ronda juegan dos equipos. Cara a cara: el primero que explota su globo responde, y el que
+   gana elige si juega o pasa. Tres errores y el otro equipo puede robar. La final vale doble.»
+3. *Dibujá en Springfield*: «Uno del equipo dibuja en el celular y el dibujo sale en la tele. Su
+   equipo grita hasta adivinar. Nada de letras ni números.»
 
 ## Pausa · comida
 
 En el panel, «📺 Poner el noticiero»: la tele pasa el *Noticiero de Springfield* con lo que va de
-la noche (quién lidera, las piezas, un testigo al azar). Los avisos («Las pizzas salen en 5
-minutos») se mandan desde el mismo panel. Al volver, «Volver al QR en la tele».
+la noche (quién lidera, un testigo al azar). Los avisos («Las pizzas salen en 5 minutos») se
+mandan desde el mismo panel. Al volver, «Volver al QR en la tele».
 
 ## Bloque 2 · unos 70 minutos
 
-| # | Juego | Tiempo | Configuración | Pieza |
-|---|---|---|---|---|
-| 4 | ⚡ Trivia | 10 min | 10 preguntas, 20 segundos cada una | 🧩 al ganador |
-| 5 | ⚖️ Escapes de Lionel Hutz | 20 a 25 min | «Cada equipo su escape», banco Hutz | 🧩 al primero en salir |
-| 6 | 🔐 La sentencia | 15 min | Modo cooperativo, escape «La sentencia» | — |
-| 7 | 🎂 Momento torta | 10 min | Luces apagadas, «Soplar» cuando sopla Ale | — |
-| 8 | 🏆 Podio y sentencias | 5 min | Revelar del último al campeón; cada uno ve su sentencia | — |
+| # | Juego | Tiempo | Configuración |
+|---|---|---|---|
+| 4 | ⚡ Trivia Springfield | 20 min | Modo «Con castigo», 8 preguntas, 20 segundos |
+| 5 | 🧉 Frases en argentino | 10 a 15 min | 10 frases, 30 segundos |
+| 6 | 📼 ¿Te acordás de la escena? | 15 min | 3 escenas, 1 minuto y medio cada una |
+| 7 | 🎂 Momento torta | 10 min | Luces apagadas, «Soplar» cuando sopla Ale |
+| 8 | 🏆 Podio y sentencias | 5 min | Revelar del último al campeón; cada uno ve su sentencia |
 
 **Qué decir**
 
-4. *Trivia*: «Pregunta en la tele, todos responden desde el celular. Suma más el equipo en el
-   que más acertaron.»
-5. *Escapes de Lionel Hutz*: leer la carta documento de la tele. «Cada equipo tiene su propio
-   expediente: Planta Nuclear, Taberna de Moe, Escuela Primaria y Kwik-E-Mart. Cada candado
-   abierto les da una letra; con las cinco letras cierran el expediente. Hay datos repartidos
-   entre los celulares y uno escondido en la fiesta.» Gana el primero en salir.
-6. *La sentencia*: «El juez Snyder va a dictar sentencia. Abran los candados entre todos. El
-   último se abre con las piezas que ganaron: júntense con los otros equipos.»
+4. *Trivia*: «Hablen en el equipo y voten desde el celular: gana la opción más votada. El equipo
+   que se equivoca paga una prenda.» La del contrato sale siempre.
+5. *Frases en argentino*: «La tele muestra una frase de Los Simpson dicha en argentino. Adivinen
+   cuál es la original.»
+6. *¿Te acordás de la escena?*: «Miren la escena en la tele y escriban en el celular todo lo que
+   se acuerden. Suma lo de todo el equipo.» Antes de revelar, revisá en el panel lo que escribieron.
 7. *Torta*: «¡Arriba los celulares! Son las velitas. Cuando Ale sople, se apagan todas.» Apagar
    las luces, cantar y tocar «💨 ¡Soplar!» justo cuando sopla. Se puede repetir para la foto.
 8. *Podio*: revelar despacio, del último al primero, y dejar el momento para el campeón.

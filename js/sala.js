@@ -92,7 +92,7 @@ export async function existeSala(codigo) {
 export async function cerrarSala(codigo) {
   // Primero se avisa a todos, así los alumnos ven «La sala se cerró» y no «te sacaron».
   await updateDoc(refSala(codigo), { cerrada: true }).catch(() => {});
-  const subs = ['jugadores', 'respuestas', 'secretos', 'privado', 'recursos'];
+  const subs = ['jugadores', 'respuestas', 'secretos', 'privado', 'recursos', 'dibujos'];
   for (const s of subs) {
     const snap = await getDocs(collection(db, 'salas', codigo, s));
     for (let i = 0; i < snap.docs.length; i += 400) {
@@ -382,6 +382,11 @@ export class Sala {
   }
 
   // ── Acciones del alumno ──
+  // Dibujo en vivo (Dibujá en Springfield): quien dibuja escribe sus trazos en su propio documento.
+  dibujar(datos) {
+    return setDoc(doc(db, 'salas', this.codigo, 'dibujos', this.uid), { ...datos, juego: this.juego?.id || null, t: Date.now() });
+  }
+
   responder(datos) {
     return setDoc(doc(db, 'salas', this.codigo, 'respuestas', this.uid), {
       ...datos,

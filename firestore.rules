@@ -6,7 +6,7 @@ rules_version = '2';
 // Resumen:
 // - Quien organiza (cuenta de Google): ve y edita solo sus bancos y sus salas.
 // - Invitados y pantalla grande (sesión anónima): leen la sala; cada invitado escribe
-//   solo su nombre y sus respuestas; ve solo su propia palabra secreta.
+//   solo su nombre, sus respuestas y su dibujo; ve solo su propia palabra secreta.
 // - Las respuestas correctas del juego viven en «privado» y solo las ve quien organiza.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -65,6 +65,16 @@ service cloud.firestore {
                               && (!('palabras' in request.resource.data)
                                   || (request.resource.data.palabras is list && request.resource.data.palabras.size() <= 3));
         allow delete: if esDuenio();
+      }
+
+      // Dibujo en vivo: quien dibuja manda sus trazos y la pantalla grande los muestra.
+      match /dibujos/{uid} {
+        allow read: if conSesion();
+        allow create, update: if conSesion() && request.auth.uid == uid && vigente()
+                              && request.resource.data.keys().hasOnly(['juego', 'ronda', 'n', 'trazos', 't'])
+                              && request.resource.data.trazos is list
+                              && request.resource.data.trazos.size() <= 500;
+        allow delete: if conSesion() && (request.auth.uid == uid || esDuenio());
       }
 
       match /secretos/{uid} {

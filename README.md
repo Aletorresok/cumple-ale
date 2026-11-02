@@ -13,9 +13,11 @@ donde vienen la ceremonia de selección, la mímica y el cierre con podio.
 | Juego | Qué usa del banco | Cómo se juega |
 |---|---|---|
 | 🎩 **Selección de equipos** | Nada | De a uno, cada invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va. Los equipos quedan parejos. Puede pasar solo, uno tras otro. |
-| 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Las encuestas salen del banco o de lo que responden los invitados en el momento. Tres errores y otro equipo puede robar el pozo. |
+| 📊 **Los invitados dicen** | Encuestas (o nada) | Al estilo de 100 argentinos dicen. Dos equipos por ronda: cara a cara explotando un globo (o con un pulsador en el celular), el ganador elige si juega o pasa, tres errores y el otro equipo roba el pozo. La última ronda puede valer doble. Las encuestas salen del banco o de lo que responden los invitados en el momento. |
+| ✏️ **Dibujá en Springfield** | Para dibujar (o las 40 de Springfield que vienen con el juego) | Estilo Pictionary: alguien del equipo dibuja con el dedo en su celular y el dibujo sale en vivo en la tele; su equipo grita. Colores, goma, deshacer y borrar. Cada acierto suma 10. Modo «adivinan todos»: el primer equipo que acierta suma 10 y el de quien dibuja, 5. |
 | 🎭 **Mímica por equipos** | Palabras de mímica | Alguien del equipo ve la palabra en su celular y la actúa; marca «¡Adivinaron!» o «Pasar». Cada acierto suma 10. |
 | 📼 **¿Te acordás de la escena?** | Nada (escenas en `js/escenas.js`) | La tele presenta una escena clásica de Los Simpson (los hijos de Cleto, los octillizos de Apu…) y cada equipo escribe desde los celulares todo lo que se acuerde. Se suma lo de todos los integrantes, la app reconoce los nombres aunque tengan errores de tipeo y quien organiza puede aceptar o sacar respuestas a mano antes de revelar. Puntos por puesto (100, 60, 40, 20) o 10 por acierto. |
+| 🧉 **Frases en argentino** | Su propio banco (`js/frases.js`) | La tele muestra una frase famosa de Los Simpson dicha en argentino y los equipos adivinan la original: eligiendo entre 4 opciones en el celular o a los gritos (el panel marca qué equipo la dijo primero). Con 💡 la tele da la pista de quién la dice. |
 | 🔐 **Sala de escape** | Escapes | Candados (números, palabras, flechas o colores) por equipos: en carrera, cada equipo con su propio escape, o todos juntos. |
 | 🏆 **Podio final** | Nada | Revela el ranking del último al campeón, con papelitos. |
 
@@ -39,11 +41,8 @@ pantalla grande da la bienvenida a Springfield, y en «Mis bancos» está el ban
 con trivia, mímica y encuestas de la serie.
 
 **⚡ Trivia: tres temáticas propuestas.** En «Mis bancos» hay un botón para agregar cada una
-(unas 15 preguntas cada una): *Bien argentina* (historia, geografía, fútbol, música), *Cine, tele y
-música* y *Cultura general*. Se pueden editar o combinar, y sumar preguntas sobre Ale.
-
-También quedan disponibles, a revisar: ⚡ Trivia por equipos, 🎲 ¿Cuánto apostás?, ☁️ Nube de
-deseos y 🎯 ¿A quién le toca? (sorteo).
+(unas 15 a 20 preguntas cada una): *Springfield* (cultura Simpson), *Cine, tele y
+música* y *Cultura general*. Con el modo «Con castigo», el equipo que se equivoca paga una prenda. Se pueden editar o combinar, y sumar preguntas sobre Ale.
 
 **🖨 Plan B en papel.** En «Mis bancos», el botón 🖨 de cada banco imprime todo para jugar sin
 internet: tarjetas de mímica para recortar, encuestas con sus
@@ -94,6 +93,7 @@ npm i -D firebase-tools playwright firebase
 npx firebase emulators:start --only auth,firestore --project cumple-ale-7f78e
 python3 -m http.server 5173
 node pruebas/fiesta.mjs 30 capturas      # 30 invitados simulados juegan una noche entera
+node pruebas/dibujo.mjs 12 capturas      # Dibujá en Springfield: el dibujo del celular llega a la tele
 ```
 
 La prueba también corta la red de algunos celulares, recarga otros, y al final muestra cuántas
@@ -122,6 +122,7 @@ js/tv.js                   pantalla grande
 js/juegos/*.js             un archivo por juego (configurar, iniciar, host, alumno, tv)
 firestore.rules            reglas de seguridad de la base de datos
 pruebas/fiesta.mjs         prueba de punta a punta con invitados simulados
+pruebas/frases.mjs         prueba del juego «Frases en argentino»
 ```
 
 Para agregar un juego: crear `js/juegos/mijuego.js` con la misma forma que los demás y sumarlo

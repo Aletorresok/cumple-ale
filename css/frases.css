@@ -1,0 +1,42 @@
+/* Frases en argentino (js/juegos/frases.js). Usa los colores y piezas de estilos.css. */
+
+/* Pantalla grande */
+.fa-tv {
+  position: relative; flex: none; font-family: var(--display); font-size: 2.3em; line-height: 1.15; text-align: center;
+  text-wrap: balance; padding: .7em 1.1em .6em; border-radius: 22px; color: var(--mark-ink);
+  background: var(--mark); box-shadow: 0 .35em 0 rgb(0 0 0 / .35);
+}
+.fa-tv.media { font-size: 1.9em; }
+.fa-tv.larga { font-size: 1.55em; }
+.fa-tv-original.media { font-size: 1.8em; }
+.fa-tv-original.larga { font-size: 1.45em; }
+.fa-tv-argento-chica { font-size: 1.15em; color: var(--tv-muted); text-wrap: balance; }
+.fa-tv-argento-chica::before { content: '🧉 '; }
+.fa-tv-pista { text-align: center; font-size: 1.4em; line-height: 1.2; color: var(--mark); }
+.fa-tv-grito { text-align: center; font-family: var(--display); font-size: 2em; color: var(--tv-tinta); margin-block: auto; animation: frase-latido 1.2s ease-in-out infinite; }
+.fa-tv-opciones .tv-opcion { font-size: 1.15em; }
+.fa-tv-opciones.compacta .tv-opcion { font-size: .95em; min-height: 2.4em; padding: .5em .9em; }
+.fa-cab, .fa-tv-pista, .fa-tv-grito, .fa-tv-revelada, .fa-tv-opciones { flex: none; }
+.fa-tv-revelada { flex: none; text-align: center; display: flex; flex-direction: column; gap: .3em; padding: .6em 1em; border-radius: 18px; background: var(--tv-surface); border: 3px solid var(--ok); }
+.fa-tv-etq { font-family: var(--mono); font-size: .9em; letter-spacing: .08em; text-transform: uppercase; color: var(--tv-muted); }
+.fa-tv-original { font-family: var(--display); font-size: 2.3em; line-height: 1.15; text-wrap: balance; color: var(--tv-tinta); }
+.fa-tv-quien { font-size: 1.3em; color: var(--tv-muted); }
+.fa-tv-ganador { display: flex; justify-content: center; font-size: 1.6em; }
+.fa-tv-ganador .tv-eq { min-width: 40%; }
+@keyframes frase-latido { 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .fa-tv-grito { animation: none; } }
+
+/* Celular */
+.fa-argento-cel {
+  font-family: var(--display); font-size: 1.45rem; line-height: 1.2; text-align: center; text-wrap: balance;
+  padding: 16px; border-radius: 14px; background: var(--mark); color: var(--mark-ink); margin: 0;
+}
+.fa-pista { text-align: center; margin: 0; }
+.fa-original { font-family: var(--display); font-size: 1.35rem; line-height: 1.2; margin: 0; }
+
+/* Panel */
+.fa-host-argento { font-family: var(--display); font-size: 1.25rem; padding: 10px 14px; border-radius: 10px; background: var(--mark); color: var(--mark-ink); margin: 0; }
+.fa-host-original { padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 14%, var(--surface)); border: 2px solid var(--ok); }
+.fa-host-original p { margin: 4px 0 0; }
+.fa-ganadores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fa-ganadores .btn { background: var(--c); border-color: var(--c); color: #fff; }

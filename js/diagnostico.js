@@ -72,7 +72,6 @@ export function iniciarDiagnostico(raiz, codigoUrl) {
           const jug = await getDocs(collection(db, 'salas', codigo, 'jugadores'));
           fila('bien', `${jug.size} ${jug.size === 1 ? 'invitado conectado' : 'invitados conectados'}`, `${d.equipos?.length || 0} equipos.`);
           if (d.piezas?.largo) fila('bien', 'Código final cargado', `${d.piezas.largo} piezas para repartir.`);
-          else fila('aviso', 'Falta el código final del escape', 'Cargalo en el panel de la sala para poder dar piezas.');
         }
       } catch (e) {
         fila('mal', `No se pudo leer la sala ${codigo}`, mensajeError(e));

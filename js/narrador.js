@@ -17,6 +17,9 @@ const LINEAS = {
   mimica: {
     inicio: ['Mímica. Hablar es de cobardes.', 'Ahora actúen sin decir una palabra. Qué difícil para mí.'],
   },
+  dibujo: {
+    inicio: ['Dibujá en Springfield. Si no sabés qué es, decí «dona».', 'A dibujar. Yo dibujo igual que Maggie, pero con más hambre.'],
+  },
   quiz: {
     inicio: ['Trivia. Que nadie mire el celular del de al lado.', 'Preguntas, preguntas… yo prefiero las donas.'],
   },
@@ -31,9 +34,6 @@ const LINEAS = {
     inicio: ['Y ahora, el podio. Redoble de tambores.'],
     fin: ['Eso fue todo. ¡Felicitaciones a los campeones y gracias por venir!'],
   },
-  ruleta: { inicio: ['Gira la ruleta. Ojalá me toque a mí… o que no.'] },
-  apuesta: { inicio: ['Hora de apostar. En lo de Moe nos conocen.'] },
-  nube: { inicio: ['Escriban lo que quieran. Yo escribiría «donas».'] },
 };
 const AL_AZAR = (l) => l[Math.floor(Math.random() * l.length)];
 

@@ -1,10 +1,48 @@
-// Quiz por equipos: todos responden desde el celular y suma cada equipo según
-// qué proporción de sus integrantes acertó.
+// Quiz por equipos: todos responden desde el celular. Dos modos:
+//  · puntos: suma cada equipo según qué proporción de sus integrantes acertó.
+//  · castigo (estilo programa japonés): cada integrante vota, la opción más votada es la
+//    respuesta del equipo (si empatan, desempata el capitán de la pregunta) y el equipo que
+//    se equivoca paga una prenda.
 import { h, montar, vista, selectorBanco, selector, pildoraEquipo, ranking, esperando } from './comun.js';
 import { itemsDe } from '../bancos.js';
 import { mezclar, cuentaRegresiva, letraOpcion, toast, sonido, vibrar, idAzar } from '../util.js';
 
 const PUNTOS = 100;
+
+// Prendas suaves y de tema; todas tienen versión sin alcohol.
+export const PRENDAS = [
+  'Todo el equipo toma un trago de Duff (o de Buzz Cola).',
+  'Todo el equipo grita «¡Ay, caramba!» con voz de Bart.',
+  'Todo el equipo hace el «¡Doh!» de Homero a la vez.',
+  'Un integrante canta el tema de Los Simpson tarareando.',
+  'Un integrante come una dona sin usar las manos.',
+  'Todo el equipo imita la risa de Nelson: «¡Ja, ja!».',
+  'Un integrante imita al Sr. Burns diciendo «Excelente».',
+  'El equipo se saca una foto del sillón: se apiñan en el sofá más cercano.',
+  'Un integrante dice «Gracias, vuelva pronto» con acento de Apu.',
+  'Todo el equipo baila 10 segundos como Homero.',
+];
+
+// Elige al capitán de cada equipo para una pregunta: alguien conectado, al azar.
+function capitanes(sala) {
+  const out = {};
+  for (const e of sala.equipos()) {
+    const m = sala.miembrosActivos(e.id);
+    if (m.length) out[e.id] = mezclar(m)[0].uid;
+  }
+  return out;
+}
+
+// Respuesta del equipo: la opción más votada. Con empate gana la que votó el capitán; si no
+// votó ninguna de las empatadas, la primera. Sin votos no hay respuesta.
+export function respuestaDeEquipo(votos, voto_capitan) {
+  const cuenta = new Map();
+  votos.forEach((v) => cuenta.set(v, (cuenta.get(v) || 0) + 1));
+  if (!cuenta.size) return null;
+  const mayor = Math.max(...cuenta.values());
+  const empatadas = [...cuenta].filter(([, n]) => n === mayor).map(([v]) => v).sort((a, b) => a - b);
+  return empatadas.includes(voto_capitan) ? voto_capitan : empatadas[0];
+}
 
 export default {
   id: 'quiz',
@@ -15,20 +53,21 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: el equipo que se equivoca paga una prenda']], 'puntos');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 10);
     const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 30);
     return {
-      el: h('div', { class: 'pila' }, b.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
+      el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
         h('p', { class: 'muted chico' }, `Cada equipo suma hasta ${PUNTOS} puntos por pregunta, según qué parte del equipo acertó (así no importa si un equipo tiene más integrantes).`)),
       leer: () => {
         const banco = b.banco();
         if (!banco) return null;
-        return { banco, cantidad: Number(cant.valor()), segundos: Number(seg.valor()) };
+        return { banco, cantidad: Number(cant.valor()), segundos: Number(seg.valor()), modo: modo.valor() };
       },
     };
   },
 
-  async iniciar(sala, { banco, cantidad, segundos }) {
+  async iniciar(sala, { banco, cantidad, segundos, modo = 'puntos' }) {
     let items = mezclar(itemsDe(banco, 'pregunta'));
     // Las preguntas marcadas como «sale siempre» entran aunque se sorteen menos.
     if (cantidad) {
@@ -42,7 +81,8 @@ export default {
     const id = idAzar();
     await sala.guardarPrivado({ juego: id, preguntas });
     await sala.iniciarJuego({
-      tipo: 'quiz', fase: 'pregunta', n: 0, total: preguntas.length, titulo: banco.titulo,
+      tipo: 'quiz', fase: 'pregunta', n: 0, total: preguntas.length, titulo: banco.titulo, modo,
+      capitanes: modo === 'castigo' ? capitanes(sala) : null,
       pregunta: preguntas[0].pregunta, opciones: preguntas[0].opciones,
       duracion: segundos * 1000, terminaEn: Date.now() + segundos * 1000,
     }, id);
@@ -69,8 +109,16 @@ export default {
         // Cuentan los que siguen conectados, o los que respondieron aunque ya se hayan ido.
         const miembros = sala.miembros(e.id).filter((m) => m.presente || resp.has(m.uid));
         const ok = miembros.filter((m) => resp.get(m.uid)?.valor === correcta).length;
-        const pts = miembros.length ? Math.round((PUNTOS * ok) / miembros.length) : 0;
+        let pts = miembros.length ? Math.round((PUNTOS * ok) / miembros.length) : 0;
         porEquipo[e.id] = { ok, n: miembros.length, pts };
+        if (j.modo === 'castigo') {
+          // Responde el equipo, no cada uno: la opción más votada decide.
+          const votos = miembros.map((m) => resp.get(m.uid)?.valor).filter((x) => Number.isInteger(x));
+          const elegida = respuestaDeEquipo(votos, resp.get(j.capitanes?.[e.id])?.valor);
+          const acerto = elegida === correcta;
+          pts = acerto ? PUNTOS : 0;
+          porEquipo[e.id] = { ok, n: miembros.length, pts, elegida, acerto, prenda: acerto || !miembros.length ? null : mezclar(PRENDAS)[0] };
+        }
         sumas[e.id] = pts;
       }
       try {
@@ -86,6 +134,7 @@ export default {
       await sala.actualizarJuego({
         fase: 'pregunta', n, pregunta: p.pregunta, opciones: p.opciones,
         terminaEn: Date.now() + j.duracion, correcta: undefined, conteo: undefined, porEquipo: undefined,
+        capitanes: j.modo === 'castigo' ? capitanes(sala) : null,
       });
     }
 
@@ -116,6 +165,7 @@ export default {
               h('button', { class: 'btn', onclick: revelar }, 'Revelar respuesta'))
             : h('div', { class: 'pila' },
               h('div', { class: 'fila' }, sala.equipos().map((e) => pildoraEquipo(e, ` +${j.porEquipo?.[e.id]?.pts ?? 0}`))),
+              ...sala.equipos().filter((e) => j.porEquipo?.[e.id]?.prenda).map((e) => h('p', { class: 'prenda' }, `🍩 ${e.nombre}: ${j.porEquipo[e.id].prenda}`)),
               h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? 'Ver resultados' : 'Siguiente pregunta →')));
         if (j.fase === 'pregunta') alLimpiar(cuentaRegresiva(reloj, j.terminaEn, { alTerminar: revelar }));
       },
@@ -150,7 +200,11 @@ export default {
           montar(el, h('div', { class: 'resultado ' + (mia === undefined ? '' : acerto ? 'bien' : 'mal') },
             h('div', { class: 'resultado-titulo' }, mia === undefined ? 'Se terminó el tiempo' : acerto ? '¡Correcto!' : 'Incorrecto'),
             h('p', null, 'La respuesta era ', h('b', null, `${letraOpcion(j.correcta)}. ${j.opciones[j.correcta]}`)),
-            pe && h('p', { class: 'muted' }, `Tu equipo: ${pe.ok} de ${pe.n} acertaron · +${pe.pts} puntos`)));
+            j.modo === 'castigo' && pe
+              ? h('div', { class: 'pila-s' },
+                h('p', null, pe.elegida == null ? 'Tu equipo no votó.' : `Tu equipo eligió ${letraOpcion(pe.elegida)}: ${pe.acerto ? '¡acertó!' : 'se equivocó.'}`),
+                pe.prenda && h('p', { class: 'prenda' }, '🍩 Prenda: ', pe.prenda))
+              : pe && h('p', { class: 'muted' }, `Tu equipo: ${pe.ok} de ${pe.n} acertaron · +${pe.pts} puntos`)));
           return;
         }
         const reloj = h('span', { class: 'reloj' });
@@ -165,7 +219,9 @@ export default {
           },
         }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', null, o)));
         const estado = h('p', { class: 'muted chico centro' }, elegida[j.n] !== undefined ? 'Respuesta enviada.' : 'Elegí una opción.');
+        const capitan = j.modo === 'castigo' && j.capitanes?.[miEquipo()] === sala.uid;
         montar(el,
+          j.modo === 'castigo' && h('p', { class: 'muted chico centro' }, capitan ? '👑 Sos el capitán: si hay empate, tu voto desempata.' : 'Hablen en el equipo y voten: gana la opción más votada.'),
           h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj),
           h('p', { class: 'pregunta-alumno' }, j.pregunta),
           h('div', { class: 'opciones' }, botones),
@@ -206,6 +262,12 @@ export default {
           revelada
             ? h('div', { class: 'tv-equipos' }, sala.equipos().map((e) => {
               const pe = j.porEquipo?.[e.id] || { ok: 0, n: 0, pts: 0 };
+              if (j.modo === 'castigo') {
+                return h('div', { class: 'tv-eq' + (pe.prenda ? ' penado' : ''), style: { '--c': e.color } },
+                  h('span', { class: 'tv-eq-nombre' }, e.nombre),
+                  h('span', { class: 'tv-eq-dato' }, pe.elegida == null ? 'sin voto' : `${letraOpcion(pe.elegida)} ${pe.acerto ? '✓' : '✗'}`),
+                  pe.prenda ? h('span', { class: 'tv-prenda' }, `🍩 ${pe.prenda}`) : h('span', { class: 'tv-eq-pts' }, `+${pe.pts}`));
+              }
               return h('div', { class: 'tv-eq', style: { '--c': e.color } },
                 h('span', { class: 'tv-eq-nombre' }, e.nombre),
                 h('span', { class: 'tv-eq-dato' }, `${pe.ok}/${pe.n} ✓`),

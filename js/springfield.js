@@ -2,6 +2,20 @@
 // Usa los nombres del doblaje latino. Se agrega desde «Mis bancos» y se edita como cualquier otro.
 const q = (pregunta, correcta, ...incorrectas) => ({ tipo: 'pregunta', pregunta, correcta, incorrectas });
 
+// Para «Dibujá en Springfield»: cosas que se reconocen en un dibujo de un minuto.
+// Vienen con el juego (no hace falta agregar el banco) y se pueden cambiar desde «Mis bancos».
+export const PALABRAS_DIBUJO = [
+  'Una dona con chispitas', 'Una lata de Duff', 'La planta nuclear', 'El pelo de Marge', 'Plopper, el cerdo araña',
+  'El sillón de los Simpson', 'La patineta de Bart', 'El saxofón de Lisa', 'El chupete de Maggie', 'Blinky, el pez de tres ojos',
+  'El Kwik-E-Mart', 'La taberna de Moe', 'El auto de Homero', 'El micro escolar de Otto', 'El monorriel',
+  'La casa del árbol', 'Bola de Nieve, el gato', 'Ayudante de Santa, el perro', 'Krusty el payaso', 'El bigote de Flanders',
+  'Los anteojos de Milhouse', 'La gomera de Bart', 'Una barra de plutonio', 'Itchy y Scratchy', 'El Hombre Abeja',
+  'La estatua de Jebediah Springfield', 'El Sr. Burns diciendo «Excelente»', 'El Sr. Quitanieves', 'Una chuleta de cerdo',
+  'El pizarrón de los castigos de Bart', 'Homero astronauta', 'El collar de perlas de Marge', 'Bob Patiño pisando un rastrillo',
+  'Homero en la hamaca', 'La dentadura del abuelo', 'Duffman', 'La sirena del patrullero de Wiggum', 'El ojo morado de Moe',
+  'Lisa vegetariana comiendo una ensalada', 'La familia en el sillón mirando la tele',
+];
+
 export const BANCO_SPRINGFIELD = {
   id: 'springfield',
   titulo: 'Springfield · Los Simpson',
@@ -30,14 +44,28 @@ export const BANCO_SPRINGFIELD = {
       'Lisa tocando el saxofón', 'Maggie con el chupete', 'El Sr. Burns diciendo «Excelente»', 'Ned Flanders saludando',
       'Apu atendiendo el Kwik-E-Mart', 'Moe sirviendo cerveza', 'Krusty el payaso', 'El jefe Wiggum comiendo',
       'Nelson burlándose', 'Homero durmiendo en la planta', 'Barney eructando', 'El abuelo contando una historia',
-      'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco']
+      'Ralph comiendo crayones', 'Bob Patiño pisando rastrillos', 'La familia corriendo al sillón', 'Homero cayendo por el barranco',
+      // Episodios famosos
+      'Homero viaja al espacio como astronauta', 'Homero come los ajíes picantes de la feria y alucina',
+      'Homero engorda a propósito para trabajar desde casa', 'Lisa se hace vegetariana',
+      'Bart le corta la cabeza a la estatua de Jebediah Springfield', 'Homero va a la universidad',
+      'Los Simpson viajan a Japón', 'Bart se hace famoso con la frase «Yo no fui»',
+      'Homero recupera el pelo con un tónico milagroso', 'Lisa toca el saxofón con Encías Sangrantes Murphy',
+      'Marge se hace policía', 'Homero se convierte en boxeador', 'Bart se gana un elefante',
+      'Homero forma un cuarteto vocal y se hace famoso', 'El Sr. Burns tapa el sol', 'Los Simpson viajan a Brasil']
       .map((palabra) => ({ tipo: 'mimica', palabra })),
 
+    // ── Para dibujar ──
+    ...PALABRAS_DIBUJO.map((palabra) => ({ tipo: 'dibujo', palabra })),
 
-    // ── Los invitados dicen (puntos estimados, para cambiar por los de la encuesta previa) ──
-    { tipo: 'encuesta', pregunta: 'Nombrá un personaje de Los Simpson', respuestas: [
-      { texto: 'Homero', puntos: 30 }, { texto: 'Bart', puntos: 24 }, { texto: 'Marge', puntos: 15 },
-      { texto: 'Lisa', puntos: 12 }, { texto: 'Sr. Burns / Burns', puntos: 9 }, { texto: 'Maggie', puntos: 6 }] },
+
+    // ── Los invitados dicen ──
+    // Puntos PROVISORIOS: se reemplazan por los del Google Form que responden los invitados
+    // (cada respuesta vale tantos puntos como personas la dieron).
+    { tipo: 'encuesta', pregunta: 'Nombrá un personaje de Los Simpson que no sea de la familia', respuestas: [
+      { texto: 'Sr. Burns / Burns / Montgomery Burns', puntos: 22 }, { texto: 'Ned Flanders / Flanders', puntos: 18 },
+      { texto: 'Moe', puntos: 14 }, { texto: 'Apu', puntos: 12 }, { texto: 'Krusty / Krusty el payaso', puntos: 10 },
+      { texto: 'Milhouse', puntos: 9 }, { texto: 'Barney', puntos: 8 }, { texto: 'el jefe Gorgory / Gorgory / Wiggum', puntos: 7 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá algo que come o toma Homero', respuestas: [
       { texto: 'donas / rosquillas', puntos: 35 }, { texto: 'cerveza / Duff', puntos: 28 }, { texto: 'chuletas / costillas', puntos: 12 },
       { texto: 'pizza', puntos: 10 }, { texto: 'pollo', puntos: 8 }] },
@@ -45,5 +73,32 @@ export const BANCO_SPRINGFIELD = {
       { texto: 'la taberna de Moe / bar de Moe / Moe', puntos: 30 }, { texto: 'la planta nuclear / planta', puntos: 25 },
       { texto: 'Kwik-E-Mart / el almacén de Apu', puntos: 18 }, { texto: 'la escuela / escuela primaria', puntos: 14 },
       { texto: 'la casa de los Simpson / Avenida Siempreviva', puntos: 13 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá una frase célebre de Homero', respuestas: [
+      { texto: "D'oh / Doh / Dou", puntos: 38 }, { texto: 'Mmm… rosquillas / mmm donas / mmm', puntos: 22 },
+      { texto: 'Wuju / Woohoo / Yuju', puntos: 16 }, { texto: 'Pequeño demonio / maldito demonio', puntos: 12 },
+      { texto: 'Cállate Flanders / Flanders', puntos: 8 }, { texto: 'Multiplícate por cero', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que tiene Marge', respuestas: [
+      { texto: 'el pelo azul / pelo / peinado', puntos: 48 }, { texto: 'collar de perlas / collar / perlas', puntos: 18 },
+      { texto: 'vestido verde / vestido', puntos: 14 }, { texto: 'paciencia', puntos: 10 },
+      { texto: 'tres hijos / hijos', puntos: 6 }, { texto: 'Homero / marido', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá algo que hay en la casa de los Simpson', respuestas: [
+      { texto: 'el sillón / sofá', puntos: 34 }, { texto: 'la tele / televisión', puntos: 26 },
+      { texto: 'el cuadro del barco / cuadro / barco', puntos: 12 }, { texto: 'el sótano', puntos: 10 },
+      { texto: 'la cocina', puntos: 8 }, { texto: 'el garaje / el auto', puntos: 6 }, { texto: 'la casita del árbol / casa del árbol', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá un trabajo que tuvo Homero', respuestas: [
+      { texto: 'inspector de seguridad / la planta nuclear / planta / seguridad', puntos: 40 }, { texto: 'astronauta', puntos: 22 },
+      { texto: 'quitanieves / Señor Quitanieves / Sr. Quitanieves', puntos: 14 }, { texto: 'cantante / Los Borbotones / Be Sharps / cuarteto', puntos: 9 },
+      { texto: 'boxeador', puntos: 6 }, { texto: 'inventor', puntos: 5 }, { texto: 'misionero', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá un hijo de Cleto', respuestas: [
+      { texto: 'Tiffany', puntos: 18 }, { texto: 'Heather', puntos: 15 }, { texto: 'Cody', puntos: 13 }, { texto: 'Dylan', puntos: 12 },
+      { texto: 'Brittany', puntos: 11 }, { texto: 'Jordan', puntos: 10 }, { texto: 'Kendall', puntos: 9 }, { texto: 'Taylor', puntos: 8 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá la mejor frase de Los Simpson', respuestas: [
+      { texto: 'Multiplícate por cero', puntos: 24 }, { texto: "D'oh / Doh / Dou", puntos: 20 }, { texto: 'Ay, caramba / ay caramba', puntos: 16 },
+      { texto: 'Excelente', puntos: 12 }, { texto: 'Ja-ja / jaja', puntos: 10 }, { texto: 'Yo no fui', puntos: 8 },
+      { texto: 'Mmm… rosquillas / mmm donas', puntos: 6 }, { texto: 'Un contrato es un acuerdo que no se puede romper', puntos: 4 }] },
+    { tipo: 'encuesta', pregunta: 'Nombrá un invitado famoso de Los Simpson', respuestas: [
+      { texto: 'Michael Jackson', puntos: 18 }, { texto: 'Paul McCartney / McCartney', puntos: 15 }, { texto: 'Stephen Hawking / Hawking', puntos: 13 },
+      { texto: 'Lady Gaga', puntos: 11 }, { texto: 'Mel Gibson', puntos: 10 }, { texto: 'U2 / Bono', puntos: 9 },
+      { texto: 'Aerosmith', puntos: 8 }, { texto: 'Los Ramones / Ramones', puntos: 7 }] },
   ],
 };
