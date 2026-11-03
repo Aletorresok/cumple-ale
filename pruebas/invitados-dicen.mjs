@@ -267,10 +267,10 @@ try {
     if (r === 1) {
       const sel = await host.locator('#prox-pregunta option').nth(0).textContent();
       afirmar(sel.includes('personaje'), `la próxima sugerida es la segunda elegida (${sel})`);
-      await host.locator('#prox-pregunta').selectOption({ label: 'Nombrá un hijo de Cleto' });
+      await host.locator('#prox-pregunta').selectOption({ label: 'Nombrá un invitado famoso de Los Simpson' });
     }
     if (r < 4) await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
-    if (r === 1) await tv.getByText('Nombrá un hijo de Cleto').waitFor({ timeout: 10000 });
+    if (r === 1) await tv.getByText('Nombrá un invitado famoso de Los Simpson').waitFor({ timeout: 10000 });
   }
   const mismos = (a, b) => [...a].sort().join() === [...b].sort().join();
   afirmar(mismos(llaves[2].par, [llaves[0].perdio, llaves[1].perdio]), `la ronda 3 es entre los perdedores (${llaves[2].par})`);
