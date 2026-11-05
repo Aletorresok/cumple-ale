@@ -161,6 +161,7 @@ try {
     await host.locator('#cfg-banco').waitFor();
     const op = await host.locator('#cfg-banco option').allTextContents();
     afirmar(op[0].includes('vienen con el juego'), `las palabras de Springfield vienen con el juego (${op})`);
+    await host.locator('#cfg-modo').selectOption('equipo');
     await host.locator('#cfg-vueltas').selectOption('1');
   });
   await tv.getByText('Dibujá en Springfield').first().waitFor({ timeout: 10000 });

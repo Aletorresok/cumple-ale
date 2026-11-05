@@ -143,7 +143,7 @@ export default {
     const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
       ['fisico', 'Globos: el primero que lo explota responde en voz alta (lo marcás vos en el panel)'],
       ['celular', 'Pulsador y respuestas en el celular']], 'fisico');
-    const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 20);
+    const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [10, '10 segundos'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 10);
     const checks = checksEquipos(sala);
     // Qué preguntas salen y en qué orden (en el orden en que se tocan). Las que falten salen al azar.
     let elegidas = [];

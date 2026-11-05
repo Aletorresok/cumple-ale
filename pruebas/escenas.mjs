@@ -137,7 +137,7 @@ try {
 
   await elegirJuego(host, '¿Te acordás de la escena?', async () => {
     await host.locator('.escena-opcion').first().waitFor();
-    afirmar(await host.locator('.escena-opcion input:checked').count() === 5, 'vienen marcadas 5 escenas');
+    afirmar(await host.locator('.escena-opcion input:checked').count() === 2, 'vienen marcadas 2 escenas (Cleto y las mascotas)');
     // Solo Cleto y los Borbotones.
     const marcas = host.locator('.escena-opcion input');
     for (let i = 0; i < await marcas.count(); i++) {

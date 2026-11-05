@@ -28,8 +28,8 @@ export default {
   tipos: [],
 
   configurar() {
-    const modo = selector('cfg-modo', 'Cómo se responde', [['celular', 'Cada uno elige en el celular (4 opciones)'], ['voz', 'A los gritos: el panel marca quién la dijo']], 'celular');
-    const cant = selector('cfg-cantidad', 'Cantidad de frases', [[6, '6'], [8, '8'], [10, '10'], [12, '12'], [15, '15'], [0, `Todas (${FRASES.length})`]], 10);
+    const modo = selector('cfg-modo', 'Cómo se responde', [['celular', 'Cada uno elige en el celular (4 opciones)'], ['voz', 'A los gritos: el panel marca quién la dijo']], 'voz');
+    const cant = selector('cfg-cantidad', 'Cantidad de frases', [[6, '6'], [8, '8'], [10, '10'], [12, '12'], [15, '15'], [0, `Todas (${FRASES.length})`]], 8);
     const seg = selector('cfg-segundos', 'Tiempo por frase', [[20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto']], 30);
     const ayuda = h('p', { class: 'muted chico' });
     const explicar = () => {
