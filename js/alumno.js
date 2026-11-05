@@ -1,7 +1,7 @@
 // Vista del alumno: entra con código y nombre, y juega desde el celular.
 import { asegurarSesion, mensajeError, db, collection, getDocs, deleteDoc, doc } from './fb.js';
 import { Sala, existeSala, unirse } from './sala.js';
-import { latidoInvitado } from './presencia.js';
+import { latidoInvitado, mantenerPantalla } from './presencia.js';
 import { juego as buscarJuego } from './juegos/index.js';
 import { esperando, pildoraEquipo } from './juegos/comun.js';
 import { h, montar, urlApp, normalizar, guardarLocal, leerLocal, toast, bandaConexion } from './util.js';
@@ -102,6 +102,7 @@ function enSala(raiz, codigo, uid, nombre) {
     cuerpo);
 
   const cerrada = () => {
+    soltarPantalla?.();
     guardarLocal(CLAVE, null);
     sala.detener();
     vistaJuego?.destruir();
@@ -110,6 +111,7 @@ function enSala(raiz, codigo, uid, nombre) {
       h('a', { class: 'btn', href: urlApp('') }, 'Entrar a otra sala'))));
   };
 
+  let soltarPantalla = null;
   latidoInvitado(sala, uid);
   sala.vigilarConexion(bandaConexion());
   sala.escuchar({}, (motivo) => {
@@ -121,6 +123,10 @@ function enSala(raiz, codigo, uid, nombre) {
     const j = sala.juego;
     if ((j?.id || null) !== idJuego) {
       idJuego = j?.id || null;
+      // Durante un juego el celular no se apaga solo (así no se pierde la pregunta ni el turno);
+      // entre juegos se suelta para cuidar la batería.
+      soltarPantalla?.();
+      soltarPantalla = j ? mantenerPantalla() : null;
       vistaJuego?.destruir();
       vistaJuego = null;
       if (j) {

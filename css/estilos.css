@@ -825,3 +825,4 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 @media (prefers-reduced-motion: reduce) { .tv-dibujo-cartel.sale { animation: none; } }
 .dibujo-botones.todos .btn { min-height: 52px; }
 .dibujo-botones.todos .btn.sec { grid-column: 1 / -1; }
+.deshacer { margin: 6px 0 2px; }
