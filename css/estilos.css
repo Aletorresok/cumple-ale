@@ -826,3 +826,36 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .dibujo-botones.todos .btn { min-height: 52px; }
 .dibujo-botones.todos .btn.sec { grid-column: 1 / -1; }
 .deshacer { margin: 6px 0 2px; }
+
+/* ════════ Celular del invitado: Springfield y el color del equipo ════════ */
+body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg)); min-height: 100dvh; }
+.invitado-barra { border-bottom: 4px solid var(--mi-color); }
+.invitado-quien { min-width: 0; gap: 8px; }
+.invitado-nombre { font-family: var(--display); font-weight: 400; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.invitado-barra .pildora { flex: none; }
+.invitado-salir { color: var(--muted); font-size: .8rem; flex: none; }
+/* Esperas: grandes y claras, con una dona de Springfield en vez del punto. */
+.modo-invitado .esperando { padding: 40px 12px; gap: 14px; }
+.modo-invitado .esperando p.grande { font-size: 1.75rem; line-height: 1.15; }
+.modo-invitado .esperando p.muted { font-size: 1.05rem; max-width: 30ch; }
+.modo-invitado .pulso {
+  width: 64px; height: 64px; opacity: 1;
+  background:
+    radial-gradient(circle, transparent 0 22%, #F7A8C8 23% 60%, #D9A05B 61% 70%, transparent 71%),
+    conic-gradient(from 20deg, transparent 0 8%, #FED90F 8% 10%, transparent 10% 30%, #2E6FE4 30% 32%, transparent 32% 55%, #2BA36B 55% 57%, transparent 57% 78%, #E4572E 78% 80%, transparent 80%);
+  -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 23% 70%, transparent 71%);
+          mask: radial-gradient(circle, transparent 0 22%, #000 23% 70%, transparent 71%);
+  animation: dona 2.4s ease-in-out infinite;
+}
+@keyframes dona { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(25deg) translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .modo-invitado .pulso { animation: none; } }
+/* Respuesta al toque: todo lo que se toca se hunde un poco. */
+.opcion, .btn, .pildora-boton, .chip { transition: transform .08s ease; }
+.opcion:active, .btn:active:not(:disabled), .pildora-boton:active, .chip:active { transform: scale(.97); }
+.modo-invitado .btn { min-height: 52px; font-size: 1.05rem; }
+.modo-invitado .opcion { min-height: 72px; font-size: 1.15rem; }
+
+/* ════════ Tele: legible desde el sillón ════════ */
+.tv-prenda { font-size: 1.05em; line-height: 1.25; }
+.tv-pie .marcador-eq { font-size: 1.15em; padding: .35em 1em; }
+.mira-tele { text-align: center; font-family: var(--display); font-size: 1.2rem; color: var(--muted); margin: 8px 0; }

@@ -4,7 +4,7 @@ import { Sala, existeSala, unirse } from './sala.js';
 import { latidoInvitado, mantenerPantalla } from './presencia.js';
 import { juego as buscarJuego } from './juegos/index.js';
 import { esperando, pildoraEquipo } from './juegos/comun.js';
-import { h, montar, urlApp, normalizar, guardarLocal, leerLocal, toast, bandaConexion } from './util.js';
+import { h, montar, urlApp, normalizar, guardarLocal, leerLocal, toast, bandaConexion, confirmar } from './util.js';
 
 const CLAVE = 'cumple-ale-invitado';
 
@@ -88,6 +88,8 @@ function enSala(raiz, codigo, uid, nombre) {
   let idJuego = undefined;
 
   const salir = async () => {
+    // Un toque sin querer no te saca de la fiesta: se pide confirmación.
+    if (!(await confirmar({ titulo: '¿Salir de la sala?', texto: 'Perdés tu lugar en el equipo. Para volver tenés que entrar de nuevo con el QR.', ok: 'Salir', cancelar: 'Me quedo', peligro: true }))) return;
     sala.detener();
     vistaJuego?.destruir();
     guardarLocal(CLAVE, null);
@@ -95,10 +97,11 @@ function enSala(raiz, codigo, uid, nombre) {
     location.href = urlApp('');
   };
 
+  document.body.classList.add('modo-invitado');
   montar(raiz,
     h('header', { class: 'barra invitado-barra' },
-      h('span', { class: 'fila nowrap' }, h('b', null, nombre), miEquipo),
-      h('button', { class: 'btn-link chico', onclick: salir }, 'Salir')),
+      h('span', { class: 'fila nowrap invitado-quien' }, h('b', { class: 'invitado-nombre' }, nombre), miEquipo),
+      h('button', { class: 'btn-link chico invitado-salir', onclick: salir }, 'Salir')),
     cuerpo);
 
   const cerrada = () => {
@@ -137,7 +140,7 @@ function enSala(raiz, codigo, uid, nombre) {
       }
     }
     if (!j) {
-      montar(cuerpo, esperando('¡Ya estás adentro!', eq ? `Estás en el equipo ${eq.nombre}. Esperá a que empiece un juego.` : 'Esperá a que empiece un juego.'));
+      montar(cuerpo, esperando('📺 ¡Mirá la tele!', eq ? `Estás en ${eq.nombre}. Guardá el celular: la tele avisa cuando lo necesites.` : 'Ya estás adentro. Guardá el celular hasta el próximo juego.'));
     }
     vistaJuego?.actualizar(motivo);
   }, cerrada);

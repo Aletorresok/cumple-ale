@@ -26,7 +26,6 @@ export const ESCENAS = [
     id: 'octillizos',
     titulo: 'Los octillizos de Apu',
     consigna: 'Apu y Manjula tuvieron ocho bebés de una. ¿Cómo se llaman?',
-    fija: true,
     items: [
       ['Poonam', 'Punam', 'Poonan'], ['Sashi', 'Sasi', 'Shashi'], ['Pria', 'Priya', 'Prya'], ['Uma'],
       ['Anoop', 'Anup', 'Anoup'], ['Sandeep', 'Sandip', 'Sandi'], ['Nabendu', 'Nabendú', 'Navendu'], ['Gheet', 'Geet', 'Gita', 'Guit'],
@@ -36,7 +35,6 @@ export const ESCENAS = [
     id: 'borbotones',
     titulo: 'Los Borbotones',
     consigna: 'El cuarteto de Homero que ganó un Grammy. ¿Quiénes estuvieron en la banda?',
-    fija: true,
     items: [
       ['Homero', 'Homero Simpson'], ['Apu', 'Apu Nahasapeemapetilon'], ['Skinner', 'Director Skinner', 'Seymour Skinner'],
       ['Barney', 'Barney Gumble'], ['Jefe Gorgory', 'Gorgory', 'Clancy Gorgory', 'el jefe'],
@@ -46,7 +44,6 @@ export const ESCENAS = [
     id: 'burns',
     titulo: '¿Quién le disparó al Sr. Burns?',
     consigna: 'Burns tapó el sol y medio Springfield tenía motivos. ¿Quiénes eran los sospechosos?',
-    fija: true,
     items: [
       ['Smithers', 'Waylon Smithers'], ['Homero'], ['Moe'], ['Barney'], ['Willie', 'Jardinero Willie'],
       ['Skinner', 'Director Skinner'], ['Bart'], ['Lisa'], ['Tito Puente', 'Tito'], ['Maggie (¡fue ella!)', 'Maggie'],

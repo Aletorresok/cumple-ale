@@ -151,7 +151,7 @@ try {
       const p = await pagina(`inv${n}`, `?sala=${codigo}`);
       await p.locator('#nombre').fill(`Invitado ${n}`);
       await p.getByRole('button', { name: 'Entrar' }).click();
-      await p.getByText('¡Ya estás adentro!').waitFor({ timeout: 30000 });
+      await p.getByText('¡Mirá la tele!').waitFor({ timeout: 30000 });
       return p;
     }));
     invitados.push(...lote);
@@ -231,8 +231,12 @@ try {
   });
   let salioContrato = false;
   let penados = 0;
+  // Con castigo vota solo el capitán; los demás ven «¡Miren la tele!» y pueden tocar «voto yo».
+  const vozYo = (p) => p.getByRole('button', { name: /voto yo/ });
+  const pregLista = (p, timeout) => p.locator('.opcion').or(vozYo(p)).first().waitFor({ timeout });
+  const votar = async (p, k) => { if (await vozYo(p).count()) await vozYo(p).click(); await p.locator('.opcion').nth(k).click(); };
   for (let n = 0; n < 5; n++) {
-    await invitados[0].locator('.opcion').first().waitFor({ timeout: 15000 });
+    await pregLista(invitados[0], 15000);
     const pregunta = await tv.locator('.tv-pregunta').textContent();
     const esContrato = pregunta.includes('contrato');
     if (esContrato) { salioContrato = true; await captura(tv, '10c-trivia-contrato'); await captura(invitados[0], '10d-trivia-celular'); }
@@ -250,7 +254,7 @@ try {
       const equiposAntes = await Promise.all(recargados.map((p) => p.locator('.invitado-barra .pildora').textContent()));
       await Promise.all(recargados.map(recargar));
       for (const [i, p] of recargados.entries()) {
-        await p.locator('.opcion').first().waitFor({ timeout: 20000 });
+        await pregLista(p, 20000);
         const eq = await p.locator('.invitado-barra .pildora').textContent();
         afirmar(eq === equiposAntes[i], `después de recargar sigue en su equipo (${equiposAntes[i]} → ${eq})`);
       }
@@ -261,7 +265,7 @@ try {
       const servidor = /127\.0\.0\.1:8080|localhost:8080/;
       const bloquear = (r) => r.abort('internetdisconnected');
       await sinInternet.context().route(servidor, bloquear);
-      await Promise.all(invitados.map((p) => p.locator('.opcion').nth(0).click()));
+      await Promise.all(invitados.map((p) => votar(p, 0)));
       await sinInternet.locator('.banda-conexion:not([hidden])').waitFor({ timeout: 20000 });
       await sinInternet.context().unroute(servidor, bloquear);
       await sinInternet.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 60000 });
@@ -279,10 +283,17 @@ try {
       const resp = await fetch(`${doc.name.replace(/^projects/, 'http://127.0.0.1:8080/v1/projects')}?updateMask.fieldPaths=visto`, { method: 'PATCH', headers: cab, body: JSON.stringify({ fields: { visto: { timestampValue: viejo } } }) });
       afirmar(resp.ok, `el emulador aceptó marcar al ausente (${resp.status})`);
       await esperar(1500);
-      await Promise.all(invitados.filter((p) => p !== ausente).map((p) => p.locator('.opcion').nth(n % 2).click()));
+      await Promise.all(invitados.filter((p) => p !== ausente).map((p) => votar(p, n % 2)));
       paso(`Presencia: ${N - 1} respondieron y la pregunta se reveló sin esperar al celular ausente`);
     } else {
-      await Promise.all(invitados.map((p) => p.locator('.opcion').nth(n % 2).click()));
+      await Promise.all(invitados.map((p) => pregLista(p, 15000)));
+      const capitanes = [];
+      for (const p of invitados) if (await p.locator('.opcion').count()) capitanes.push(p);
+      afirmar(capitanes.length === 4, `solo los 4 capitanes ven las opciones (${capitanes.length})`);
+      if (n === 2) await captura(invitados.find((p) => !capitanes.includes(p)), '10d2-trivia-sin-celular');
+      await Promise.all(capitanes.map((p) => p.locator('.opcion').nth(n % 2).click()));
+      await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 8000 });
+      if (n === 2) paso('Trivia: votan solo los 4 capitanes y la pregunta se revela sin esperar el reloj');
     }
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
     await tv.locator('.tv-opcion.correcta').waitFor();

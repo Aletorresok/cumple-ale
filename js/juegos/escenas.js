@@ -99,7 +99,7 @@ export default {
 
   configurar() {
     const marcas = ESCENAS.map((e) => h('input', { type: 'checkbox', value: e.id, checked: !!e.fija }));
-    const seg = selector('cfg-seg', 'Tiempo para escribir', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 90);
+    const seg = selector('cfg-seg', 'Tiempo para escribir', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 60);
     const modo = selector('cfg-puntos', 'Puntos', [['puesto', 'Por puesto: 100, 60, 40 y 20'], ['acierto', `${PUNTOS_ACIERTO} por cada acierto`]], 'puesto');
     return {
       el: h('div', { class: 'pila' },

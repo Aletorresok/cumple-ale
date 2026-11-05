@@ -120,7 +120,7 @@ try {
     const p = await pagina(`inv${k + 1}`, `?sala=${codigo}`);
     await p.locator('#nombre').fill(`Invitado ${k + 1}`);
     await p.getByRole('button', { name: 'Entrar' }).click();
-    await p.getByText('¡Ya estás adentro!').waitFor({ timeout: 30000 });
+    await p.getByText('¡Mirá la tele!').waitFor({ timeout: 30000 });
     return p;
   }));
   await host.waitForFunction((n) => document.querySelector('.entrada')?.textContent.includes(`${n} invitados conectados`), N, { timeout: 30000 });
@@ -137,7 +137,7 @@ try {
 
   await elegirJuego(host, '¿Te acordás de la escena?', async () => {
     await host.locator('.escena-opcion').first().waitFor();
-    afirmar(await host.locator('.escena-opcion input:checked').count() === 5, 'vienen marcadas 5 escenas');
+    afirmar(await host.locator('.escena-opcion input:checked').count() === 2, 'vienen marcadas 2 escenas (Cleto y las mascotas)');
     // Solo Cleto y los Borbotones.
     const marcas = host.locator('.escena-opcion input');
     for (let i = 0; i < await marcas.count(); i++) {

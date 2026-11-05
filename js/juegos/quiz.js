@@ -53,9 +53,9 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
-    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: el equipo que se equivoca paga una prenda']], 'puntos');
-    const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 10);
-    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 30);
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: el equipo que se equivoca paga una prenda']], 'castigo');
+    const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
+    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 15);
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
         h('p', { class: 'muted chico' }, `Cada equipo suma hasta ${PUNTOS} puntos por pregunta, según qué parte del equipo acertó (así no importa si un equipo tiene más integrantes).`)),
@@ -175,7 +175,15 @@ export default {
         const total = participantes().length;
         const resp = [...sala.respuestasJuego(j.n).keys()].filter((uid) => sala.data.asignaciones?.[uid] && sala.presente(uid)).length;
         contador.textContent = `${resp}/${total}`;
-        if (total > 0 && resp >= total) setTimeout(revelar, 800);
+        // Con castigo vota uno por equipo: alcanza con que cada equipo con gente haya votado.
+        const listos = j.modo === 'castigo'
+          ? (() => {
+            const votaron = new Set([...sala.respuestasJuego(j.n).keys()].map((uid) => sala.data.asignaciones?.[uid]).filter(Boolean));
+            const equipos = new Set(participantes().map((p) => p.equipo));
+            return equipos.size > 0 && [...equipos].every((e) => votaron.has(e));
+          })()
+          : total > 0 && resp >= total;
+        if (listos) setTimeout(revelar, 800);
       },
     });
     return v;
@@ -183,9 +191,11 @@ export default {
 
   alumno(el, sala) {
     const elegida = {};
+    const votoYo = new Set();
     const miEquipo = () => sala.data.asignaciones?.[sala.uid];
-    return vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.n}`,
+    const dibujarDeNuevo = () => v.actualizar();
+    const v = vista({
+      clave: () => `${sala.juego.fase}:${sala.juego.n}:${votoYo.has(sala.juego.n)}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         if (j.fase === 'fin') {
@@ -220,8 +230,19 @@ export default {
         }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', null, o)));
         const estado = h('p', { class: 'muted chico centro' }, elegida[j.n] !== undefined ? 'Respuesta enviada.' : 'Elegí una opción.');
         const capitan = j.modo === 'castigo' && j.capitanes?.[miEquipo()] === sala.uid;
+        // Con castigo vota solo el capitán: los demás discuten mirando la tele, sin celular.
+        // Si el capitán no aparece, cualquiera puede tocar «Voto yo» y votar.
+        if (j.modo === 'castigo' && !capitan && !votoYo.has(j.n) && elegida[j.n] === undefined) {
+          const reloj2 = h('span', { class: 'reloj' });
+          montar(el,
+            h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj2),
+            esperando('👀 ¡Miren la tele!', 'Discutan en voz alta. Vota el capitán del equipo (le sale 👑 en el celular).'),
+            h('button', { class: 'btn-link chico', onclick: () => { votoYo.add(j.n); dibujarDeNuevo(); } }, 'El capitán no está: voto yo'));
+          alLimpiar(cuentaRegresiva(reloj2, j.terminaEn));
+          return;
+        }
         montar(el,
-          j.modo === 'castigo' && h('p', { class: 'muted chico centro' }, capitan ? '👑 Sos el capitán: si hay empate, tu voto desempata.' : 'Hablen en el equipo y voten: gana la opción más votada.'),
+          j.modo === 'castigo' && h('p', { class: 'muted chico centro' }, capitan ? '👑 Sos el capitán: escuchá a tu equipo y votá vos.' : 'Votá por tu equipo.'),
           h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj),
           h('p', { class: 'pregunta-alumno' }, j.pregunta),
           h('div', { class: 'opciones' }, botones),
@@ -229,6 +250,7 @@ export default {
         alLimpiar(cuentaRegresiva(reloj, j.terminaEn));
       },
     });
+    return v;
   },
 
   tv(el, sala) {

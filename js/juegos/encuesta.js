@@ -143,7 +143,7 @@ export default {
     const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
       ['fisico', 'Globos: el primero que lo explota responde en voz alta (lo marcás vos en el panel)'],
       ['celular', 'Pulsador y respuestas en el celular']], 'fisico');
-    const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 20);
+    const seg = selector('cfg-seg', 'Tiempo para responder', [[0, 'Sin límite'], [10, '10 segundos'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos']], 10);
     const checks = checksEquipos(sala);
     // Qué preguntas salen y en qué orden (en el orden en que se tocan). Las que falten salen al azar.
     let elegidas = [];
@@ -682,7 +682,8 @@ export default {
           } else {
             titulo = `Le toca responder a ${j.responde?.nombre || 'tu equipo'}`; sub = '¡Ayudalo! Pero responde solo él.';
           }
-          montar(el, ultimo, esperando(titulo, sub), resumen, tablero(j));
+          // Con globos todo pasa en voz alta: el tablero se mira en la tele, no en el celular.
+          montar(el, ultimo, esperando(titulo, sub), resumen, h('p', { class: 'mira-tele' }, '📺 El tablero está en la tele'));
           return;
         }
         if (j.fase === 'duelo') {

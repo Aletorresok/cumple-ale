@@ -144,7 +144,7 @@ try {
     const p = await pagina(`inv${k + 1}`, `?sala=${codigo}`);
     await p.locator('#nombre').fill(`Invitado ${k + 1}`);
     await p.getByRole('button', { name: 'Entrar' }).click();
-    await p.getByText('¡Ya estás adentro!').waitFor({ timeout: 30000 });
+    await p.getByText('¡Mirá la tele!').waitFor({ timeout: 30000 });
     return p;
   }));
   await host.waitForFunction((n) => document.querySelector('.entrada')?.textContent.includes(`${n} invitados conectados`), N, { timeout: 30000 });
@@ -161,6 +161,7 @@ try {
     await host.locator('#cfg-banco').waitFor();
     const op = await host.locator('#cfg-banco option').allTextContents();
     afirmar(op[0].includes('vienen con el juego'), `las palabras de Springfield vienen con el juego (${op})`);
+    await host.locator('#cfg-modo').selectOption('equipo');
     await host.locator('#cfg-vueltas').selectOption('1');
   });
   await tv.getByText('Dibujá en Springfield').first().waitFor({ timeout: 10000 });

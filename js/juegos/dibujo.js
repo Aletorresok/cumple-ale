@@ -126,9 +126,9 @@ export default {
     const opciones = [['', `Springfield (vienen con el juego) — ${PALABRAS_DIBUJO.length} palabras`],
       ...aptos.map((b) => [b.id, `${b.titulo} — ${itemsDe(b, 'dibujo').length} palabras para dibujar`])];
     const banco = selector('cfg-banco', 'Palabras', opciones, aptos.find((b) => b.plantilla === 'springfield')?.id || '');
-    const seg = selector('cfg-seg', 'Tiempo por turno', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos']], 90);
+    const seg = selector('cfg-seg', 'Tiempo por turno', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos']], 60);
     const vueltas = selector('cfg-vueltas', 'Vueltas', [[1, '1 turno por equipo'], [2, '2 turnos por equipo'], [3, '3 turnos por equipo']], 2);
-    const modo = selector('cfg-modo', 'Quién adivina', [['equipo', 'Solo el equipo de quien dibuja'], ['todos', 'Todos los equipos: el primero que acierta']], 'equipo');
+    const modo = selector('cfg-modo', 'Quién adivina', [['equipo', 'Solo el equipo de quien dibuja'], ['todos', 'Todos los equipos: el primero que acierta']], 'todos');
     const conGente = sala.equipos().filter((e) => sala.miembros(e.id).length >= 2);
     return {
       el: h('div', { class: 'pila' }, banco.el, h('div', { class: 'grilla-2' }, seg.el, vueltas.el), modo.el,
