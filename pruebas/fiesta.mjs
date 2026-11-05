@@ -120,6 +120,17 @@ try {
   await host.locator('.escaleta-actual').getByText('Llegada').waitFor();
   await captura(host, '0b-escaleta-panel');
 
+  // ── Deshacer puntos: un +50 de más se vuelve atrás con un toque ──
+  const ptsPrimero = () => host.locator('.equipo .equipo-pts').first().textContent();
+  const ptsAntes = Number(await ptsPrimero());
+  await host.locator('.equipo').first().getByRole('button', { name: '+50' }).click();
+  await host.locator('.deshacer').getByText(/\+50/).waitFor();
+  await host.waitForFunction((n) => Number(document.querySelector('.equipo .equipo-pts').textContent) === n, ptsAntes + 50);
+  await host.locator('.deshacer').click();
+  await host.waitForFunction((n) => Number(document.querySelector('.equipo .equipo-pts').textContent) === n, ptsAntes);
+  afirmar(!(await host.locator('.deshacer').count()), 'después de deshacer no queda nada para deshacer');
+  paso('Deshacer puntos: el +50 de más volvió atrás');
+
   const tv = await pagina('tv', `?tv=${codigo}`, { width: 1600, height: 900 });
 
   // ── Diagnóstico de la sala (lo que se mira antes de que llegue la gente) ──

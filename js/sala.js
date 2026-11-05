@@ -134,6 +134,27 @@ export class Sala {
     this.jugadores = new Map();
     this.respuestas = new Map();
     this.subs = [];
+    // Últimos cambios de puntos hechos desde este dispositivo (para «Deshacer» en el panel).
+    // Se guardan en el navegador para que sobrevivan a una recarga del panel.
+    try { this.historialPuntos = JSON.parse(localStorage.getItem('puntos-' + codigo) || '[]'); } catch { this.historialPuntos = []; }
+  }
+
+  anotarPuntos(puntosPorEquipo) {
+    const cambio = Object.fromEntries(Object.entries(puntosPorEquipo).filter(([, n]) => n));
+    if (!Object.keys(cambio).length) return;
+    this.historialPuntos = [...this.historialPuntos, cambio].slice(-20);
+    try { localStorage.setItem('puntos-' + this.codigo, JSON.stringify(this.historialPuntos)); } catch {}
+  }
+
+  ultimoCambioPuntos() { return this.historialPuntos.at(-1) || null; }
+
+  // Vuelve atrás el último cambio de puntos (un +10 de más, o lo que sumó una ronda).
+  async deshacerPuntos() {
+    const ultimo = this.ultimoCambioPuntos();
+    if (!ultimo) return;
+    this.historialPuntos = this.historialPuntos.slice(0, -1);
+    try { localStorage.setItem('puntos-' + this.codigo, JSON.stringify(this.historialPuntos)); } catch {}
+    await this.actualizar(camposPuntos(Object.fromEntries(Object.entries(ultimo).map(([eid, n]) => [eid, -n]))));
   }
 
   // Escucha los cambios. `opciones` indica qué colecciones hacen falta en este rol.
@@ -263,6 +284,7 @@ export class Sala {
   actualizarJuego(patch, puntos = {}) {
     const campos = camposPuntos(puntos);
     for (const [k, v] of Object.entries(patch)) campos['juego.' + k] = v === undefined ? deleteField() : v;
+    this.anotarPuntos(puntos); // antes de escribir: la pantalla se redibuja apenas sale la escritura
     return this.actualizar(campos);
   }
 
@@ -275,10 +297,14 @@ export class Sala {
 
   sumar(puntosPorEquipo) {
     const campos = camposPuntos(puntosPorEquipo);
-    return Object.keys(campos).length ? this.actualizar(campos) : Promise.resolve();
+    if (!Object.keys(campos).length) return Promise.resolve();
+    this.anotarPuntos(puntosPorEquipo);
+    return this.actualizar(campos);
   }
 
   reiniciarPuntos() {
+    this.historialPuntos = [];
+    try { localStorage.removeItem('puntos-' + this.codigo); } catch {}
     return this.actualizar({ puntos: Object.fromEntries((this.data?.equipos || []).map((e) => [e.id, 0])) });
   }
 

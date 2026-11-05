@@ -305,6 +305,7 @@ function panelSala(raiz, docente, codigo) {
           h('button', { class: 'btn-link', onclick: async () => {
             if (await confirmar({ titulo: '¿Poner los puntos en cero?', ok: 'Reiniciar puntos', peligro: true })) sala.reiniciarPuntos();
           } }, 'Puntos a cero'))),
+      deshacer(eqs),
       h('div', { class: 'equipos' }, eqs.map((e) => {
         const miembros = sala.miembros(e.id);
         return h('div', { class: 'equipo', style: { '--c': e.color } },
@@ -319,6 +320,18 @@ function panelSala(raiz, docente, codigo) {
       })),
       sinEquipo.length > 0 && h('p', { class: 'muted chico' }, 'Sin equipo: ', sinEquipo.map((m) => m.nombre).join(', ')),
       !sala.jugadores.size && h('p', { class: 'muted' }, 'Todavía no entró nadie. Los invitados que entren se reparten solos entre los equipos.'));
+  }
+
+  // Botón para volver atrás el último cambio de puntos (un toque de más en medio de la fiesta).
+  function deshacer(eqs) {
+    const ultimo = sala.ultimoCambioPuntos();
+    if (!ultimo) return null;
+    const texto = Object.entries(ultimo).map(([eid, n]) => `${n > 0 ? '+' : '−'}${Math.abs(n)} ${eqs.find((e) => e.id === eid)?.nombre || eid}`).join(', ');
+    return h('button', { class: 'btn sec chico deshacer', onclick: async (ev) => {
+      ev.currentTarget.disabled = true;
+      try { await sala.deshacerPuntos(); toast('Listo, se deshizo: ' + texto); } catch (e) { toast('No se pudo deshacer: ' + e.message, 'error'); }
+      dibujarEquipos();
+    } }, '↩ Deshacer ', texto);
   }
 
   async function mezclarEquipos() {
