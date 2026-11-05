@@ -151,7 +151,7 @@ try {
       const p = await pagina(`inv${n}`, `?sala=${codigo}`);
       await p.locator('#nombre').fill(`Invitado ${n}`);
       await p.getByRole('button', { name: 'Entrar' }).click();
-      await p.getByText('¡Ya estás adentro!').waitFor({ timeout: 30000 });
+      await p.getByText('¡Mirá la tele!').waitFor({ timeout: 30000 });
       return p;
     }));
     invitados.push(...lote);

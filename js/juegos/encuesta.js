@@ -682,7 +682,8 @@ export default {
           } else {
             titulo = `Le toca responder a ${j.responde?.nombre || 'tu equipo'}`; sub = '¡Ayudalo! Pero responde solo él.';
           }
-          montar(el, ultimo, esperando(titulo, sub), resumen, tablero(j));
+          // Con globos todo pasa en voz alta: el tablero se mira en la tele, no en el celular.
+          montar(el, ultimo, esperando(titulo, sub), resumen, h('p', { class: 'mira-tele' }, '📺 El tablero está en la tele'));
           return;
         }
         if (j.fase === 'duelo') {
