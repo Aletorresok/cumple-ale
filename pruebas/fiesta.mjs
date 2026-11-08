@@ -286,7 +286,7 @@ try {
   const antesTrivia = await puntos(host);
   let esperado = 0;
   const turnos = [];
-  for (let n = 0; n < 8; n++) {
+  for (let n = 0; n < 9; n++) {
     await tv.getByText('Sin opciones vale 2', { exact: false }).waitFor({ timeout: 15000 });
     await host.getByRole('button', { name: /✓ Bien/ }).waitFor({ timeout: 15000 });
     turnos.push((await tv.locator('.tv-turno .pildora').textContent()).trim());
@@ -315,17 +315,17 @@ try {
       esperado += caso === 0 ? 2 : 1;
     }
     await tv.locator('.tv-opcion.correcta').waitFor({ timeout: 10000 });
-    if (n === 0 || n === 2) {
-      // Las de Los Magios y la Llamarada Moe pasan la escena para chequear la respuesta.
+    if ([0, 2, 4, 8].includes(n)) {
+      // Magios, Llamarada Moe, crayones y código de área pasan la escena para chequear la respuesta.
       await tv.waitForFunction(() => { const v = document.querySelector('video.tv-trivia-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
-      if (n === 2) { await captura(tv, '10c2-trivia-video-chequeo'); paso('Trivia japonesa: al responder las de Los Magios y la Llamarada Moe, la tele pasa la escena para chequear'); }
+      if (n === 2) { await captura(tv, '10c2-trivia-video-chequeo'); paso('Trivia japonesa: al responder las que tienen escena (Magios, Llamarada, crayones, código de área), la tele la pasa para chequear'); }
     } else afirmar(!(await tv.locator('video.tv-trivia-video').count()), 'sin video, no pasa ninguna escena');
     await host.getByRole('button', { name: /Siguiente pregunta|aproximación/ }).click();
   }
   afirmar(new Set(turnos.slice(0, 4)).size === 4 && turnos[4] === turnos[0], `las preguntas rotan por equipo (${turnos.join(', ')})`);
   await esperar(800);
   afirmar(await puntos(host) - antesTrivia === esperado, `sin opciones vale 2 y con opciones 1 (${await puntos(host) - antesTrivia} de ${esperado})`);
-  paso(`Trivia japonesa: 8 preguntas rotando por equipo, ${esperado} puntos (2 sin opciones, 1 con opciones)`);
+  paso(`Trivia japonesa: 9 preguntas rotando por equipo, ${esperado} puntos (2 sin opciones, 1 con opciones)`);
   // Ronda final: aproximación.
   await tv.getByText('Ronda final: aproximación').waitFor({ timeout: 10000 });
   await host.getByRole('button', { name: 'Revelar la respuesta en la tele' }).click();

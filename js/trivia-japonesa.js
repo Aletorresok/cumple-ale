@@ -10,10 +10,11 @@ export const PREGUNTAS_JAPONESA = [
   q('¿Cuál es el número de preso de Bob Patiño?', '24601', '31337', '74200', '18650'),
   conVideo('video/trivia-llamarada.mp4', q('Además del fuego, ¿cuál es el ingrediente secreto de la Llamarada Moe?', 'Jarabe para la tos infantil de Krusty', 'Tequila', 'Licor de dona', 'Duff con pimienta')),
   q('¿Qué nombre nuevo se pone Homero, sacado de un secador de pelo?', 'Max Power', 'Homer Thompson', 'Mr. X', 'Señor Poder'),
-  q('¿Qué coeficiente intelectual tiene Homero con el crayón en el cerebro?', '55', '105', '75', '30'),
+  conVideo('video/trivia-crayones.mp4', q('¿Cuántos crayones se metió Homero por la nariz?', '16', '8', '12', '24')),
   q('¿Cómo se llama el osito de peluche del Sr. Burns?', 'Bobo', 'Rosebud', 'Winston', 'Teddy'),
   q('¿Cuál es el teléfono del Señor Quitanieves?', 'KL5-3226', 'KL5-1234', '555-PLOW', '742-1989'),
   q('¿Cuál es el nombre real de Krusty el payaso?', 'Herschel Krustofski', 'Hyman Krustofski', 'Krusty Kowalski', 'Herschel Klein'),
+  conVideo('video/trivia-codigo-area.mp4', q('¿Cuál es el código de área de la Nueva Springfield?', '939', '636', '742', '555')),
 ];
 
 // Ronda final: cada equipo escribe su número en una hoja; el que más se acerca gana 3 puntos.
