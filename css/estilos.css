@@ -879,3 +879,7 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .tv-pizarra-cartel { min-height: 5em; width: min(80vw, 900px); margin: 0 auto; }
 .tv-pizarra-cartel { display: flex; justify-content: center; align-items: center; }
 .tv-pizarra-cartel .tv-dibujo-cartel { position: static; transform: none; margin: 0 auto; }
+
+/* ¿Te acordás de la escena? · video en la tele */
+.tv-video-marco { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 50; }
+.tv-video { width: 100vw; height: 100vh; border: 0; background: #000; object-fit: contain; }

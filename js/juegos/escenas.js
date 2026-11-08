@@ -1,4 +1,5 @@
-// ¿Te acordás de la escena?: la tele presenta una escena clásica de Los Simpson (por ejemplo, Cleto
+// ¿Te acordás de la escena?: con video (cargado desde el panel), la tele pasa la escena una sola vez y
+// después aparece la pregunta. Sin video, la tele presenta una escena clásica (por ejemplo, Cleto
 // llamando a todos sus hijos) y cada equipo escribe desde los celulares todo lo que se acuerde.
 // Lo que escriben los integrantes de un equipo se junta en una sola lista. Quien organiza revisa,
 // puede aceptar o sacar respuestas a mano y revela: la tele muestra la lista completa y quién
@@ -8,7 +9,28 @@ import { ESCENAS } from '../escenas.js';
 import { normalizar, distancia, cuentaRegresiva, toast, sonido, vibrar, confeti, guardarLocal, leerLocal } from '../util.js';
 
 const PUNTOS_PUESTO = [100, 60, 40, 20];
-const PUNTOS_ACIERTO = 10;
+const PUNTOS_ACIERTO = 1;  // la fiesta usa puntos chicos: 1 por cada cosa que se acuerden
+const CLAVE_PROPIAS = 'escenas-propias'; // escenas con video que carga quien organiza (en este dispositivo)
+
+// Video de una escena: un link de YouTube (watch, youtu.be o shorts, con ?t= para empezar) o un
+// archivo .mp4. Devuelve { tipo: 'youtube', src } o { tipo: 'archivo', src } o null.
+export function fuenteVideo(url) {
+  const u = String(url || '').trim();
+  if (!u) return null;
+  const m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if (m) {
+    const t = u.match(/[?&](?:t|start)=(\d+)/);
+    const fin = u.match(/[?&]end=(\d+)/);
+    const q = new URLSearchParams({ autoplay: '1', controls: '0', rel: '0', modestbranding: '1', playsinline: '1' });
+    if (t) q.set('start', t[1]);
+    if (fin) q.set('end', fin[1]);
+    return { tipo: 'youtube', src: `https://www.youtube-nocookie.com/embed/${m[1]}?${q}` };
+  }
+  return { tipo: 'archivo', src: u };
+}
+
+// Escenas propias guardadas en este dispositivo: { id, titulo, video, consigna, items: [['resp', 'alias'…]] }.
+export const escenasPropias = () => { const l = leerLocal(CLAVE_PROPIAS, []); return Array.isArray(l) ? l : []; };
 const MAX_LARGO = 40;      // largo máximo de cada respuesta
 const TROZO = 200;         // las reglas de Firebase aceptan «valor» de hasta 200 caracteres…
 const MAX_TROZOS = 4;      // …y «palabras» con hasta 3 textos más: hasta 800 caracteres por celular
@@ -98,20 +120,57 @@ export default {
   tipos: [],
 
   configurar() {
-    const marcas = ESCENAS.map((e) => h('input', { type: 'checkbox', value: e.id, checked: !!e.fija }));
+    // Lista de escenas (las propias con video primero). Se rearma al guardar o borrar una propia.
+    let todas = [], marcas = [];
+    const elegidas = new Set([...escenasPropias().map((e) => e.id), ...ESCENAS.filter((e) => e.fija).map((e) => e.id)]);
+    const zonaLista = h('div', { class: 'pila-s' });
+    const pintarLista = () => {
+      const propias = escenasPropias();
+      todas = [...propias, ...ESCENAS];
+      marcas = todas.map((e) => h('input', { type: 'checkbox', value: e.id, checked: elegidas.has(e.id),
+        onchange: (ev) => { if (ev.target.checked) elegidas.add(e.id); else elegidas.delete(e.id); } }));
+      montar(zonaLista, todas.map((e, i) => h('label', { class: 'fila nowrap escena-opcion' }, marcas[i],
+        h('span', null, e.video ? '🎬 ' : '', h('b', null, e.titulo), h('span', { class: 'muted chico' }, ` · ${e.items.length} para recordar`)),
+        propias.includes(e) && h('button', { class: 'btn-link peligro chico', type: 'button', onclick: (ev) => { ev.preventDefault(); borrarPropia(e.id); } }, 'Borrar'))));
+    };
     const seg = selector('cfg-seg', 'Tiempo para escribir', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 60);
-    const modo = selector('cfg-puntos', 'Puntos', [['puesto', 'Por puesto: 100, 60, 40 y 20'], ['acierto', `${PUNTOS_ACIERTO} por cada acierto`]], 'puesto');
+    const modo = selector('cfg-puntos', 'Puntos', [['acierto', `${PUNTOS_ACIERTO} punto por cada cosa que se acuerden`], ['puesto', 'Por puesto: 100, 60, 40 y 20']], 'acierto');
+    // Formulario para cargar una escena con video.
+    const fTitulo = h('input', { class: 'campo', id: 'esc-titulo', maxlength: 60, placeholder: 'Título (ej.: Homero en la feria)' });
+    const fVideo = h('input', { class: 'campo', id: 'esc-video', placeholder: 'Link de YouTube (con ?t= para que arranque ahí) o de un .mp4' });
+    const fPregunta = h('input', { class: 'campo', id: 'esc-pregunta', maxlength: 200, placeholder: 'Pregunta (ej.: ¿Qué cosas comió Homero?)' });
+    const fRespuestas = h('textarea', { class: 'campo', id: 'esc-respuestas', rows: 3, placeholder: 'Respuestas correctas, una por línea. Otras formas de escribirla, separadas con /  (ej.: dona / rosquilla)' });
+    const guardarPropia = () => {
+      const titulo = fTitulo.value.trim(), video = fVideo.value.trim(), consigna = fPregunta.value.trim();
+      const items = fRespuestas.value.split('\n').map((l) => l.split('/').map((x) => x.trim()).filter(Boolean)).filter((x) => x.length);
+      if (!video || !fuenteVideo(video)) { toast('Pegá el link del video', 'error'); fVideo.focus(); return; }
+      if (!consigna) { toast('Escribí la pregunta', 'error'); fPregunta.focus(); return; }
+      if (!items.length) { toast('Escribí al menos una respuesta correcta', 'error'); fRespuestas.focus(); return; }
+      const lista = [...escenasPropias(), { id: 'propia-' + Date.now().toString(36), titulo: titulo || consigna.slice(0, 40), video, consigna, items }];
+      guardarLocal(CLAVE_PROPIAS, lista);
+      elegidas.add(lista[lista.length - 1].id);
+      pintarLista();
+      toast('Escena guardada y marcada para jugar', 'ok');
+      fTitulo.value = fVideo.value = fPregunta.value = fRespuestas.value = '';
+    };
+    const borrarPropia = (id) => { guardarLocal(CLAVE_PROPIAS, escenasPropias().filter((e) => e.id !== id)); elegidas.delete(id); pintarLista(); toast('Escena borrada'); };
+    pintarLista();
+    const cargar = h('details', { class: 'pila-s' }, h('summary', null, '🎬 Cargar una escena con video'),
+      h('div', { class: 'pila-s' }, fTitulo, fVideo, fPregunta, fRespuestas,
+        h('p', { class: 'muted chico' }, 'El video pasa una sola vez en la tele; después aparece la pregunta y cada equipo escribe lo que se acuerde. Se guarda en este dispositivo.'),
+        h('button', { class: 'btn sec', type: 'button', onclick: guardarPropia }, 'Guardar escena')));
     return {
       el: h('div', { class: 'pila' },
         h('div', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Escenas (en este orden)'),
-          ESCENAS.map((e, i) => h('label', { class: 'fila nowrap escena-opcion' }, marcas[i],
-            h('span', null, h('b', null, e.titulo), h('span', { class: 'muted chico' }, ` · ${e.items.length} para recordar`))))),
+          zonaLista),
+        cargar,
         h('div', { class: 'grilla-2' }, seg.el, modo.el),
         h('p', { class: 'muted chico' }, 'Cada integrante escribe desde su celular y todo se suma a la lista del equipo. Antes de revelar podés aceptar o sacar respuestas a mano.')),
       leer: () => {
+        // Primero las propias (con video), después las clásicas, en el orden de la lista.
         const ids = marcas.filter((m) => m.checked).map((m) => m.value);
         if (!ids.length) { toast('Elegí al menos una escena', 'error'); return null; }
-        return { escenas: ESCENAS.filter((e) => ids.includes(e.id)), seg: Number(seg.valor()), modo: modo.valor() };
+        return { escenas: todas.filter((e) => ids.includes(e.id)), seg: Number(seg.valor()), modo: modo.valor() };
       },
     };
   },
@@ -120,8 +179,9 @@ export default {
     const juego = await sala.iniciarJuego({
       tipo: 'escenas', fase: 'presentar', n: 0, total: escenas.length, seg, modo,
       titulo: escenas[0].titulo, consigna: escenas[0].consigna, cantidad: escenas[0].items.length, hasta: 0,
+      video: escenas[0].video || null, visto: false,
     });
-    await sala.guardarPrivado({ juego, escenas: escenas.map((e) => ({ titulo: e.titulo, consigna: e.consigna, items: e.items.map((it) => ({ a: it })) })), manual: {} });
+    await sala.guardarPrivado({ juego, escenas: escenas.map((e) => ({ titulo: e.titulo, consigna: e.consigna, video: e.video || null, items: e.items.map((it) => ({ a: it })) })), manual: {} });
   },
 
   host(el, sala) {
@@ -149,6 +209,8 @@ export default {
       ocupado = false;
     }
 
+    const pasarVideo = () => accion(() => sala.actualizarJuego({ fase: 'video', t: Date.now() }));
+    const terminoVideo = () => accion(() => sala.actualizarJuego({ fase: 'presentar', visto: true }));
     const empezar = () => accion(() => sala.actualizarJuego({ fase: 'escribiendo', hasta: Date.now() + sala.juego.seg * 1000 }));
     const cortar = () => accion(async () => { if (sala.juego.fase === 'escribiendo') await sala.actualizarJuego({ fase: 'revisar', hasta: 0 }); });
 
@@ -177,7 +239,7 @@ export default {
       const n = j.n + 1;
       if (n >= j.total) { await sala.actualizarJuego({ fase: 'fin' }); return; }
       const e = privado.escenas[n];
-      await sala.actualizarJuego({ fase: 'presentar', n, titulo: e.titulo, consigna: e.consigna, cantidad: e.items.length, hasta: 0, items: undefined, porEquipo: undefined });
+      await sala.actualizarJuego({ fase: 'presentar', n, titulo: e.titulo, consigna: e.consigna, cantidad: e.items.length, hasta: 0, items: undefined, porEquipo: undefined, video: e.video || null, visto: false });
     });
 
     // Tarjeta por equipo: cuántas lleva y, al revisar, cada ítem para prender o apagar a mano.
@@ -218,6 +280,19 @@ export default {
         const respuestas = h('details', { class: 'mini-palabra' }, h('summary', null, `Ver la lista completa (${e.items.length})`),
           h('p', { class: 'chico' }, e.items.map((it) => it.a[0]).join(' · ')));
         zonaEquipos = h('div', { class: 'pila-s' });
+        if (j.fase === 'video') {
+          montar(el, cabecera, respuestas,
+            h('p', { class: 'muted' }, '🎬 El video está pasando en la tele (una sola vez).'),
+            h('button', { class: 'btn grande', onclick: terminoVideo }, 'Terminó el video: mostrar la pregunta'));
+          return;
+        }
+        if (j.fase === 'presentar' && j.video && !j.visto) {
+          montar(el, cabecera, respuestas,
+            h('p', { class: 'muted chico' }, 'Avisá que la escena pasa una sola vez. La pregunta aparece después del video.'),
+            h('button', { class: 'btn grande', onclick: pasarVideo }, '▶ Pasar el video en la tele'),
+            h('button', { class: 'btn-link', onclick: terminoVideo }, 'Saltear el video'));
+          return;
+        }
         if (j.fase === 'presentar') {
           montar(el, cabecera, respuestas,
             h('p', { class: 'muted chico' }, 'La tele muestra la escena. Leé la consigna en voz alta y largá el tiempo.'),
@@ -261,6 +336,10 @@ export default {
         const eq = sala.equipo(mio);
         if (j.fase === 'fin') { montar(el, h('h2', null, '¡Terminaron las escenas!'), ranking(sala)); return; }
         if (!mio) { montar(el, esperando('Todavía no tenés equipo', 'Pedile a quien organiza que te sume a uno.')); return; }
+        if (j.fase === 'video' || (j.fase === 'presentar' && j.video && !j.visto)) {
+          montar(el, esperando('📺 ¡Miren la tele!', 'La escena pasa una sola vez. Presten atención a todo.'));
+          return;
+        }
         if (j.fase === 'presentar') {
           montar(el, h('div', { class: 'pila-s' }, h('span', { class: 'etiqueta' }, `Escena ${j.n + 1} de ${j.total}`), h('h2', null, j.titulo)),
             esperando('¡Miren la tele!', 'En un ratito tu equipo escribe todo lo que se acuerde.'));
@@ -343,10 +422,29 @@ export default {
         }
         const cabecera = [h('div', { class: 'tv-etiqueta' }, `📼 ¿Te acordás de la escena? · ${j.n + 1} de ${j.total}`),
           h('h1', { class: 'tv-titulo' }, j.titulo)];
+        if (j.fase === 'video') {
+          const f = fuenteVideo(j.video);
+          const reproductor = f?.tipo === 'youtube'
+            ? h('iframe', { class: 'tv-video', src: f.src, allow: 'autoplay; encrypted-media; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin' })
+            : h('video', { class: 'tv-video', src: f?.src || '', autoplay: true, playsinline: true });
+          if (reproductor.tagName === 'VIDEO') {
+            reproductor.addEventListener('ended', () => reproductor.classList.add('terminado'));
+            reproductor.play?.().catch(() => { reproductor.muted = true; reproductor.play().catch(() => {}); });
+          }
+          montar(el, h('div', { class: 'tv-video-marco' }, reproductor));
+          return;
+        }
+        if (j.fase === 'presentar' && j.video && !j.visto) {
+          montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
+            h('div', { class: 'tv-icono' }, '🎬'),
+            h('p', { class: 'tv-pregunta' }, 'Presten atención: la escena pasa una sola vez.'),
+            h('p', { class: 'tv-sub' }, 'Después viene la pregunta. Cuanto más se acuerden, más puntos para el equipo.')));
+          return;
+        }
         if (j.fase === 'presentar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, `Son ${j.cantidad}. Cada equipo escribe desde los celulares todos los que se acuerde. ¡Repártanse!`)));
+            h('p', { class: 'tv-sub' }, j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
           return;
         }
         if (j.fase === 'escribiendo' || j.fase === 'revisar') {

@@ -12,6 +12,7 @@ import { qr } from './qr.js';
 import { imprimirRespaldo } from './respaldo.js';
 import { panelEscaleta } from './escaleta.js';
 import { mantenerPantalla, latidoPanel } from './presencia.js';
+import { EQUIPOS_BASE } from './config.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
 
@@ -205,7 +206,22 @@ function panelSala(raiz, docente, codigo) {
   sala.subs.push(soltarPantalla);
   latidoPanel(sala, () => sala.data?.controlador === SESION);
   sala.vigilarConexion(bandaConexion());
+  // Salas creadas antes del cambio de nombres: los equipos que siguen con el nombre viejo pasan al nuevo.
+  const VIEJOS = { e1: ['Krusty Burger'], e2: ['Escuela Primaria'], e3: ['Planta Nuclear'], e4: ['Taberna de Moe', 'La Banda de Luxo'] };
+  let nombresRevisados = false;
+  const actualizarNombres = () => {
+    if (nombresRevisados || !sala.data?.equipos) return;
+    nombresRevisados = true;
+    let cambio = false;
+    const equipos = sala.data.equipos.map((e) => {
+      const nuevo = EQUIPOS_BASE.find((b) => b.id === e.id);
+      if (nuevo && VIEJOS[e.id]?.includes(e.nombre)) { cambio = true; return { ...e, nombre: nuevo.nombre }; }
+      return e;
+    });
+    if (cambio) sala.actualizar({ equipos }).catch((err) => console.warn('nombres de equipos', err));
+  };
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
+    actualizarNombres();
     contadorAlumnos.textContent = sala.activos().length;
     if (motivo === 'jugadores' || motivo === 'sala') pedirAsignar();
     if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); }
