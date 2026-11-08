@@ -20,10 +20,10 @@
   --t1: #E4572E; --t2: #2E6FE4; --t3: #2BA36B; --t4: #8A4FD8; --t5: #C98A12; --t6: #1A9BA8;
   --tv-bg: #0D1626;
   --tv-cielo: #17325A;
-  --tv-surface: #182539;
-  --tv-surface2: #22344D;
+  --tv-surface: #1F304A;
+  --tv-surface2: #2E4566;
   --tv-tinta: #EEF3F8;
-  --tv-muted: #93A4B8;
+  --tv-muted: #C6D3E1;
   --mi-color: var(--accent);
   --display: "Lilita One", "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif;
   font-synthesis-weight: none;
@@ -933,3 +933,16 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 
 /* Feliz cumpleaños: aviso si el navegador arrancó el video sin sonido */
 .tv-cumple-sonido { position: absolute; bottom: 5vh; left: 50%; transform: translateX(-50%); font-size: 2rem; padding: .5em 1em; border: 0; border-radius: 14px; background: #ffd90f; color: #1b1b1b; font-weight: 800; cursor: pointer; }
+
+/* ── Modo proyector (tele): la imagen va proyectada con poca luz, así que todo lo que es
+   texto secundario, bordes y colores de equipo sube de brillo y de grosor. ── */
+.tv .equipo-nombre, .tv .tv-grupo-cab, .tv .tv-eq-nombre { color: color-mix(in srgb, var(--c) 62%, #fff); }
+.tv .tv-grupo-cab > :last-child { white-space: nowrap; }
+.tv-etiqueta { font-weight: 700; font-size: .9em; }
+.tv .casillero { border: 2px solid var(--tv-surface2); }
+.tv .cas-num { color: var(--tv-tinta); }
+.tv-trivia-nombre b { color: #FF4B3A; }
+.tv-trivia-nombre small { font-size: 1.05rem; font-weight: 700; }
+.marcador.compacto .marcador-eq { font-size: 1.1em; }
+.marcador.compacto .logo-eq { height: 2.2em; }
+.tv .marcador-pts { color: #fff; }
