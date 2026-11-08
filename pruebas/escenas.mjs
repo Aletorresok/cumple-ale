@@ -268,8 +268,8 @@ try {
   await host.getByRole('button', { name: /Terminó el video/ }).click();
   await tv.getByText('¿Qué colores había en la pantalla?').waitFor({ timeout: 10000 });
   // En voz alta (por defecto): nadie escribe y el organizador toca lo que cada equipo dijo bien.
-  await host.getByRole('button', { name: '🗣️ ¡Que respondan!' }).click();
-  await tv.getByText(/Cada equipo dice lo que se acuerda/).waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: '✍️ ¡A escribir en el papel!' }).click();
+  await tv.getByText(/Todos escriben en su papel/).waitFor({ timeout: 10000 });
   await esperar(1000);
   afirmar(!(await invitados[0].locator('#escena-respuesta').count()), 'en voz alta el celular no tiene dónde escribir');
   await invitados[0].getByText('¡Miren la tele!').waitFor();
@@ -298,7 +298,7 @@ try {
     }
   });
   await host.getByRole('button', { name: 'Saltear el video' }).click();
-  await host.getByRole('button', { name: '🗣️ ¡Que respondan!' }).click();
+  await host.getByRole('button', { name: '✍️ ¡A escribir en el papel!' }).click();
   await tv.getByText(/con 6 de 9, la respuesta es correcta/).waitFor({ timeout: 10000 });
   const t1 = host.locator('.escena-equipo').nth(0), t2 = host.locator('.escena-equipo').nth(1);
   for (const c of ['París', 'Moscú', 'Mongolia', 'Buenos Aires', 'Ohio', 'Uganda']) await t1.getByRole('button', { name: c, exact: true }).click();

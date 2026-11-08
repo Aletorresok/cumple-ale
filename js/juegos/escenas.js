@@ -134,7 +134,7 @@ export default {
         h('span', null, e.video ? '🎬 ' : '', h('b', null, e.titulo), h('span', { class: 'muted chico' }, ` · ${e.items.length} para recordar`)),
         propias.includes(e) && h('button', { class: 'btn-link peligro chico', type: 'button', onclick: (ev) => { ev.preventDefault(); borrarPropia(e.id); } }, 'Borrar'))));
     };
-    const responden = selector('cfg-responden', 'Cómo responden', [['voz', 'En voz alta: vos marcás lo que se acuerdan'], ['celular', 'Escriben desde los celulares']], 'voz');
+    const responden = selector('cfg-responden', 'Cómo responden', [['voz', 'En un papel: cada equipo escribe y vos marcás lo que acertó'], ['celular', 'Escriben desde los celulares']], 'voz');
     const seg = selector('cfg-seg', 'Tiempo para escribir (con celulares)', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 60);
     const modo = selector('cfg-puntos', 'Puntos', [['acierto', `${PUNTOS_ACIERTO} punto por cada cosa que se acuerden`], ['puesto', 'Por puesto: 100, 60, 40 y 20']], 'acierto');
     // Formulario para cargar una escena con video.
@@ -168,7 +168,7 @@ export default {
         cargar,
         responden.el,
         h('div', { class: 'grilla-2' }, seg.el, modo.el),
-        h('p', { class: 'muted chico' }, 'En voz alta: cada equipo dice lo que se acuerda y vos tocás cada cosa que dijeron bien. Con celulares, cada integrante escribe y todo se suma a la lista del equipo; antes de revelar podés aceptar o sacar respuestas a mano.')),
+        h('p', { class: 'muted chico' }, 'En un papel: todos los equipos juegan cada escena, escriben en su hoja y vos tocás cada cosa que acertó cada equipo. Con celulares, cada integrante escribe y todo se suma a la lista del equipo; antes de revelar podés aceptar o sacar respuestas a mano.')),
       leer: () => {
         // Primero las propias (con video), después las clásicas, en el orden de la lista.
         const ids = marcas.filter((m) => m.checked).map((m) => m.value);
@@ -301,9 +301,9 @@ export default {
         if (j.fase === 'presentar') {
           montar(el, cabecera, respuestas,
             h('p', { class: 'muted chico' }, j.voz
-              ? 'La tele muestra la pregunta. Leéla en voz alta, dales un ratito para pensar y después escuchá a cada equipo.'
+              ? 'La tele muestra la pregunta. Leéla en voz alta y que cada equipo la escriba en su papel. Después juntá las hojas.'
               : 'La tele muestra la escena. Leé la consigna en voz alta y largá el tiempo.'),
-            h('button', { class: 'btn grande', onclick: empezar }, j.voz ? '🗣️ ¡Que respondan!' : `✍️ ¡A escribir! (${j.seg} s)`));
+            h('button', { class: 'btn grande', onclick: empezar }, j.voz ? '✍️ ¡A escribir en el papel!' : `✍️ ¡A escribir! (${j.seg} s)`));
           return;
         }
         if (j.fase === 'escribiendo') {
@@ -317,7 +317,7 @@ export default {
         if (j.fase === 'revisar') {
           montar(el, cabecera,
             h('p', { class: 'chico' }, j.voz
-              ? 'Cada equipo dice en voz alta lo que se acuerda. Tocá cada cosa que digan bien (queda en verde, 1 punto). Se puede sacar tocando de nuevo.'
+              ? 'Leé la hoja de cada equipo y tocá cada cosa que tengan bien (queda en verde, 1 punto). Se puede sacar tocando de nuevo.'
               : 'Revisá: en verde lo que cuenta. Tocá un nombre para aceptarlo o sacarlo (por ejemplo, si lo escribieron muy distinto).'),
             zonaEquipos,
             h('button', { class: 'btn grande', onclick: revelar }, '📺 Revelar en la tele'));
@@ -350,7 +350,7 @@ export default {
           return;
         }
         if (j.voz && (j.fase === 'presentar' || j.fase === 'revisar')) {
-          montar(el, esperando('📺 ¡Miren la tele!', 'Nada de celular: junten en equipo todo lo que se acuerden y díganlo en voz alta.'));
+          montar(el, esperando('📺 ¡Miren la tele!', 'Nada de celular: escriban en el papel del equipo todo lo que se acuerden.'));
           return;
         }
         if (j.fase === 'presentar') {
@@ -457,13 +457,13 @@ export default {
         if (j.fase === 'presentar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, j.minimo ? `Son ${j.cantidad}: si nombran ${j.minimo}, la respuesta es correcta.` : j.voz ? (j.cantidad > 1 ? `Son ${j.cantidad}. Junten en equipo todo lo que se acuerden: lo dicen en voz alta.` : 'Piénsenlo en equipo y díganlo en voz alta.') : j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
+            h('p', { class: 'tv-sub' }, j.minimo ? `Son ${j.cantidad}: si nombran ${j.minimo}, la respuesta es correcta.` : j.voz ? (j.cantidad > 1 ? `Son ${j.cantidad}. Escriban en el papel del equipo todo lo que se acuerden.` : 'Escríbanlo en el papel del equipo.') : j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
           return;
         }
         if (j.voz && j.fase === 'revisar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, j.minimo ? `🗣️ Cada equipo dice lo que se acuerda: con ${j.minimo} de ${j.cantidad}, la respuesta es correcta.` : `🗣️ Cada equipo dice lo que se acuerda${j.cantidad > 1 ? ` (son ${j.cantidad})` : ''}. ¡1 punto por cada una!`)));
+            h('p', { class: 'tv-sub' }, j.minimo ? `✍️ Todos escriben en su papel: con ${j.minimo} de ${j.cantidad}, la respuesta es correcta.` : `✍️ Todos escriben en su papel${j.cantidad > 1 ? ` (son ${j.cantidad})` : ''}. ¡1 punto por cada una!`)));
           return;
         }
         if (j.fase === 'escribiendo' || j.fase === 'revisar') {
