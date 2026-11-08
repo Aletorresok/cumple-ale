@@ -883,3 +883,13 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 /* ¿Te acordás de la escena? · video en la tele */
 .tv-video-marco { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 50; }
 .tv-video { width: 100vw; height: 100vh; border: 0; background: #000; object-fit: contain; }
+
+/* Completá la frase */
+.tv-frase { font-family: var(--display); font-size: 3.2em; line-height: 1.5; max-width: 90vw; margin: .5em auto; text-align: center; }
+.tv-frase-hueco { display: inline-block; width: calc(var(--n) * .55em); border-bottom: .12em solid currentColor; margin: 0 .1em; opacity: .7; }
+.tv-frase-palabra { display: inline-block; color: #fff; background: var(--c); padding: 0 .3em; border-radius: .25em; margin: 0 .05em; }
+.tv-frase-palabra.nadie { background: transparent; color: var(--muted, #aaa); text-decoration: underline; }
+.tv-frase-palabra.nueva { animation: aparece .5s ease-out; }
+.frase-host { line-height: 1.4; }
+.frase-oculta-host { background: var(--surface2, #eee); padding: 0 .25em; border-radius: 4px; }
+.frase-palabra.hecha { opacity: .65; }
