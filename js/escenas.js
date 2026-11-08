@@ -8,6 +8,14 @@
 // «fija: true» = viene marcada para jugar. Las demás quedan de repuesto en el panel.
 export const ESCENAS = [
   {
+    id: 'abuelo-onda',
+    titulo: 'Yo sí estaba en onda',
+    video: 'video/escena-onda.mp4',
+    consigna: '¿Cuántas veces se dice la palabra «onda» en la escena?',
+    fija: true,
+    items: [['8', 'ocho', '8 veces', 'ocho veces']],
+  },
+  {
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
     consigna: 'Cleto le regala a Marge los cupones de pretzels y llama a todos sus hijos, uno por uno. ¿Cuántos nombres se acuerdan?',
