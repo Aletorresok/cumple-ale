@@ -188,13 +188,13 @@ export function sonido(tipo) {
     const g = audio.createGain();
     o.connect(g); g.connect(audio.destination);
     const t = audio.currentTime;
-    const tonos = { bien: [660, 990], mal: [220, 150], tic: [880, 880], fin: [523, 1046] };
+    const tonos = { bien: [660, 990], mal: [220, 150], error: [200, 70], tic: [880, 880], fin: [523, 1046] };
     const [f1, f2] = tonos[tipo] || tonos.tic;
-    o.type = tipo === 'mal' ? 'square' : 'sine';
+    o.type = tipo === 'mal' || tipo === 'error' ? (tipo === 'error' ? 'sawtooth' : 'square') : 'sine';
     o.frequency.setValueAtTime(f1, t);
-    o.frequency.exponentialRampToValueAtTime(f2, t + 0.18);
-    const dur = tipo === 'tic' ? 0.08 : 0.4;
-    g.gain.setValueAtTime(tipo === 'mal' ? 0.08 : 0.2, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + (tipo === 'error' ? 0.6 : 0.18));
+    const dur = tipo === 'tic' ? 0.08 : tipo === 'error' ? 0.8 : 0.4;
+    g.gain.setValueAtTime(tipo === 'mal' ? 0.08 : tipo === 'error' ? 0.18 : 0.2, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.start(t); o.stop(t + dur);
   } catch { /* sin audio */ }

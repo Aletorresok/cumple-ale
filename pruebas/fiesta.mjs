@@ -85,6 +85,7 @@ async function recargar(p) {
 const captura = async (p, nombre) => { if (CAPTURAS) await p.screenshot({ path: `${CAPTURAS}/${nombre}.png` }); };
 const paso = (t) => console.log(`· ${t}`);
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+const puntos = async (host) => (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
 function afirmar(cond, texto) { if (!cond) throw new Error('Falló: ' + texto); }
 
 async function elegirJuego(host, nombre, preparar) {
@@ -206,23 +207,16 @@ try {
   await terminarJuego(host);
   await medir('Los invitados dicen (arranque)');
 
-  // ── Trivia ──
+  // ── Trivia en modo puntos (todos responden desde el celular): reconexión y presencia ──
   await elegirJuego(host, 'Trivia por equipos', async () => {
     await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Springfield — 31 preguntas' });
     await host.locator('#cfg-cantidad').selectOption('5');
-    await host.locator('#cfg-modo').selectOption('castigo');
+    await host.locator('#cfg-modo').selectOption('puntos');
   });
-  let salioContrato = false;
-  let penados = 0;
-  // Con castigo vota solo el capitán; los demás ven «¡Miren la tele!» y pueden tocar «voto yo».
-  const vozYo = (p) => p.getByRole('button', { name: /voto yo/ });
-  const pregLista = (p, timeout) => p.locator('.opcion').or(vozYo(p)).first().waitFor({ timeout });
-  const votar = async (p, k) => { if (await vozYo(p).count()) await vozYo(p).click(); await p.locator('.opcion').nth(k).click(); };
-  for (let n = 0; n < 5; n++) {
+  const pregLista = (p, timeout) => p.locator('.opcion').first().waitFor({ timeout });
+  const votar = async (p, k) => { await p.locator('.opcion').nth(k).click(); };
+  for (let n = 0; n < 2; n++) {
     await pregLista(invitados[0], 15000);
-    const pregunta = await tv.locator('.tv-pregunta').textContent();
-    const esContrato = pregunta.includes('contrato');
-    if (esContrato) { salioContrato = true; await captura(tv, '10c-trivia-contrato'); await captura(invitados[0], '10d-trivia-celular'); }
     if (n === 0) {
       // ── Reconexión: se corta la red de tres celulares y otros tres recargan la página ──
       const cortados = invitados.slice(0, 3);
@@ -253,7 +247,7 @@ try {
       await sinInternet.context().unroute(servidor, bloquear);
       await sinInternet.locator('.banda-conexion').waitFor({ state: 'hidden', timeout: 60000 });
       paso('Reconexión: un celular con wifi pero sin internet vio el aviso y su respuesta llegó al volver');
-    } else if (n === 1) {
+    } else {
       // Presencia: un celular que dejó de avisar (se quedó sin batería) no frena la pregunta.
       const ausente = invitados[N - 1];
       const raiz = `http://127.0.0.1:8080/v1/projects/${PROYECTO}/databases/(default)/documents/salas/${codigo}/jugadores`;
@@ -268,27 +262,59 @@ try {
       await esperar(1500);
       await Promise.all(invitados.filter((p) => p !== ausente).map((p) => votar(p, n % 2)));
       paso(`Presencia: ${N - 1} respondieron y la pregunta se reveló sin esperar al celular ausente`);
-    } else {
-      await Promise.all(invitados.map((p) => pregLista(p, 15000)));
-      const capitanes = [];
-      for (const p of invitados) if (await p.locator('.opcion').count()) capitanes.push(p);
-      afirmar(capitanes.length === 4, `solo los 4 capitanes ven las opciones (${capitanes.length})`);
-      if (n === 2) await captura(invitados.find((p) => !capitanes.includes(p)), '10d2-trivia-sin-celular');
-      await Promise.all(capitanes.map((p) => p.locator('.opcion').nth(n % 2).click()));
-      await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 8000 });
-      if (n === 2) paso('Trivia: votan solo los 4 capitanes y la pregunta se revela sin esperar el reloj');
     }
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
     await tv.locator('.tv-opcion.correcta').waitFor();
-    penados += await tv.locator('.tv-prenda').count();
     if (n === 0) await invitados[0].locator('.resultado').waitFor();
     if (n === 0) await captura(tv, '10a-trivia');
+    await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).click();
+  }
+  await terminarJuego(host);
+
+  // ── Trivia con castigo: sin celulares, responden en voz alta y el organizador marca ──
+  await elegirJuego(host, 'Trivia por equipos', async () => {
+    await host.locator('#cfg-banco').selectOption({ label: 'Trivia · Springfield — 31 preguntas' });
+    await host.locator('#cfg-cantidad').selectOption('5');
+    afirmar(await host.locator('#cfg-modo').inputValue() === 'castigo', 'por defecto, trivia con castigo');
+    afirmar(await host.locator('#cfg-segundos').inputValue() === '20', 'por defecto, 20 segundos por pregunta');
+  });
+  let salioContrato = false;
+  let cruces = 0;
+  const antesTrivia = await puntos(host);
+  let bienes = 0;
+  for (let n = 0; n < 5; n++) {
+    await tv.locator('.tv-pregunta').waitFor({ timeout: 15000 });
+    await host.getByRole('button', { name: '✓ Bien' }).first().waitFor({ timeout: 15000 });
+    const pregunta = await tv.locator('.tv-pregunta').textContent();
+    const esContrato = pregunta.includes('contrato');
+    if (esContrato) { salioContrato = true; await captura(tv, '10c-trivia-contrato'); }
+    if (n === 0) {
+      await invitados[0].getByText('¡Miren la tele!').waitFor({ timeout: 10000 });
+      afirmar(!(await invitados[0].locator('.opcion').count()), 'con castigo el celular no muestra opciones');
+      await captura(invitados[0], '10d-trivia-celular');
+    }
+    // Primer equipo bien, segundo mal; el resto alterna según la pregunta.
+    const bien = host.getByRole('button', { name: '✓ Bien' });
+    const mal = host.getByRole('button', { name: '✗ Mal' });
+    await bien.nth(0).click(); bienes++;
+    await mal.nth(1).click();
+    await tv.locator('.tv-cruz.activa').waitFor({ timeout: 5000 });
+    await tv.locator('.tv-eq-marca.mal').first().waitFor({ timeout: 5000 });
+    if (n === 0) { await captura(tv, '10b-trivia-cruz'); paso('Trivia con castigo: el organizador marca ✗ y la tele muestra la cruz roja'); }
+    cruces += 1;
+    if (n % 2) { await bien.nth(2).click(); bienes++; } else { await mal.nth(2).click(); cruces++; }
+    await esperar(400);
+    await host.getByRole('button', { name: 'Revelar respuesta' }).click();
+    await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).waitFor({ timeout: 20000 });
+    await tv.locator('.tv-opcion.correcta').waitFor();
+    if (n === 0) await invitados[0].locator('.resultado').waitFor();
     if (esContrato) await captura(tv, '10e-trivia-contrato-revelada');
     await host.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ }).click();
   }
-  afirmar(penados > 0, `en el modo con castigo algún equipo pagó prenda (${penados})`);
+  await esperar(800);
+  afirmar(await puntos(host) - antesTrivia === bienes, `cada acierto marcado vale 1 punto (${await puntos(host) - antesTrivia} de ${bienes})`);
   afirmar(salioContrato, 'la pregunta del contrato sale siempre, aunque se sorteen 5');
-  paso(`Trivia con castigo: cinco preguntas, ${penados} prendas repartidas, con la del contrato`);
+  paso(`Trivia con castigo: cinco preguntas, ${bienes} aciertos (+1 cada uno) y ${cruces} cruces, con la del contrato`);
   await terminarJuego(host);
   await medir('Trivia (cinco preguntas)');
 
