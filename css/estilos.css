@@ -813,6 +813,11 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .tv-cruz-eq { margin-top: .2em; padding: .2em .8em; border-radius: 14px; background: var(--c); color: #fff; font-size: 3.2rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,.4); }
 @keyframes cruz-golpe { from { transform: scale(2.4) rotate(-12deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes cruz-sale { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+.tv-turno { display: flex; align-items: center; justify-content: center; gap: .6em; font-size: 2.2rem; font-weight: 800; margin: .4em 0; }
+.tv-turno .pildora { font-size: 2.6rem; padding: .2em .7em; }
+.tv-turno .pildora img { height: 1.6em; }
+.tv-turno-nota { text-align: center; font-size: 1.5rem; color: var(--tv-muted); margin: .6em 0; }
+.tv-aprox-respuesta { text-align: center; font-family: var(--display); font-size: clamp(3rem, 9vw, 7rem); color: #2fbf4a; margin: .3em 0; animation: cruz-golpe .45s cubic-bezier(.2, 1.6, .4, 1); }
 
 /* ── Dibujá en Springfield ── */
 .lienzo { display: block; width: 100%; aspect-ratio: 4 / 3; background: #fff; touch-action: none; user-select: none; -webkit-user-select: none; }
