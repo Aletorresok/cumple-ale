@@ -278,6 +278,13 @@ try {
     afirmar(await host.locator('#cfg-modo').inputValue() === 'castigo', 'por defecto, trivia con castigo');
     afirmar(await host.locator('#cfg-segundos').inputValue() === '20', 'por defecto, 20 segundos por pregunta');
   });
+  // Antes de la primera pregunta, la tele pasa el video «Nosotros castigamos la ignorancia».
+  await tv.locator('video.tv-video').waitFor({ timeout: 15000 });
+  await tv.waitForFunction(() => { const v = document.querySelector('video.tv-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
+  await invitados[0].getByText('¡Miren la tele!').waitFor({ timeout: 10000 });
+  await captura(tv, '10-trivia-video');
+  await host.getByRole('button', { name: '⚡ Empezar la trivia' }).click();
+  paso('Trivia con castigo: primero pasa el video en la tele y el organizador larga la primera pregunta');
   let salioContrato = false;
   let cruces = 0;
   const antesTrivia = await puntos(host);
