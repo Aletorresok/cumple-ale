@@ -1,14 +1,19 @@
 // Quiz por equipos. Dos modos:
 //  · puntos: todos responden desde el celular; cada equipo suma según qué proporción acertó.
-//  · castigo: sin celulares. Cada equipo discute en voz alta y uno dice la respuesta; quien
-//    organiza marca bien o mal por equipo. Al que se equivoca le sale una cruz roja en la tele
-//    (el castigo va por fuera de la app). Cada acierto vale 1 punto.
+//  · castigo (Trivia japonesa): sin celulares. Cada pregunta le toca a un equipo (rotan, sin robos).
+//    La pregunta sale sin opciones y vale 2; si el equipo pide opciones, quien organiza las muestra
+//    y vale 1. Si arriesgan y fallan, cruz roja y pierden la pregunta. El reloj lo larga quien
+//    organiza. Al final, una pregunta de aproximación para todos (la escriben en una hoja): el que
+//    más se acerca gana 3.
 import { h, montar, vista, selectorBanco, selector, pildoraEquipo, ranking, esperando } from './comun.js';
 import { itemsDe } from '../bancos.js';
 import { mezclar, cuentaRegresiva, letraOpcion, toast, sonido, vibrar, idAzar } from '../util.js';
+import { PREGUNTAS_JAPONESA, APROX_JAPONESA } from '../trivia-japonesa.js';
 
 const PUNTOS = 100;
-const PUNTOS_CASTIGO = 1;
+const PUNTOS_SIN_OPCIONES = 2;
+const PUNTOS_CON_OPCIONES = 1;
+const PUNTOS_APROX = 3;
 // Video que pasa en la tele antes de la primera pregunta del modo con castigo («Nosotros castigamos la ignorancia»).
 export const VIDEO_INTRO = 'video/trivia-intro.mp4';
 
@@ -21,16 +26,17 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
-    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Trivia japonesa (con castigo): responden en voz alta y vos marcás bien o mal']], 'castigo');
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto (con el banco elegido)'], ['castigo', `Trivia japonesa: ${PREGUNTAS_JAPONESA.length} preguntas por turno + aproximación`]], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
-    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 20);
+    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 30);
     const intro = h('input', { type: 'checkbox', id: 'cfg-intro', checked: true });
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
         h('label', { class: 'fila nowrap' }, intro, h('span', null, '🎬 Antes de empezar, pasar el video «Nosotros castigamos la ignorancia» (solo con castigo)')),
-        h('p', { class: 'muted chico' }, `Con castigo: nadie usa el celular. Cada equipo dice su respuesta en voz alta, vos marcás ✓ o ✗ y cada acierto vale ${PUNTOS_CASTIGO} punto. En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
+        h('p', { class: 'muted chico' }, `Trivia japonesa: nadie usa el celular. Cada pregunta le toca a un equipo; sin opciones vale ${PUNTOS_SIN_OPCIONES} y si piden opciones vale ${PUNTOS_CON_OPCIONES}. El reloj lo largás vos. Al final, aproximación para todos: el que más se acerca gana ${PUNTOS_APROX}. (Usa sus propias preguntas: el banco y la cantidad no cuentan.) En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
       leer: () => {
         const banco = b.banco();
+        if (modo.valor() === 'castigo') return { banco: banco || { titulo: 'Trivia japonesa', items: [] }, cantidad: 0, segundos: Number(seg.valor()), modo: 'castigo', intro: intro.checked };
         if (!banco) return null;
         return { banco, cantidad: Number(cant.valor()), segundos: Number(seg.valor()), modo: modo.valor(), intro: intro.checked };
       },
@@ -38,7 +44,8 @@ export default {
   },
 
   async iniciar(sala, { banco, cantidad, segundos, modo = 'puntos', intro = false }) {
-    const conIntro = intro && modo === 'castigo';
+    if (modo === 'castigo') return iniciarJaponesa(sala, { segundos, intro });
+    const conIntro = false;
     let items = mezclar(itemsDe(banco, 'pregunta'));
     // Las preguntas marcadas como «sale siempre» entran aunque se sorteen menos.
     if (cantidad) {
@@ -60,6 +67,7 @@ export default {
   },
 
   host(el, sala) {
+    if (sala.juego?.modo === 'castigo') return hostJaponesa(el, sala);
     let privado = null;
     let revelando = -1;
     sala.privadoDelJuego().then((p) => { privado = p; v.actualizar(); });
@@ -191,6 +199,7 @@ export default {
   },
 
   alumno(el, sala) {
+    if (sala.juego?.modo === 'castigo') return alumnoJaponesa(el, sala);
     const elegida = {};
     const miEquipo = () => sala.data.asignaciones?.[sala.uid];
     const v = vista({
@@ -253,6 +262,7 @@ export default {
   },
 
   tv(el, sala) {
+    if (sala.juego?.modo === 'castigo') return tvJaponesa(el, sala);
     let barras = null;
     let cruz = null;
     let vistas = {};   // marcas ya mostradas: la cruz sale solo cuando aparece un ✗ nuevo
@@ -347,3 +357,240 @@ export default {
     });
   },
 };
+
+// ───────────────────────── Trivia japonesa ─────────────────────────
+
+async function iniciarJaponesa(sala, { segundos, intro }) {
+  const preguntas = PREGUNTAS_JAPONESA.map((it) => {
+    const opciones = mezclar([it.correcta, ...it.incorrectas]);
+    return { pregunta: it.pregunta, opciones, correcta: opciones.indexOf(it.correcta) };
+  });
+  const orden = sala.equipos().map((e) => e.id);
+  const id = idAzar();
+  await sala.guardarPrivado({ juego: id, preguntas, aprox: APROX_JAPONESA });
+  await sala.iniciarJuego({
+    tipo: 'quiz', modo: 'castigo', titulo: 'Trivia japonesa', fase: intro ? 'intro' : 'pregunta',
+    n: 0, total: preguntas.length, orden, equipo: orden[0] || null,
+    pregunta: preguntas[0].pregunta, opciones: [], conOpciones: false,
+    duracion: segundos * 1000, terminaEn: 0,
+  }, id);
+}
+
+const equipoDe = (sala, eid) => sala.equipos().find((e) => e.id === eid);
+const valeAhora = (j) => (j.conOpciones ? PUNTOS_CON_OPCIONES : PUNTOS_SIN_OPCIONES);
+const nombreJaponesa = (extra) => h('div', { class: 'tv-trivia-nombre' },
+  h('b', null, '⚡ Trivia japonesa'), h('span', null, 'Treinta minutos sobre Tokio'), extra && h('small', null, extra));
+
+function hostJaponesa(el, sala) {
+  let privado = null;
+  let enviando = false;
+  sala.privadoDelJuego().then((p) => { privado = p; v.actualizar(); });
+
+  const act = async (patch, puntos) => {
+    if (enviando) return;
+    enviando = true;
+    try { await sala.actualizarJuego(patch, puntos); } catch (e) { toast(e.message, 'error'); } finally { enviando = false; }
+  };
+  const empezar = () => sala.juego.fase === 'intro' && act({ fase: 'pregunta' });
+  const largarReloj = () => act({ terminaEn: Date.now() + sala.juego.duracion });
+  const mostrarOpciones = () => act({ conOpciones: true, opciones: privado.preguntas[sala.juego.n].opciones });
+  const responder = (acerto) => {
+    const j = sala.juego;
+    if (j.fase !== 'pregunta') return;
+    const pts = acerto ? valeAhora(j) : 0;
+    const p = privado.preguntas[j.n];
+    act({ fase: 'revelada', acerto, pts, opciones: p.opciones, correcta: p.correcta, terminaEn: 0 }, j.equipo ? { [j.equipo]: pts } : undefined);
+  };
+  const siguiente = () => {
+    const j = sala.juego;
+    const n = j.n + 1;
+    if (n >= j.total) {
+      act({ fase: 'aprox', pregunta: privado.aprox.pregunta, opciones: [], conOpciones: false, equipo: null, terminaEn: 0, acerto: null, pts: 0, correcta: null, ganadores: {} });
+      return;
+    }
+    const p = privado.preguntas[n];
+    act({ fase: 'pregunta', n, equipo: j.orden[n % j.orden.length] || null, pregunta: p.pregunta, opciones: [], conOpciones: false, terminaEn: 0, acerto: null, pts: 0, correcta: null });
+  };
+  const revelarAprox = () => act({ fase: 'aprox-revelada', respuesta: privado.aprox.respuesta, terminaEn: 0 });
+  const tocarGanador = (eid) => {
+    const j = sala.juego;
+    if (j.fase !== 'aprox-revelada') return;
+    act({ ['ganadores.' + eid]: !j.ganadores?.[eid] });
+  };
+  const darAprox = () => {
+    const j = sala.juego;
+    const ganadores = Object.keys(j.ganadores || {}).filter((k) => j.ganadores[k]);
+    if (!ganadores.length) { toast('Tocá el equipo que más se acercó.', 'error'); return; }
+    act({ fase: 'fin' }, Object.fromEntries(ganadores.map((k) => [k, PUNTOS_APROX])));
+  };
+
+  let ganadoresEl;
+  const relojOBoton = (j, alLimpiar) => {
+    if (j.terminaEn) {
+      const reloj = h('span', { class: 'reloj' });
+      alLimpiar(cuentaRegresiva(reloj, j.terminaEn, { alTerminar: () => { reloj.textContent = '¡Tiempo!'; } }));
+      return reloj;
+    }
+    return h('button', { class: 'btn sec', onclick: largarReloj }, `⏱ Largar ${j.duracion / 1000} s`);
+  };
+  const v = vista({
+    clave: () => { const j = sala.juego; return `${j.fase}:${j.n}:${!!privado}:${j.terminaEn}:${j.conOpciones}`; },
+    dibujar(alLimpiar) {
+      const j = sala.juego;
+      ganadoresEl = null;
+      if (!privado) { montar(el, esperando('Cargando la trivia…')); return; }
+      if (j.fase === 'intro') {
+        montar(el, h('p', null, '🎬 En la tele está pasando «Nosotros castigamos la ignorancia».'),
+          h('p', { class: 'muted chico' }, 'Cuando termine, largá la primera pregunta.'),
+          h('button', { class: 'btn grande', onclick: empezar }, '⚡ Empezar la trivia'));
+        return;
+      }
+      if (j.fase === 'fin') { montar(el, h('h3', null, '¡Terminó la trivia!'), ranking(sala)); return; }
+      if (j.fase === 'aprox' || j.fase === 'aprox-revelada') {
+        const revelada = j.fase === 'aprox-revelada';
+        montar(el,
+          h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, '🎯 Ronda final: aproximación'), !revelada && relojOBoton(j, alLimpiar)),
+          h('p', { class: 'pregunta-host' }, privado.aprox.pregunta),
+          h('p', null, 'Respuesta: ', h('b', null, privado.aprox.respuesta)),
+          revelada
+            ? h('div', { class: 'pila' },
+              h('p', { class: 'muted chico' }, `Tocá el equipo que más se acercó (si empatan, tocá los dos). Gana ${PUNTOS_APROX} puntos.`),
+              ganadoresEl = h('div', { class: 'pila-s aprox-ganadores' }),
+              h('button', { class: 'btn grande', onclick: darAprox }, `🏆 Dar ${PUNTOS_APROX} puntos y terminar`))
+            : h('div', { class: 'pila' },
+              h('p', { class: 'muted chico' }, 'Cada equipo escribe su número en una hoja. Cuando estén todas, revelá.'),
+              h('button', { class: 'btn grande', onclick: revelarAprox }, 'Revelar la respuesta en la tele')));
+        return;
+      }
+      const p = privado.preguntas[j.n];
+      const eq = equipoDe(sala, j.equipo);
+      const revelada = j.fase === 'revelada';
+      const opciones = h('ol', { class: 'opciones-host' }, p.opciones.map((o, i) =>
+        h('li', { class: i === p.correcta ? 'correcta' : '' }, h('b', null, letraOpcion(i)), ' ', o)));
+      montar(el,
+        h('div', { class: 'fila entre' },
+          h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1} de ${j.total}`),
+          !revelada && relojOBoton(j, alLimpiar)),
+        h('div', { class: 'fila' }, h('span', null, 'Le toca a'), pildoraEquipo(eq)),
+        h('p', { class: 'pregunta-host' }, j.pregunta),
+        h('p', null, 'Respuesta: ', h('b', null, p.opciones[p.correcta])),
+        revelada
+          ? h('div', { class: 'pila' },
+            h('p', null, j.acerto ? `✓ Acertaron: +${j.pts}` : '✗ Se equivocaron: no suman.'),
+            h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? '🎯 Ronda final: aproximación →' : 'Siguiente pregunta →'))
+          : h('div', { class: 'pila' },
+            j.conOpciones
+              ? h('div', { class: 'pila-s' }, h('span', { class: 'muted chico' }, 'Opciones en la tele (ahora vale 1):'), opciones)
+              : h('button', { class: 'btn sec', onclick: mostrarOpciones }, `👀 Mostrar opciones (pasa a valer ${PUNTOS_CON_OPCIONES})`),
+            h('div', { class: 'fila' },
+              h('button', { class: 'btn ok grande', onclick: () => responder(true) }, `✓ Bien (+${valeAhora(j)})`),
+              h('button', { class: 'btn peligro grande', onclick: () => responder(false) }, '✗ Mal'))));
+    },
+    refrescar() {
+      const j = sala.juego;
+      if (!ganadoresEl) return;
+      montar(ganadoresEl, sala.equipos().map((e) => h('button', {
+        class: 'btn' + (j.ganadores?.[e.id] ? ' ok' : ' sec'), onclick: () => tocarGanador(e.id),
+      }, (j.ganadores?.[e.id] ? '🏆 ' : '') + e.nombre)));
+    },
+  });
+  return v;
+}
+
+function alumnoJaponesa(el, sala) {
+  const miEquipo = () => sala.data.asignaciones?.[sala.uid];
+  return vista({
+    clave: () => `${sala.juego.fase}:${sala.juego.n}`,
+    dibujar() {
+      const j = sala.juego;
+      if (j.fase === 'fin') { montar(el, h('h2', null, '¡Terminó la trivia!'), ranking(sala)); return; }
+      if (j.fase === 'intro') { montar(el, esperando('📺 ¡Miren la tele!', 'Ya empieza la trivia.')); return; }
+      if (j.fase === 'aprox' || j.fase === 'aprox-revelada') {
+        montar(el, esperando('🎯 ¡Miren la tele!', 'Ronda final: escriban su respuesta en la hoja del equipo.'));
+        return;
+      }
+      const mio = j.equipo && j.equipo === miEquipo();
+      if (j.fase === 'revelada' && mio) {
+        vibrar(j.acerto ? 60 : [60, 60, 60]);
+        montar(el, h('div', { class: 'resultado ' + (j.acerto ? 'bien' : 'mal') },
+          h('div', { class: 'resultado-titulo' }, j.acerto ? `¡Tu equipo acertó! +${j.pts}` : '✗ Tu equipo se equivocó'),
+          h('p', null, 'La respuesta era ', h('b', null, j.opciones[j.correcta]))));
+        return;
+      }
+      const eq = equipoDe(sala, j.equipo);
+      montar(el, esperando('👀 ¡Miren la tele!', mio ? 'Les toca a ustedes: discutan y uno responde en voz alta.' : `Le toca a ${eq?.nombre || 'otro equipo'}.`));
+    },
+  });
+}
+
+function tvJaponesa(el, sala) {
+  let ganadoresEl = null;
+  return vista({
+    clave: () => { const j = sala.juego; return `${j.fase}:${j.n}:${j.terminaEn}:${j.conOpciones}`; },
+    dibujar(alLimpiar) {
+      const j = sala.juego;
+      ganadoresEl = null;
+      if (j.fase === 'fin') {
+        sonido('fin');
+        montar(el, h('div', { class: 'tv-centro' }, h('h1', { class: 'tv-titulo' }, '¡Terminó la trivia!'), ranking(sala)));
+        return;
+      }
+      if (j.fase === 'intro') {
+        const video = h('video', { class: 'tv-video', src: VIDEO_INTRO, autoplay: true, playsinline: true });
+        video.play?.().catch(() => { video.muted = true; video.play().catch(() => {}); });
+        montar(el, h('div', { class: 'tv-video-marco' }, video));
+        return;
+      }
+      const reloj = j.terminaEn ? h('div', { class: 'tv-reloj' }) : null;
+      if (reloj) {
+        alLimpiar(cuentaRegresiva(reloj, j.terminaEn, {
+          cadaSegundo: (f) => reloj.classList.toggle('urgente', f < 5500),
+          alTerminar: () => { reloj.textContent = '¡Tiempo!'; sonido('error'); },
+        }));
+      }
+      if (j.fase === 'aprox' || j.fase === 'aprox-revelada') {
+        const revelada = j.fase === 'aprox-revelada';
+        if (revelada) sonido('bien');
+        montar(el,
+          h('div', { class: 'tv-cabecera' }, nombreJaponesa('🎯 Ronda final: aproximación'), reloj),
+          h('div', { class: 'tv-pregunta' }, j.pregunta),
+          revelada
+            ? h('div', { class: 'tv-aprox-respuesta' }, j.respuesta)
+            : h('p', { class: 'tv-turno-nota' }, `Cada equipo escribe su respuesta en una hoja. El que más se acerca gana ${PUNTOS_APROX} puntos.`),
+          ganadoresEl = h('div', { class: 'tv-equipos' }));
+        return;
+      }
+      const eq = equipoDe(sala, j.equipo);
+      const revelada = j.fase === 'revelada';
+      const cruz = h('div', { class: 'tv-cruz', 'aria-hidden': 'true' });
+      montar(el,
+        h('div', { class: 'tv-cabecera' }, nombreJaponesa(`Pregunta ${j.n + 1} de ${j.total}`), !revelada && reloj),
+        h('div', { class: 'tv-turno', style: { '--c': eq?.color || '#888' } }, h('span', null, 'Le toca a'), pildoraEquipo(eq)),
+        h('div', { class: 'tv-pregunta' }, j.pregunta),
+        revelada
+          ? h('div', { class: 'tv-opciones' }, h('div', { class: 'tv-opcion correcta' }, h('span', { class: 'tv-op-txt' }, j.opciones[j.correcta])))
+          : j.conOpciones
+          ? h('div', { class: 'tv-opciones' }, j.opciones.map((o, i) =>
+            h('div', { class: 'tv-opcion op' + i }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', { class: 'tv-op-txt' }, o))))
+          : null,
+        h('p', { class: 'tv-turno-nota' }, revelada
+          ? (j.acerto ? `✓ ¡Correcto! +${j.pts} para ${eq?.nombre || ''}` : `✗ ${eq?.nombre || ''} no suma`)
+          : j.conOpciones ? `Con opciones vale ${PUNTOS_CON_OPCIONES}` : `Sin opciones vale ${PUNTOS_SIN_OPCIONES} · si piden opciones, vale ${PUNTOS_CON_OPCIONES}`),
+        cruz);
+      if (revelada && j.acerto) sonido('bien');
+      if (revelada && !j.acerto) {
+        sonido('error');
+        montar(cruz, h('div', { class: 'tv-cruz-x' }, '✗'), eq && h('div', { class: 'tv-cruz-eq', style: { '--c': eq.color } }, eq.nombre));
+        cruz.classList.add('activa');
+      }
+    },
+    refrescar() {
+      const j = sala.juego;
+      if (!ganadoresEl) return;
+      montar(ganadoresEl, j.fase === 'aprox-revelada'
+        ? sala.equipos().filter((e) => j.ganadores?.[e.id]).map((e) => h('div', { class: 'tv-eq tv-eq-marca bien', style: { '--c': e.color } },
+          h('span', { class: 'tv-eq-nombre' }, '🏆 ' + e.nombre), h('span', { class: 'tv-eq-pts' }, `+${PUNTOS_APROX}`)))
+        : []);
+    },
+  });
+}
