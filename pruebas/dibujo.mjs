@@ -187,8 +187,15 @@ try {
   await host.getByRole('button', { name: '➕ Jugar otra vuelta' }).click();
   await host.getByText('Turno 2 de 8').waitFor({ timeout: 10000 });
   paso('Con el juego empezado, «Jugar otra vuelta» suma un turno más por equipo (4 → 8)');
+  // El organizador elige quién dibuja: tocando su nombre, la palabra le aparece a esa persona.
+  const elegible = host.locator('.btn.sec', { hasText: /Invitado \d+/ });
+  afirmar(await elegible.count() >= 1, 'el panel muestra a los integrantes del equipo para elegir quién dibuja');
+  const elegido = (await elegible.last().textContent()).replace('✓ ', '').trim();
+  await elegible.last().click();
+  const celElegido = invitados[Number(elegido.split(' ')[1]) - 1];
+  await celElegido.locator('.dibujo-palabra').waitFor({ timeout: 10000 });
+  paso(`El organizador eligió a ${elegido} y la palabra le apareció en su celular`);
   // Tope: las palabras repartidas entre los equipos (30 / 4 = 7). Al llegar, el turno termina solo.
-  await host.getByRole('button', { name: '✏️ Empezar turno' }).click();
   await host.getByText('máximo 7 palabras').waitFor({ timeout: 10000 });
   for (let i = 0; i < 7; i++) {
     await host.getByText(`${i} adivinadas`).waitFor({ timeout: 10000 });

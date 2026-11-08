@@ -180,14 +180,15 @@ export default {
       v.actualizar();
     };
 
-    async function empezarTurno() {
+    // uid: quien elige el organizador. Sin uid, la app elige a alguien que todavía no dibujó.
+    async function empezarTurno(uid) {
       const j = sala.juego;
       const equipo = j.fase === 'fin_turno' ? j.siguiente : j.equipo;
       const miembros = sala.miembrosActivos(equipo);
       if (!miembros.length) { toast('Ese equipo no tiene integrantes conectados', 'error'); return; }
       // Dibuja alguien que todavía no dibujó (si ya dibujaron todos, cualquiera).
       const libres = miembros.filter((m) => !j.dibujaron.includes(m.uid));
-      const actor = mezclar(libres.length ? libres : miembros)[0];
+      const actor = miembros.find((m) => m.uid === uid) || mezclar(libres.length ? libres : miembros)[0];
       const turno = j.turno + 1;
       privado.turnoPalabras = [];
       await sala.actualizarJuego({ fase: 'dibujando', turno, equipo, actor: { uid: actor.uid, nombre: actor.nombre }, n: 0, aciertos: 0, pasadas: 0, ultimas: [], ultimaOk: null, ultimaEq: null, hasta: Date.now() + j.seg * 1000, dibujaron: [...j.dibujaron, actor.uid] });
@@ -247,7 +248,12 @@ export default {
     let contador;
     const v = vista({
       destruir: () => fin?.(),
-      clave: () => `${sala.juego.fase}:${sala.juego.turno}:${sala.juego.total}:${!!privado}`,
+      clave: () => {
+        const j = sala.juego;
+        const prox = j.fase === 'fin_turno' ? j.siguiente : j.equipo;
+        const quienes = (j.fase === 'listo' || j.fase === 'fin_turno') ? sala.miembrosActivos(prox).map((m) => m.uid).join(',') : '';
+        return `${j.fase}:${j.turno}:${j.total}:${!!privado}:${quienes}`;
+      },
       dibujar() {
         const j = sala.juego;
         fin?.(); fin = null; contador = null;
@@ -259,9 +265,13 @@ export default {
               Object.entries(puntosDelTurno(j.ultimas || [], j.equipo, j.pts)).map(([e, p]) => `${sala.equipo(e)?.nombre} +${p}`).join(' · ') || 'sin puntos'),
             h('p', null, `Turno ${j.turno + 1} de ${j.total}: le toca a `, pildoraEquipo(sala.equipo(j.fase === 'fin_turno' ? j.siguiente : j.equipo))),
             h('p', { class: 'muted chico' }, j.pizarra
-              ? 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. Dibuja en la pizarra, su equipo grita y vos tocás «Adivinaron».'
-              : 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. El dibujo sale en vivo en la tele.'),
-            h('button', { class: 'btn grande', onclick: empezarTurno }, '✏️ Empezar turno'),
+              ? 'Tocá a quién dibuja: le aparece la palabra en su celular. Dibuja en la pizarra, su equipo grita y vos tocás «Adivinaron».'
+              : 'Tocá a quién dibuja: le aparece la palabra en su celular. El dibujo sale en vivo en la tele.'),
+            h('div', { class: 'fila', style: 'flex-wrap:wrap;gap:8px' },
+              sala.miembrosActivos(j.fase === 'fin_turno' ? j.siguiente : j.equipo).map((m) =>
+                h('button', { class: 'btn sec', onclick: () => empezarTurno(m.uid) },
+                  `${(j.dibujaron || []).includes(m.uid) ? '✓ ' : ''}${m.nombre}`))),
+            h('button', { class: 'btn grande', onclick: () => empezarTurno() }, '✏️ Empezar turno (que elija la app)'),
             botonVuelta());
           return;
         }
