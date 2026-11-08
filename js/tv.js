@@ -54,7 +54,7 @@ export async function iniciarTv(raiz, codigoUrl) {
       }
     }
     if (j || sala.data.pantalla !== 'intro') pararIntro();
-    if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala);
+    if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala, espera);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;
     montar(pie, sinMarcador ? null : marcador(sala));

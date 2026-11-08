@@ -318,9 +318,16 @@ try {
   await esperar(1500);
   await captura(tv, '10n-intro');
   await host.getByRole('button', { name: '↻ Repetir la intro' }).waitFor();
-  await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
+  await tv.locator('.in-pizarron').waitFor({ timeout: 15000 });
+  await tv.locator('.in-renglon', { hasText: 'No voy a faltar' }).first().waitFor({ timeout: 10000 });
+  await captura(tv, '10n2-intro-pizarron');
+  // Si arranca un juego en medio de la intro y después termina, la tele no repite la intro: vuelve al QR.
+  await elegirJuego(host, 'Completá la frase');
+  await tv.locator('.tv-frase').waitFor({ timeout: 15000 });
+  await terminarJuego(host);
   await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
-  paso('Intro de la noche en la tele');
+  afirmar(!(await tv.locator('.tv-intro').count()), 'al terminar un juego la intro no vuelve a empezar');
+  paso('Intro de la noche en la tele (pizarrón) y no se repite al volver de un juego');
 
   // ── Podio ──
   await elegirJuego(host, 'Podio final');
