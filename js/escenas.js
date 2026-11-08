@@ -13,7 +13,7 @@ export const ESCENAS = [
     video: 'video/escena-onda.mp4',
     consigna: '¿Cuántas veces se dice la palabra «onda» en la escena?',
     fija: true,
-    items: [['NUM_ONDA']],
+    items: [['8', 'ocho', '8 veces', 'ocho veces']],
   },
   {
     id: 'cleto',
