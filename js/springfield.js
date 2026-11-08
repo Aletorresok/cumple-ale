@@ -60,36 +60,38 @@ export const BANCO_SPRINGFIELD = {
 
 
     // ── Los invitados dicen ──
-    // Puntos REALES del Google Form (14 invitados, hasta 3 respuestas cada uno, 2 y 3 de noviembre de 2026):
+    // Puntos REALES del Google Form (18 invitados, hasta 3 respuestas cada uno, del 2 al 6 de noviembre de 2026):
     // cada respuesta vale tantos puntos como personas la dieron. Las que dijo una sola persona quedan afuera.
     // El primer texto antes de la barra es el que se ve en la tele; el resto son variantes que también valen.
     { tipo: 'encuesta', pregunta: 'Nombrá un personaje de Los Simpson que no sea de la familia', respuestas: [
-      { texto: 'Apu', puntos: 6 }, { texto: 'Moe', puntos: 5 }, { texto: 'Ned Flanders / Flanders', puntos: 5 },
-      { texto: 'Sr. Burns / Burns / Montgomery Burns / señor Berns', puntos: 3 }, { texto: 'Barney / Barnie', puntos: 2 },
+      { texto: 'Moe', puntos: 8 }, { texto: 'Apu', puntos: 7 }, { texto: 'Ned Flanders / Flanders', puntos: 6 },
+      { texto: 'Barney / Barnie', puntos: 4 }, { texto: 'Sr. Burns / Burns / Montgomery Burns / señor Berns', puntos: 3 },
       { texto: 'Smithers / Smiders', puntos: 2 }, { texto: 'Lenny', puntos: 2 }, { texto: 'el hombre topo / Hans Topo / topo', puntos: 2 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá algo que come o toma Homero', respuestas: [
-      { texto: 'cerveza / Duff / cerveza Duff', puntos: 13 }, { texto: 'rosquillas / donas / donuts / dona', puntos: 10 },
-      { texto: 'chuletas de cerdo / chuleta / chuletas', puntos: 2 }, { texto: 'hamburguesa / hamburguesas', puntos: 2 },
+      { texto: 'cerveza / Duff / cerveza Duff', puntos: 16 }, { texto: 'rosquillas / donas / donuts / dona', puntos: 13 },
+      { texto: 'hamburguesa / hamburguesas', puntos: 3 }, { texto: 'chuletas de cerdo / chuleta / chuletas', puntos: 2 },
       { texto: 'maní', puntos: 2 }, { texto: 'la Venus de Milo de gelatina / Venus de jalea / Venus de Milo', puntos: 2 },
       { texto: 'pastel / pie / tarta', puntos: 2 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá un lugar de Springfield', respuestas: [
-      { texto: 'la escuela primaria / escuela / Escuela Primaria de Springfield', puntos: 8 },
-      { texto: 'la planta nuclear / planta / planta de energía / planta atómica', puntos: 7 },
-      { texto: 'la taberna de Moe / bar de Moe / Moe / bar / taberna', puntos: 6 },
-      { texto: 'el Kwik-E-Mart / minisúper / minimercado / almacén de Apu', puntos: 4 }, { texto: 'la iglesia / iglesia', puntos: 2 }] },
+      { texto: 'la escuela primaria / escuela / Escuela Primaria de Springfield / colegio', puntos: 11 },
+      { texto: 'la planta nuclear / planta / planta de energía / planta atómica', puntos: 10 },
+      { texto: 'la taberna de Moe / bar de Moe / Moe / bar / taberna', puntos: 9 },
+      { texto: 'el Kwik-E-Mart / minisúper / minimercado / almacén de Apu', puntos: 4 },
+      { texto: 'Krusty Burger / hamburguesas Krusty', puntos: 3 }, { texto: 'la iglesia / iglesia', puntos: 2 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá algo que hay en la casa de los Simpson', respuestas: [
-      { texto: 'la tele / TV / televisor / televisión', puntos: 10 }, { texto: 'el sillón / sofá / sillon', puntos: 10 },
-      { texto: 'el cuadro del barco / cuadro / barco / velero', puntos: 4 }, { texto: 'Ayudante de Santa / el perro / perro', puntos: 2 },
+      { texto: 'la tele / TV / televisor / televisión', puntos: 14 }, { texto: 'el sillón / sofá / sillon', puntos: 14 },
+      { texto: 'el cuadro del barco / cuadro / barco / velero', puntos: 4 }, { texto: 'Ayudante de Santa / el perro / perro', puntos: 3 },
       { texto: 'la casa del árbol / casita del árbol', puntos: 2 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá un trabajo que tuvo Homero', respuestas: [
-      { texto: 'inspector de seguridad en la planta nuclear / inspector de seguridad / planta nuclear / planta / técnico nuclear', puntos: 9 },
-      { texto: 'quitanieves / Don Barredora / barrendero / barredor de nieve / limpia nieves', puntos: 7 },
-      { texto: 'en el bowling / bolos / boliche / acomodador de bolos', puntos: 5 }, { texto: 'astronauta', puntos: 3 },
+      { texto: 'inspector de seguridad en la planta nuclear / inspector de seguridad / planta nuclear / planta / técnico nuclear / sector 7G', puntos: 12 },
+      { texto: 'quitanieves / Don Barredora / barrendero / barredor de nieve / limpia nieves', puntos: 9 },
+      { texto: 'en el bowling / bolos / boliche / acomodador de bolos', puntos: 5 }, { texto: 'astronauta', puntos: 5 },
       { texto: 'heladero', puntos: 2 }, { texto: 'payaso / Krusty el payaso', puntos: 2 },
-      { texto: 'cantante / Los Borbotones / Be Sharps', puntos: 2 }] },
+      { texto: 'cantante / Los Borbotones / Be Sharps', puntos: 2 }, { texto: 'boxeador', puntos: 2 }] },
     { tipo: 'encuesta', pregunta: 'Nombrá un invitado famoso de Los Simpson', respuestas: [
-      { texto: 'Lady Gaga / Gaga', puntos: 4 }, { texto: 'U2 / Bono', puntos: 3 }, { texto: 'Ronaldo / Ronaldo Nazario', puntos: 3 },
-      { texto: 'Michael Jackson', puntos: 2 }, { texto: 'Stephen King', puntos: 2 }, { texto: 'Mick Jagger / Rolling Stones', puntos: 2 },
-      { texto: 'Los Beatles / Paul McCartney / McCartney', puntos: 2 }, { texto: 'Metallica / James Hetfield', puntos: 2 }] },
+      { texto: 'Lady Gaga / Gaga', puntos: 5 }, { texto: 'U2 / Bono', puntos: 4 }, { texto: 'Ronaldo / Ronaldo Nazario', puntos: 4 },
+      { texto: 'Michael Jackson', puntos: 4 }, { texto: 'Mick Jagger / Rolling Stones', puntos: 3 },
+      { texto: 'Leonard Nimoy / Señor Spock / Spock', puntos: 3 }, { texto: 'Stephen King', puntos: 2 },
+      { texto: 'Los Beatles / Paul McCartney / McCartney', puntos: 2 }] },
   ],
 };
