@@ -16,8 +16,7 @@ export const PREGUNTAS_JAPONESA = [
   conVideo('video/trivia-abejas.mp4', q('¿Cuánto le iban a pagar a Homero por las abejas que consiguió vendiendo azúcar?', '2.000 dólares', '500 dólares', '1.000 dólares', '5.000 dólares')),
 ];
 
-// Ronda final: cada equipo escribe su número en una hoja; el que más se acerca gana 3 puntos.
-export const APROX_JAPONESA = {
-  pregunta: '¿Por cuánto dinero le vende Lyle Lanley el monorriel a Springfield?',
-  respuesta: '3 millones de dólares',
-};
+// Ronda final de aproximación (cada equipo escribe su número en una hoja; el que más se acerca gana 3).
+// Alexis la sacó: en null, la trivia termina con la última pregunta. Para volver a usarla:
+// { pregunta: '¿Por cuánto dinero le vende Lyle Lanley el monorriel a Springfield?', respuesta: '3 millones de dólares' }
+export const APROX_JAPONESA = null;

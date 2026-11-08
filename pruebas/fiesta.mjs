@@ -9,7 +9,7 @@
 import { chromium } from 'playwright';
 import { readFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { PREGUNTAS_JAPONESA } from '../js/trivia-japonesa.js';
+import { PREGUNTAS_JAPONESA, APROX_JAPONESA } from '../js/trivia-japonesa.js';
 
 const BASE = process.env.BASE || 'http://localhost:5173/';
 const N = Number(process.argv[2] || 30);
@@ -322,25 +322,30 @@ try {
       await tv.waitForFunction(() => { const v = document.querySelector('video.tv-trivia-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
       if (n === 1) { await captura(tv, '10c2-trivia-video-chequeo'); paso('Trivia japonesa: al responder las que tienen escena, la tele la pasa para chequear'); }
     } else afirmar(!(await tv.locator('video.tv-trivia-video').count()), 'sin video, no pasa ninguna escena');
-    await host.getByRole('button', { name: /Siguiente pregunta|aproximación/ }).click();
+    await host.getByRole('button', { name: /Siguiente pregunta|aproximación|Ver resultados/ }).click();
   }
   afirmar(new Set(turnos.slice(0, 4)).size === 4 && turnos[4] === turnos[0], `las preguntas rotan por equipo (${turnos.join(', ')})`);
   await esperar(800);
   afirmar(await puntos(host) - antesTrivia === esperado, `sin opciones vale 2 y con opciones 1 (${await puntos(host) - antesTrivia} de ${esperado})`);
   paso(`Trivia japonesa: ${totalTrivia} preguntas rotando por equipo, ${esperado} puntos (2 sin opciones, 1 con opciones)`);
-  // Ronda final: aproximación.
-  await tv.getByText('Ronda final: aproximación').waitFor({ timeout: 10000 });
-  await host.getByRole('button', { name: 'Revelar la respuesta en la tele' }).click();
-  await tv.locator('.tv-aprox-respuesta').waitFor({ timeout: 10000 });
-  const ganador = (await host.locator('.aprox-ganadores button').first().textContent()).trim();
-  await host.locator('.aprox-ganadores button').first().click();
-  await tv.locator('.tv-eq-marca.bien').waitFor({ timeout: 10000 });
-  await captura(tv, '10d-trivia-aprox');
-  await host.getByRole('button', { name: /Dar 3 puntos/ }).click();
-  await tv.getByText('¡Terminó la trivia!').waitFor({ timeout: 10000 });
-  await esperar(800);
-  afirmar(await puntos(host) - antesTrivia === esperado + 3, 'la aproximación da 3 puntos al que más se acercó');
-  paso(`Trivia japonesa: aproximación final, ${ganador} se llevó 3 puntos`);
+  if (APROX_JAPONESA) {
+    // Ronda final: aproximación.
+    await tv.getByText('Ronda final: aproximación').waitFor({ timeout: 10000 });
+    await host.getByRole('button', { name: 'Revelar la respuesta en la tele' }).click();
+    await tv.locator('.tv-aprox-respuesta').waitFor({ timeout: 10000 });
+    const ganador = (await host.locator('.aprox-ganadores button').first().textContent()).trim();
+    await host.locator('.aprox-ganadores button').first().click();
+    await tv.locator('.tv-eq-marca.bien').waitFor({ timeout: 10000 });
+    await captura(tv, '10d-trivia-aprox');
+    await host.getByRole('button', { name: /Dar 3 puntos/ }).click();
+    await tv.getByText('¡Terminó la trivia!').waitFor({ timeout: 10000 });
+    await esperar(800);
+    afirmar(await puntos(host) - antesTrivia === esperado + 3, 'la aproximación da 3 puntos al que más se acercó');
+    paso(`Trivia japonesa: aproximación final, ${ganador} se llevó 3 puntos`);
+  } else {
+    await tv.getByText('¡Terminó la trivia!').waitFor({ timeout: 10000 });
+    paso('Trivia japonesa: sin final de aproximación, termina con la última pregunta');
+  }
   await terminarJuego(host);
   await medir('Trivia (cinco preguntas)');
 
