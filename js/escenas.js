@@ -43,8 +43,9 @@ export const ESCENAS = [
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
     video: 'video/escena-cleto.mp4',
-    consigna: 'Cleto le regala a Marge los cupones de pretzels y llama a todos sus hijos, uno por uno. ¿Cuántos nombres se acuerdan?',
+    consigna: 'Cleto llama a todos sus hijos, uno por uno. ¿Qué nombres se acuerdan? (Si nombran 5, la respuesta es correcta)',
     fija: true,
+    minimo: 5,   // con 5 nombres, la respuesta es correcta
     items: [
       ['Tiffany', 'Tifany', 'Tiffani'], ['Heather', 'Heder', 'Hether'], ['Cody', 'Kody', 'Codi'],
       ['Dylan', 'Dilan'], ['Dermot', 'Dermott'], ['Jacob', 'Jakob', 'Yacob'], ['Jordan', 'Jordán'], ['Taylor', 'Tailor', 'Teylor'],

@@ -209,7 +209,8 @@ try {
   await captura(tv, 'e1-revelada');
   const pts = await host.locator('.equipo-pts').allTextContents();
   const total = pts.reduce((a, x) => a + Number(x), 0);
-  afirmar(total === 100 + 60 + 40, `puntos por puesto 100+60+40+0 (${pts})`);
+  // Cleto pide 5 nombres: los que llegan (8 y 5) aciertan y empatan primeros; 3 y 0 no.
+  afirmar(total === 100 + 100, `con mínimo de 5, los dos que llegan empatan primeros: 100+100 (${pts})`);
   const cel = porEquipo[nombres[0]][0];
   await cel.getByText('8 de 27').waitFor();
   await captura(cel, 'e1-celular-resultado');
