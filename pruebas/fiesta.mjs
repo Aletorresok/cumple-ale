@@ -359,8 +359,8 @@ try {
   await tv.locator('.in-renglon', { hasText: 'No me embriagaré' }).first().waitFor({ timeout: 10000 });
   await captura(tv, '10n2-intro-pizarron');
   // Si arranca un juego en medio de la intro y después termina, la tele no repite la intro: vuelve al QR.
-  await elegirJuego(host, 'Completá la frase');
-  await tv.locator('.tv-frase').waitFor({ timeout: 15000 });
+  await elegirJuego(host, '¿Te acordás de la escena?');
+  await tv.getByText('la escena pasa una sola vez').waitFor({ timeout: 15000 });
   await terminarJuego(host);
   await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
   afirmar(!(await tv.locator('.tv-intro').count()), 'al terminar un juego la intro no vuelve a empezar');

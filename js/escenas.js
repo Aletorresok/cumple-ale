@@ -84,17 +84,6 @@ export const ESCENAS = [
     ],
   },
   {
-    id: 'mascotas',
-    titulo: 'Las mascotas de los Simpson',
-    consigna: 'Perros, gatos y bichos que pasaron por la casa de Siempreviva. ¿Cuántos se acuerdan?',
-    items: [
-      ['Ayudante de Santa', 'Ayudante de Santa Claus', 'Santa\'s Little Helper', 'Ayudante'], ['Bola de Nieve', 'Bola de Nieve II', 'Snowball'],
-      ['Pinchy', 'la langosta', 'Pinchi'], ['Mojo', 'el mono'], ['Plopper', 'Cerdo Araña', 'Spider Cerdo', 'Spider Pig'],
-      ['Stampy', 'el elefante', 'Estampy'], ['Princesa', 'el poni', 'el pony'], ['Laddie', 'Ladi', 'Lady'],
-      ['Bart Junior', 'la rana', 'el sapo'], ['Strangles', 'la serpiente', 'la víbora'],
-    ],
-  },
-  {
     id: 'monorriel',
     titulo: 'El monorriel',
     consigna: 'Lyle Lanley ya les había vendido monorrieles a otros pueblos. ¿A cuáles?',
