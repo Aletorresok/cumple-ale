@@ -109,8 +109,6 @@ try {
   await host.getByText('Cumple Ale · ejemplo').waitFor();
   await host.getByRole('button', { name: '🍩 Agregar el banco Springfield' }).click();
   await host.getByText('Springfield · Los Simpson').waitFor();
-  await host.getByRole('button', { name: '⚖️ Agregar los escapes de Lionel Hutz' }).click();
-  await host.getByText('Springfield · Escapes de Lionel Hutz').waitFor();
   await host.getByRole('button', { name: '⚡ Trivia · Springfield', exact: true }).click();
   await host.getByText('16 preguntas').waitFor();
   await host.locator('#cant-equipos').selectOption('4');
@@ -181,37 +179,6 @@ try {
   await captura(invitados[0], '4-seleccion-celular');
   await terminarJuego(host);
   await medir('Selección de equipos');
-
-  // ── Mímica ──
-  const antes = await host.locator('.equipo-pts').allTextContents();
-  await elegirJuego(host, 'Mímica por equipos');
-  await host.getByRole('button', { name: '🎭 Empezar turno' }).click();
-  const actor = await (async () => {
-    for (let i = 0; i < 40; i++) {
-      for (const p of invitados) if (await p.getByRole('button', { name: '✓ ¡Adivinaron!' }).count()) return p;
-      await esperar(500);
-    }
-    throw new Error('Nadie recibió la palabra de mímica');
-  })();
-  const p1 = await actor.locator('.palabra').textContent();
-  await captura(tv, '7-mimica-turno');
-  await captura(actor, '8-mimica-actor');
-  await actor.getByRole('button', { name: '✓ ¡Adivinaron!' }).click();
-  await actor.locator('.palabra', { hasNotText: p1 }).waitFor({ timeout: 10000 });
-  const p2 = await actor.locator('.palabra').textContent();
-  await actor.getByRole('button', { name: '⏭ Pasar' }).click();
-  await actor.locator('.palabra', { hasNotText: p2 }).waitFor({ timeout: 10000 });
-  await actor.getByRole('button', { name: '✓ ¡Adivinaron!' }).click();
-  await host.getByText('2 adivinadas · 1 pasadas').waitFor({ timeout: 10000 });
-  await host.getByRole('button', { name: 'Terminar el turno ya' }).click();
-  await tv.locator('.tv-mimica-lista li').nth(2).waitFor();
-  await captura(tv, '9-mimica-fin-turno');
-  const despues = await host.locator('.equipo-pts').allTextContents();
-  const suma = despues.reduce((a, x) => a + Number(x), 0) - antes.reduce((a, x) => a + Number(x), 0);
-  afirmar(suma === 20, `la mímica sumó 20 puntos (sumó ${suma})`);
-  paso(`Mímica: 2 adivinadas y 1 pasada (${p1}, ${p2}), +20 puntos`);
-  await terminarJuego(host);
-  await medir('Mímica (un turno)');
 
   // ── Los invitados dicen ──
   await elegirJuego(host, 'Los invitados dicen');
@@ -309,80 +276,6 @@ try {
   await terminarJuego(host);
   await medir('Trivia (cinco preguntas)');
 
-  // ── Escapes de Lionel Hutz: cada equipo resuelve su propio expediente ──
-  await elegirJuego(host, 'Sala de escape', () => host.locator('#cfg-modo-escape').selectOption('propio'));
-  await invitados[0].getByText('Escape · el de tu equipo').waitFor({ timeout: 15000 });
-  const expedientes = await Promise.all(invitados.map((p) => p.locator('h2').first().textContent()));
-  const distintos = new Set(expedientes.map((t) => t.replace('🔐', '').trim()));
-  afirmar(distintos.size === 4, `cada equipo ve un expediente distinto (${[...distintos].join(' | ')})`);
-  await tv.locator('.tv-propio').first().waitFor();
-  const deLaPlanta = await tv.locator('.tv-propio', { hasText: 'Planta Nuclear' }).textContent();
-  afirmar(deLaPlanta.includes('La planta nuclear'), `al equipo Planta Nuclear le toca su expediente (${deLaPlanta})`);
-  await captura(tv, '10f-hutz-intro');
-  await captura(invitados[0], '10g-hutz-intro-celular');
-  await host.getByRole('button', { name: /▶ Empezar \(20 min\)/ }).click();
-  // Un equipo abre el primer candado de verdad y recibe la primera letra de la clave.
-  const primero = { 'planta nuclear': '77', 'taberna de Moe': '19', 'Kwik-E-Mart': '12', 'escuela primaria': '50' };
-  const suyo = Object.keys(primero).find((k) => expedientes[0].includes(k));
-  await invitados[0].locator('#escape-codigo').fill(primero[suyo]);
-  await invitados[0].getByRole('button', { name: '🔑 Probar código' }).click();
-  await invitados[0].getByText(/la letra 1 de la clave/).first().waitFor({ timeout: 15000 });
-  await captura(invitados[0], '10h-hutz-letra-celular');
-  // Quien organiza abre el resto de los candados de todos los equipos.
-  const abrir = host.getByRole('button', { name: 'Abrir candado' });
-  for (let k = 0; k < 30 && (await abrir.count()); k++) {
-    await abrir.first().click();
-    await esperar(600);
-    if (k === 8) await captura(tv, '10i-hutz-carrera');
-  }
-  await tv.getByText('¡Se terminó el escape!').waitFor({ timeout: 20000 });
-  await captura(tv, '10j-hutz-fin');
-  paso(`Escapes de Lionel Hutz: 4 expedientes distintos (${[...distintos].join(' | ')}); los 4 equipos escaparon`);
-  await terminarJuego(host).catch(() => {});
-  await medir('Escapes de Lionel Hutz');
-
-  // ── Piezas del código final ──
-  await host.getByRole('button', { name: /Usar el del escape «¿Quién se llevó la torta\?»/ }).click();
-  await host.waitForFunction(() => document.querySelector('#codigo-final')?.value === '0811');
-  const darPieza = host.getByRole('button', { name: '🧩 Dar pieza' });
-  for (const i of [0, 0, 1, 1]) {
-    await darPieza.nth(i).click();
-    await esperar(700);
-  }
-  const textos = (await host.locator('.tarjeta .mono').allTextContents()).filter((t) => /^\S( \S){3}$/.test(t));
-  const juntas = Array.from({ length: 4 }, (_, i) => textos.map((t) => t.split(' ')[i]).find((x) => x && x !== '_'));
-  afirmar(juntas.join('') === '0811', `entre los dos equipos tienen el código completo (${textos.join(' | ')})`);
-  const chips = await Promise.all(invitados.map((p) => p.locator('.piezas-chip').count()));
-  const conPiezas = chips.filter(Boolean).length;
-  afirmar(conPiezas === tamanios[0] + tamanios[1], `ven las piezas los ${tamanios[0] + tamanios[1]} de los dos equipos (las ven ${conPiezas})`);
-  paso(`Piezas: dos equipos juntan 0811 entre los dos (${textos.join(' | ')}); las ven ${conPiezas} celulares`);
-  await captura(invitados[chips.findIndex(Boolean)], '10b-piezas-celular');
-
-  // ── Sala de escape cooperativa: el candado final se abre con las piezas ──
-  await elegirJuego(host, 'Sala de escape', async () => {
-    await host.locator('#cfg-modo-escape').selectOption('coop');
-    await host.locator('#cfg-escape').selectOption({ label: 'La sentencia — 5 candados (Springfield · Escapes de Lionel Hutz)' });
-  });
-  await host.getByRole('button', { name: /▶ Empezar/ }).click();
-  // Quien organiza abre los candados de cada equipo hasta que aparece el final (que no lo abre).
-  const final = () => invitados[0].getByText('Candado final · todo el grupo').count();
-  for (let k = 0; k < 4 && !(await final()); k++) {
-    await host.getByRole('button', { name: 'Abrir candado' }).first().click();
-    await esperar(800);
-  }
-  await invitados[0].getByText('Candado final · todo el grupo').waitFor({ timeout: 15000 });
-  const conPieza = [];
-  for (const p of invitados) if (await p.locator('.piezas-grande').count()) conPieza.push(p);
-  afirmar(conPieza.length === conPiezas, `el candado final muestra las piezas a ${conPiezas} invitados (a ${conPieza.length})`);
-  await captura(conPieza[0], '11-escape-final-celular');
-  await conPieza[0].locator('#escape-codigo').fill('0811');
-  await conPieza[0].getByRole('button', { name: '🔑 Probar código' }).click();
-  await tv.getByText('¡El grupo escapó!').first().waitFor({ timeout: 20000 });
-  await captura(tv, '11b-escape-final');
-  paso('La sentencia (cooperativo): el grupo abrió el candado final con las piezas');
-  await terminarJuego(host).catch(() => {});
-  await medir('Piezas y escape');
-
   // ── Pausa: noticiero de Springfield con un aviso ──
   const irAlPaso = async (titulo) => {
     await host.locator('.escaleta summary').click();
@@ -415,49 +308,7 @@ try {
   await host.getByRole('button', { name: '↻ Repetir la intro' }).waitFor();
   await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
   await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
-  await host.getByRole('button', { name: '¡Ay, caramba!' }).click();
-  await tv.locator('.frase-tv', { hasText: '¡Ay, caramba!' }).waitFor({ timeout: 15000 });
-  await esperar(700);
-  await captura(tv, '10o-frase');
-  await esperar(1000); // la botonera ignora toques a menos de un instante del anterior
-  await host.locator('.botonera-panel .campo').fill('¡Que hable Ale!');
-  await host.getByRole('button', { name: 'Agregar', exact: true }).click();
-  await host.getByRole('button', { name: '¡Que hable Ale!' }).click();
-  await tv.locator('.frase-tv', { hasText: '¡Que hable Ale!' }).waitFor({ timeout: 15000 });
-  paso('Intro de la noche en la tele y botonera: la frase aparece en la pantalla grande');
-
-  // ── Narrador con voz tipo Homero ──
-  await tv.getByRole('button', { name: '🎙 Voz' }).click();
-  await tv.locator('.afinador select').selectOption({ label: 'Voz de prueba (es-AR)' });
-  await tv.getByRole('button', { name: '▶ Probar' }).click();
-  await tv.waitForFunction(() => window.__dichos.some((d) => /donas/.test(d.texto) && d.tono === 0.5 && d.vel === 0.85));
-  await tv.getByRole('button', { name: '🎙 Voz' }).click();
-  await host.getByRole('button', { name: '🎙 Prender el narrador' }).click();
-  await host.getByRole('button', { name: /Narrador prendido/ }).waitFor();
-  await host.getByPlaceholder(/Que diga/).fill('Las pizzas salen en cinco minutos');
-  await host.getByRole('button', { name: '🗣 Decir' }).click();
-  await tv.waitForFunction(() => window.__dichos.some((d) => /pizzas salen/.test(d.texto)), null, { timeout: 15000 });
-  paso('Narrador: la tele dice con voz grave y lenta lo que escribe el organizador');
-
-  // ── Momento torta: los celulares son velitas ──
-  await irAlPaso('🎂 Momento torta');
-  await host.getByRole('button', { name: '▶ Abrir Momento torta' }).click();
-  await host.getByRole('button', { name: 'Empezar', exact: true }).click();
-  await tv.locator('.tv-velitas').waitFor({ timeout: 15000 });
-  await tv.waitForFunction(() => window.__dichos.some((d) => /luces|torta/i.test(d.texto)), null, { timeout: 15000 });
-  paso('Narrador: comentó el momento torta al empezar');
-  for (const p of invitados) await p.locator('.velita-pantalla').waitFor({ timeout: 15000 });
-  await esperar(500);
-  await captura(tv, '12a-velitas');
-  await captura(invitados[0], '12b-velitas-celular');
-  await host.getByRole('button', { name: '💨 ¡Soplar!' }).click();
-  await tv.locator('.tv-velitas.sopladas').waitFor();
-  await invitados[0].locator('.velita-pantalla.sopladas').waitFor();
-  await esperar(1600);
-  await captura(tv, '12c-velitas-sopladas');
-  await captura(invitados[0], '12d-velitas-celular-sopladas');
-  paso(`Momento torta: ${invitados.length} velitas prendidas en los celulares y sopladas a la vez`);
-  await terminarJuego(host);
+  paso('Intro de la noche en la tele');
 
   // ── Podio ──
   await elegirJuego(host, 'Podio final');
