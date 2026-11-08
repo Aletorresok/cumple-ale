@@ -14,9 +14,17 @@ import { mezclar, respuestaCorrecta, cuentaRegresiva, toast, sonido, vibrar, idA
 import { contarPalabras, ofensiva } from './nube.js';
 
 const MAX_CASILLEROS = 8;
+// Modo «alternado» (reglas de la fiesta): 5 respuestas por pregunta, cada acierto vale 1 punto
+// (2 en la ronda doble) para el equipo que la dice. Si acierta sigue; si erra, responde el rival.
+const CASILLEROS_ALTERNADO = 5;
 const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
-  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial'];
+  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts'];
+
+// Cómo va la ronda en modo alternado: «Krusty Burger 3 · Planta Nuclear 1».
+export function marcadorRonda(sala, j) {
+  return (j.par || []).map((e) => `${sala.equipo(e)?.nombre || e} ${j.pts?.[e] || 0}`).join(' · ');
+}
 
 // Con llaves (4 equipos): dos cruces, después los perdedores entre sí y la final.
 const ETAPAS = ['Primer cruce', 'Segundo cruce', 'Por el tercer puesto', 'Final'];
@@ -81,7 +89,7 @@ function nuevoDuelo(sala, j, intento = 1) {
 function armarRonda(sala, j, ronda, pregunta, respuestas) {
   const par = parDe(j, ronda);
   const r = {
-    ronda, pregunta, casilleros: respuestas.length, reveladas: {}, strikes: 0, pozo: 0, paso: (j.paso || 0) + 1,
+    ronda, pregunta, casilleros: j.alterna ? Math.min(CASILLEROS_ALTERNADO, respuestas.length) : respuestas.length, reveladas: {}, strikes: 0, pozo: 0, pts: {}, paso: (j.paso || 0) + 1,
     ultimo: null, gano: null, todas: null, par, proximo: null, giro: { ...(j.giro || {}) },
     mult: j.doble && j.total && ronda >= j.total ? 2 : 1, seg: j.seg,
   };
@@ -139,6 +147,9 @@ export default {
     const b = selectorBanco(bancos, 'encuesta', 1);
     const rondas = selector('cfg-rondas', 'Rondas', [['llaves', '4 rondas en llaves: dos cruces, perdedores entre sí y final (4 equipos)'], [3, '3, rotando'], [4, '4, rotando'], [5, '5, rotando'], [6, '6, rotando'], [0, 'Todas las del banco, rotando']], 'llaves');
     const dobleUltima = h('input', { type: 'checkbox', id: 'cfg-doble', checked: true });
+    const alternado = selector('cfg-reglas', 'Reglas', [
+      ['alterna', '5 respuestas, 1 punto cada una: si acierta sigue, si erra responde el rival'],
+      ['clasico', 'Como en la tele: pozo, 3 errores y robo']], 'alterna');
     const pregunta = h('input', { class: 'campo', id: 'cfg-pregunta', maxlength: 120, placeholder: 'Nombrá algo que no puede faltar en una fiesta' });
     const pulsador = selector('cfg-pulsador', 'Pulsador y respuestas', [
       ['fisico', 'Globos: el primero que lo explota responde en voz alta (lo marcás vos en el panel)'],
@@ -171,14 +182,14 @@ export default {
     const selFuente = fuente.el.querySelector('select');
     selFuente.addEventListener('change', () => { zonaBanco.hidden = selFuente.value !== 'banco'; zonaCurso.hidden = selFuente.value !== 'curso'; });
     return {
-      el: h('div', { class: 'pila' }, fuente.el, zonaBanco, zonaCurso, pulsador.el, seg.el,
+      el: h('div', { class: 'pila' }, fuente.el, zonaBanco, zonaCurso, alternado.el, pulsador.el, seg.el,
         h('fieldset', { class: 'pila-s' }, h('legend', { class: 'etq' }, 'Equipos que juegan'),
           h('div', { class: 'fila' }, checks.map(({ e, input }) => h('label', { class: 'check' }, input, pildoraEquipo(e))))),
         h('p', { class: 'muted chico' }, `Cada ronda se enfrentan dos equipos, rotando. Cara a cara con pulsador, el ganador elige si juega o pasa, y con ${STRIKES} errores el otro equipo puede robar el pozo.`)),
       leer: () => {
         const equipos = checks.filter((c) => c.input.checked).map((c) => c.e.id);
         if (!equipos.length) { toast('Elegí al menos un equipo', 'error'); return null; }
-        const base = { fuente: fuente.valor(), seg: Number(seg.valor()), equipos, voz: pulsador.valor() === 'fisico' };
+        const base = { fuente: fuente.valor(), seg: Number(seg.valor()), equipos, voz: pulsador.valor() === 'fisico', alterna: alternado.valor() === 'alterna' };
         if (base.fuente === 'curso') {
           const q = pregunta.value.trim();
           if (!q) { toast('Escribí la pregunta', 'error'); pregunta.focus(); return null; }
@@ -196,7 +207,7 @@ export default {
   async iniciar(sala, cfg) {
     const id = idAzar();
     const orden = mezclar(cfg.equipos);
-    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, voz: !!cfg.voz, paso: 0, giro: {}, doble: !!cfg.doble, llaves: !!cfg.llaves, historial: [], proximo: null };
+    const base = { tipo: 'encuesta', fuente: cfg.fuente, orden, pares: emparejar(orden), seg: cfg.seg, voz: !!cfg.voz, alterna: !!cfg.alterna, paso: 0, giro: {}, doble: !!cfg.doble, llaves: !!cfg.llaves, historial: [], proximo: null };
     if (cfg.fuente === 'curso') {
       await sala.guardarPrivado({ juego: id, fuente: 'curso', actual: [] });
       await sala.iniciarJuego({ ...base, titulo: 'Encuesta en vivo', total: 0, fase: 'encuesta', ronda: 1, pregunta: cfg.pregunta, casilleros: 0, reveladas: {}, strikes: 0, pozo: 0, mult: 1 }, id);
@@ -221,7 +232,10 @@ export default {
     const excluidas = new Set();
     sala.privadoDelJuego().then((p) => { privado = p; v.actualizar('privado'); });
 
-    async function guardar(j, puntos) {
+    let pendiente = {}; // puntos del modo alternado que se suman en la próxima escritura
+    async function guardar(j, puntos = {}) {
+      for (const [e, n] of Object.entries(pendiente)) puntos = { ...puntos, [e]: (puntos[e] || 0) + n };
+      pendiente = {};
       const campos = {};
       for (const k of CAMPOS) campos[k] = j[k] ?? null;
       try { await sala.actualizarJuego(campos, puntos); } catch (e) { toast('No se pudo guardar: ' + e.message, 'error'); }
@@ -238,18 +252,25 @@ export default {
     async function cerrarRonda(j) {
       j.fase = 'fin_ronda';
       j.historial = [...(j.historial || []), { ronda: j.ronda, par: j.par || [], gano: j.gano || null }];
-      j.todas = privado.actual.map((r) => ({ texto: visible(r.texto), puntos: r.puntos }));
+      j.todas = privado.actual.slice(0, j.casilleros).map((r) => ({ texto: visible(r.texto), puntos: j.alterna ? (j.mult || 1) : r.puntos }));
       j.terminaEn = 0;
       j.responde = null;
       j.paso++;
-      await guardar(j, j.gano && j.pozo ? { [j.gano]: j.pozo * (j.mult || 1) } : {});
+      if (j.alterna) {
+        // Los puntos ya se sumaron con cada acierto. Gana la ronda quien acertó más (empate: el del cara a cara).
+        const [a, b] = j.par || [];
+        const pa = j.pts?.[a] || 0, pb = j.pts?.[b] || 0;
+        j.gano = pa === pb ? (j.duenio || j.gano || a || null) : (pa > pb ? a : b);
+        j.historial[j.historial.length - 1].gano = j.gano;
+        await guardar(j);
+      } else await guardar(j, j.gano && j.pozo ? { [j.gano]: j.pozo * (j.mult || 1) } : {});
       sonido('fin');
     }
 
     // Busca qué casillero es lo que escribieron (o el que marcó a mano quien organiza).
     // Si coincide con varios, se prefiere uno que todavía no esté en el tablero.
     function buscar(j, { valor, idx, error }) {
-      const resp = privado.actual;
+      const resp = privado.actual.slice(0, j.casilleros); // en modo alternado solo valen las 5 primeras
       if (error) return -1;
       if (idx !== undefined) return idx;
       const i = resp.findIndex((r, k) => !j.reveladas[k] && respuestaCorrecta(valor, r.texto));
@@ -258,8 +279,18 @@ export default {
 
     function revelar(j, i, valor) {
       const r = privado.actual[i];
-      j.reveladas[i] = { texto: visible(r.texto), puntos: r.puntos };
-      j.pozo += r.puntos;
+      if (j.alterna) {
+        const n = j.mult || 1;
+        j.reveladas[i] = { texto: visible(r.texto), puntos: n };
+        j.pozo += n;
+        if (j.turno) {
+          j.pts = { ...(j.pts || {}), [j.turno]: (j.pts?.[j.turno] || 0) + n };
+          pendiente[j.turno] = (pendiente[j.turno] || 0) + n;
+        }
+      } else {
+        j.reveladas[i] = { texto: visible(r.texto), puntos: r.puntos };
+        j.pozo += r.puntos;
+      }
       j.ultimo = { eid: j.turno, texto: valor || visible(r.texto), ok: true };
     }
 
@@ -284,7 +315,18 @@ export default {
 
     async function ganaDuelo(j, eid) {
       j.turno = eid;
-      if (Object.keys(j.reveladas).length >= j.casilleros) { j.gano = eid; await cerrarRonda(j); return; }
+      if (Object.keys(j.reveladas).length >= j.casilleros) { j.gano = eid; j.duenio = eid; await cerrarRonda(j); return; }
+      if (j.alterna) {
+        // Sin «jugar o pasar»: el que ganó el cara a cara sigue respondiendo.
+        j.duenio = eid;
+        j.fase = 'jugando';
+        j.strikes = 0;
+        j.responde = persona(sala, j.giro, eid);
+        j.paso++;
+        j.terminaEn = vence(j);
+        await guardar(j);
+        return;
+      }
       j.fase = 'elegir';
       j.terminaEn = 0;
       j.paso++;
@@ -364,7 +406,9 @@ export default {
         await cerrarRonda(j);
         return;
       }
-      if (!acierto) {
+      if (j.alterna) {
+        if (!acierto) j.turno = rival(j, j.turno) || j.turno; // erra: responde el otro equipo
+      } else if (!acierto) {
         j.strikes++;
         if (j.strikes >= STRIKES) {
           const ladron = rival(j, j.duenio);
@@ -527,10 +571,12 @@ export default {
         const u = j.ultimo;
         const ultimo = u && !u.elige && h('p', { class: 'ultimo ' + (u.repetida ? '' : u.ok ? 'bien' : 'mal') },
           u.repetida ? `«${u.texto}» ya está en el tablero` : u.ok ? `✓ ${u.texto}` : `✗ ${u.texto || 'Error'}`);
-        const lista = (botones) => h('ol', { class: 'tablero-host' }, privado.actual.map((r, i) => {
+        const lista = (botones) => h('ol', { class: 'tablero-host' }, privado.actual.slice(0, j.casilleros).map((r, i) => {
           const rev = j.reveladas[i];
           return h('li', { class: rev ? 'revelada' : '' },
-            h('span', null, visible(r.texto), h('span', { class: 'mono muted' }, ` · ${r.puntos}`)),
+            h('span', null, visible(r.texto), j.alterna
+              ? (String(r.texto).includes('/') && h('span', { class: 'muted chico' }, ` (también: ${String(r.texto).split('/').slice(1).map((x) => x.trim()).join(', ')})`))
+              : h('span', { class: 'mono muted' }, ` · ${r.puntos}`)),
             botones && !rev && h('button', { class: 'btn sec chico', onclick: () => jugar({ idx: i }) }, 'Acertó'));
         }));
         const etiqueta = h('div', { class: 'fila entre' },
@@ -541,7 +587,7 @@ export default {
           const ultimaRonda = j.fuente === 'banco' && (j.ronda >= (j.total || privado.encuestas.length) || !sinUsar().length);
           const otra = h('input', { class: 'campo', id: 'otra-pregunta', maxlength: 120, placeholder: 'Siguiente pregunta para el grupo' });
           montar(el, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
-            h('p', { class: 'grande' }, ganador ? `${ganador.nombre} se lleva ${j.pozo * (j.mult || 1)} puntos${j.mult > 1 ? ' (doble)' : ''}` : 'Nadie suma en esta ronda'),
+            h('p', { class: 'grande' }, j.alterna ? marcadorRonda(sala, j) : ganador ? `${ganador.nombre} se lleva ${j.pozo * (j.mult || 1)} puntos${j.mult > 1 ? ' (doble)' : ''}` : 'Nadie suma en esta ronda'),
             tablero(j),
             !ultimaRonda && elegirProximo(j),
             !ultimaRonda && j.fuente === 'banco' && elegirPregunta(),
@@ -654,7 +700,7 @@ export default {
           const g = sala.equipo(j.gano);
           montar(el, h('div', { class: 'resultado ' + (j.gano === mio ? 'bien' : '') },
             h('div', { class: 'resultado-titulo' }, g ? (j.gano === mio ? '¡Ganó tu equipo!' : `Ganó ${g.nombre}`) : 'Nadie suma'),
-            g && h('p', null, `+${j.pozo * (j.mult || 1)} puntos`)), tablero(j));
+            g && h('p', null, j.alterna ? marcadorRonda(sala, j) : `+${j.pozo * (j.mult || 1)} puntos`)), tablero(j));
           return;
         }
         if (j.voz) {
@@ -771,8 +817,10 @@ export default {
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Ganó el cara a cara'), pildoraEquipo(eq),
             h('div', { class: 'tv-sub centro' }, '¿Juegan o pasan?'));
         } else if (j.fase === 'fin_ronda') {
-          estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, j.gano ? 'Se lo lleva' : 'Nadie suma'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
-            j.gano && j.mult > 1 && h('div', { class: 'tv-sub centro' }, `${j.pozo} × 2 = ${j.pozo * 2}`));
+          estado = j.alterna
+            ? h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Gana la ronda'), j.gano && pildoraEquipo(sala.equipo(j.gano)))
+            : h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, j.gano ? 'Se lo lleva' : 'Nadie suma'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
+              j.gano && j.mult > 1 && h('div', { class: 'tv-sub centro' }, `${j.pozo} × 2 = ${j.pozo * 2}`));
         } else {
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, j.fase === 'robo' ? '¡Roba!' : 'Juega'), pildoraEquipo(eq),
             j.responde && h('div', { class: 'tv-sub centro' }, `Responde ${j.responde.nombre}`),
@@ -782,9 +830,11 @@ export default {
         const escena = h('div', { class: 'tv-encuesta' },
           tablero(j, { tv: true }),
           h('div', { class: 'tv-encuesta-lado' },
-            h('div', { class: 'tv-etiqueta' }, 'Pozo'),
-            h('div', { class: 'tv-pozo' }, j.pozo),
-            j.fase !== 'duelo' && j.fase !== 'elegir' && errores(j.strikes),
+            ...(j.alterna
+              ? [h('div', { class: 'tv-etiqueta' }, 'Aciertos'), h('div', { class: 'pila-s' }, (j.par || []).map((e) =>
+                h('div', { class: 'fila entre nowrap tv-pts-ronda' }, pildoraEquipo(sala.equipo(e)), h('span', { class: 'tv-pozo' }, j.pts?.[e] || 0))))]
+              : [h('div', { class: 'tv-etiqueta' }, 'Pozo'), h('div', { class: 'tv-pozo' }, j.pozo),
+                j.fase !== 'duelo' && j.fase !== 'elegir' && errores(j.strikes)]),
             estado));
         const mostrarUltimo = u && !u.elige;
         montar(el, cabecera,

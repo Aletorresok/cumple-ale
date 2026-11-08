@@ -859,3 +859,4 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .tv-prenda { font-size: 1.05em; line-height: 1.25; }
 .tv-pie .marcador-eq { font-size: 1.15em; padding: .35em 1em; }
 .mira-tele { text-align: center; font-family: var(--display); font-size: 1.2rem; color: var(--muted); margin: 8px 0; }
+.tv-pts-ronda { gap: .6em; } .tv-pts-ronda .tv-pozo { font-size: 2.6em; } .tv-pts-ronda .pildora { font-size: 1em; }
