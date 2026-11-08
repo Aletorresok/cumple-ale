@@ -144,6 +144,8 @@ try {
       const t = await host.locator('.escena-opcion').nth(i).textContent();
       if (/Cleto|Borbotones/.test(t)) await marcas.nth(i).check(); else await marcas.nth(i).uncheck();
     }
+    afirmar(await host.locator('#cfg-responden').inputValue() === 'voz', 'por defecto responden en voz alta');
+    await host.locator('#cfg-responden').selectOption('celular');
     await host.locator('#cfg-seg').selectOption('60');
     afirmar(await host.locator('#cfg-puntos').inputValue() === 'acierto', 'por defecto, 1 punto por cada cosa que se acuerden');
     await host.locator('#cfg-puntos').selectOption('puesto');
@@ -263,18 +265,23 @@ try {
   paso('Escena con video: la tele pasa el video y los celulares dicen que miren la tele');
   await host.getByRole('button', { name: /Terminó el video/ }).click();
   await tv.getByText('¿Qué colores había en la pantalla?').waitFor({ timeout: 10000 });
-  await host.getByRole('button', { name: /A escribir/ }).click();
-  const unoV = invitados[0];
-  await unoV.locator('#escena-respuesta').waitFor({ timeout: 10000 });
-  for (const t of ['Colorado', 'azul', 'violeta']) { await unoV.locator('#escena-respuesta').fill(t); await unoV.locator('#escena-respuesta').press('Enter'); }
-  await esperar(1500);
-  await host.getByRole('button', { name: 'Cortar el tiempo ya' }).click();
+  // En voz alta (por defecto): nadie escribe y el organizador toca lo que cada equipo dijo bien.
+  await host.getByRole('button', { name: '🗣️ ¡Que respondan!' }).click();
+  await tv.getByText(/Cada equipo dice lo que se acuerda/).waitFor({ timeout: 10000 });
+  await esperar(1000);
+  afirmar(!(await invitados[0].locator('#escena-respuesta').count()), 'en voz alta el celular no tiene dónde escribir');
+  await invitados[0].getByText('¡Miren la tele!').waitFor();
+  const tarjeta = host.locator('.escena-equipo').first();
+  await tarjeta.getByRole('button', { name: 'rojo' }).click();
+  await tarjeta.getByRole('button', { name: 'azul' }).click();
+  await tarjeta.getByText('2 de 3').waitFor({ timeout: 5000 });
+  await captura(host, 'e5-voz-panel');
   await host.getByRole('button', { name: '📺 Revelar en la tele' }).click();
   await tv.locator('.tv-escena-items li').first().waitFor();
   await esperar(500);
   const ptsV = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
   afirmar(ptsV - antesV === 2, `1 punto por cada cosa recordada (sumó ${ptsV - antesV})`);
-  paso('Escena con video: el equipo se acordó de 2 de 3 y sumó 2 puntos');
+  paso('Escena con video en voz alta: el organizador marcó 2 de 3 para un equipo y sumó 2 puntos');
   await host.getByRole('button', { name: 'Ver resultados' }).click();
   await terminarJuego(host);
 

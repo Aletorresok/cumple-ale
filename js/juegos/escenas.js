@@ -1,5 +1,6 @@
 // ¿Te acordás de la escena?: con video (cargado desde el panel), la tele pasa la escena una sola vez y
-// después aparece la pregunta. Sin video, la tele presenta una escena clásica (por ejemplo, Cleto
+// después aparece la pregunta. Por defecto nadie escribe: cada equipo dice en voz alta lo que se
+// acuerda y quien organiza toca cada cosa que dijeron bien (1 punto cada una). Opcionalmente, Sin video, la tele presenta una escena clásica (por ejemplo, Cleto
 // llamando a todos sus hijos) y cada equipo escribe desde los celulares todo lo que se acuerde.
 // Lo que escriben los integrantes de un equipo se junta en una sola lista. Quien organiza revisa,
 // puede aceptar o sacar respuestas a mano y revela: la tele muestra la lista completa y quién
@@ -133,7 +134,8 @@ export default {
         h('span', null, e.video ? '🎬 ' : '', h('b', null, e.titulo), h('span', { class: 'muted chico' }, ` · ${e.items.length} para recordar`)),
         propias.includes(e) && h('button', { class: 'btn-link peligro chico', type: 'button', onclick: (ev) => { ev.preventDefault(); borrarPropia(e.id); } }, 'Borrar'))));
     };
-    const seg = selector('cfg-seg', 'Tiempo para escribir', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 60);
+    const responden = selector('cfg-responden', 'Cómo responden', [['voz', 'En voz alta: vos marcás lo que se acuerdan'], ['celular', 'Escriben desde los celulares']], 'voz');
+    const seg = selector('cfg-seg', 'Tiempo para escribir (con celulares)', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos'], [180, '3 minutos']], 60);
     const modo = selector('cfg-puntos', 'Puntos', [['acierto', `${PUNTOS_ACIERTO} punto por cada cosa que se acuerden`], ['puesto', 'Por puesto: 100, 60, 40 y 20']], 'acierto');
     // Formulario para cargar una escena con video.
     const fTitulo = h('input', { class: 'campo', id: 'esc-titulo', maxlength: 60, placeholder: 'Título (ej.: Homero en la feria)' });
@@ -164,20 +166,21 @@ export default {
         h('div', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Escenas (en este orden)'),
           zonaLista),
         cargar,
+        responden.el,
         h('div', { class: 'grilla-2' }, seg.el, modo.el),
-        h('p', { class: 'muted chico' }, 'Cada integrante escribe desde su celular y todo se suma a la lista del equipo. Antes de revelar podés aceptar o sacar respuestas a mano.')),
+        h('p', { class: 'muted chico' }, 'En voz alta: cada equipo dice lo que se acuerda y vos tocás cada cosa que dijeron bien. Con celulares, cada integrante escribe y todo se suma a la lista del equipo; antes de revelar podés aceptar o sacar respuestas a mano.')),
       leer: () => {
         // Primero las propias (con video), después las clásicas, en el orden de la lista.
         const ids = marcas.filter((m) => m.checked).map((m) => m.value);
         if (!ids.length) { toast('Elegí al menos una escena', 'error'); return null; }
-        return { escenas: todas.filter((e) => ids.includes(e.id)), seg: Number(seg.valor()), modo: modo.valor() };
+        return { escenas: todas.filter((e) => ids.includes(e.id)), seg: Number(seg.valor()), modo: modo.valor(), voz: responden.valor() === 'voz' };
       },
     };
   },
 
-  async iniciar(sala, { escenas, seg, modo }) {
+  async iniciar(sala, { escenas, seg, modo, voz = false }) {
     const juego = await sala.iniciarJuego({
-      tipo: 'escenas', fase: 'presentar', n: 0, total: escenas.length, seg, modo,
+      tipo: 'escenas', fase: 'presentar', n: 0, total: escenas.length, seg, modo, voz,
       titulo: escenas[0].titulo, consigna: escenas[0].consigna, cantidad: escenas[0].items.length, hasta: 0,
       video: escenas[0].video || null, visto: false,
     });
@@ -211,7 +214,7 @@ export default {
 
     const pasarVideo = () => accion(() => sala.actualizarJuego({ fase: 'video', t: Date.now() }));
     const terminoVideo = () => accion(() => sala.actualizarJuego({ fase: 'presentar', visto: true }));
-    const empezar = () => accion(() => sala.actualizarJuego({ fase: 'escribiendo', hasta: Date.now() + sala.juego.seg * 1000 }));
+    const empezar = () => accion(() => sala.actualizarJuego(sala.juego.voz ? { fase: 'revisar', hasta: 0 } : { fase: 'escribiendo', hasta: Date.now() + sala.juego.seg * 1000 }));
     const cortar = () => accion(async () => { if (sala.juego.fase === 'escribiendo') await sala.actualizarJuego({ fase: 'revisar', hasta: 0 }); });
 
     async function marcarMano(eid, i, valor) {
@@ -256,7 +259,7 @@ export default {
         const ok = new Set(r.ok);
         return h('div', { class: 'tarjeta pila-s escena-equipo', style: { '--c': e.color } },
           h('div', { class: 'fila entre' }, pildoraEquipo(e), h('b', null, `${r.ok.length} de ${items.length}`),
-            h('span', { class: 'muted chico' }, `${r.lista.length} escritas`)),
+            !j.voz && h('span', { class: 'muted chico' }, `${r.lista.length} escritas`)),
           j.fase === 'revisar' && h('div', { class: 'fila escena-chips' }, items.map((t, i) =>
             h('button', { class: 'chip' + (ok.has(i) ? ' escena-ok' : ''), title: ok.has(i) ? 'Tocá para sacarla' : 'Tocá para aceptarla',
               onclick: () => marcarMano(e.id, i, !ok.has(i)) }, (ok.has(i) ? '✓ ' : '') + t))),
@@ -295,8 +298,10 @@ export default {
         }
         if (j.fase === 'presentar') {
           montar(el, cabecera, respuestas,
-            h('p', { class: 'muted chico' }, 'La tele muestra la escena. Leé la consigna en voz alta y largá el tiempo.'),
-            h('button', { class: 'btn grande', onclick: empezar }, `✍️ ¡A escribir! (${j.seg} s)`));
+            h('p', { class: 'muted chico' }, j.voz
+              ? 'La tele muestra la pregunta. Leéla en voz alta, dales un ratito para pensar y después escuchá a cada equipo.'
+              : 'La tele muestra la escena. Leé la consigna en voz alta y largá el tiempo.'),
+            h('button', { class: 'btn grande', onclick: empezar }, j.voz ? '🗣️ ¡Que respondan!' : `✍️ ¡A escribir! (${j.seg} s)`));
           return;
         }
         if (j.fase === 'escribiendo') {
@@ -309,7 +314,9 @@ export default {
         }
         if (j.fase === 'revisar') {
           montar(el, cabecera,
-            h('p', { class: 'chico' }, 'Revisá: en verde lo que cuenta. Tocá un nombre para aceptarlo o sacarlo (por ejemplo, si lo escribieron muy distinto).'),
+            h('p', { class: 'chico' }, j.voz
+              ? 'Cada equipo dice en voz alta lo que se acuerda. Tocá cada cosa que digan bien (queda en verde, 1 punto). Se puede sacar tocando de nuevo.'
+              : 'Revisá: en verde lo que cuenta. Tocá un nombre para aceptarlo o sacarlo (por ejemplo, si lo escribieron muy distinto).'),
             zonaEquipos,
             h('button', { class: 'btn grande', onclick: revelar }, '📺 Revelar en la tele'));
           dibujarEquipos();
@@ -338,6 +345,10 @@ export default {
         if (!mio) { montar(el, esperando('Todavía no tenés equipo', 'Pedile a quien organiza que te sume a uno.')); return; }
         if (j.fase === 'video' || (j.fase === 'presentar' && j.video && !j.visto)) {
           montar(el, esperando('📺 ¡Miren la tele!', 'La escena pasa una sola vez. Presten atención a todo.'));
+          return;
+        }
+        if (j.voz && (j.fase === 'presentar' || j.fase === 'revisar')) {
+          montar(el, esperando('📺 ¡Miren la tele!', 'Nada de celular: junten en equipo todo lo que se acuerden y díganlo en voz alta.'));
           return;
         }
         if (j.fase === 'presentar') {
@@ -444,7 +455,13 @@ export default {
         if (j.fase === 'presentar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
+            h('p', { class: 'tv-sub' }, j.voz ? (j.cantidad > 1 ? `Son ${j.cantidad}. Junten en equipo todo lo que se acuerden: lo dicen en voz alta.` : 'Piénsenlo en equipo y díganlo en voz alta.') : j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
+          return;
+        }
+        if (j.voz && j.fase === 'revisar') {
+          montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
+            h('p', { class: 'tv-pregunta' }, j.consigna),
+            h('p', { class: 'tv-sub' }, `🗣️ Cada equipo dice lo que se acuerda${j.cantidad > 1 ? ` (son ${j.cantidad})` : ''}. ¡1 punto por cada una!`)));
           return;
         }
         if (j.fase === 'escribiendo' || j.fase === 'revisar') {
