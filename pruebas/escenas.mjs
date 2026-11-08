@@ -233,6 +233,15 @@ try {
   await tv.getByText('¡Terminaron las escenas!').waitFor();
   await medir('Escena 2');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
+
+  // ── Cerrar la sala: los celulares ven que se cerró y la sala desaparece del panel ──
+  await host.getByRole('button', { name: 'Cerrar sala', exact: true }).last().click();
+  await host.getByRole('dialog').getByRole('button', { name: 'Cerrar sala' }).click();
+  await invitados[0].getByText('La sala se cerró').waitFor({ timeout: 20000 });
+  await host.getByText('Mis bancos').waitFor({ timeout: 20000 });
+  await esperar(1500);
+  afirmar(!(await host.getByText(codigo).count()), 'la sala ya no aparece en el panel');
+  paso('Cerrar sala: los celulares ven «La sala se cerró» y la sala desaparece del panel');
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
 }

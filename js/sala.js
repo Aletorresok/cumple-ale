@@ -93,13 +93,17 @@ export async function cerrarSala(codigo) {
   // Primero se avisa a todos, así los alumnos ven «La sala se cerró» y no «te sacaron».
   await updateDoc(refSala(codigo), { cerrada: true }).catch(() => {});
   const subs = ['jugadores', 'respuestas', 'secretos', 'privado', 'recursos', 'dibujos'];
+  // Cada colección se borra por separado: si una falla (por ejemplo, reglas de Firebase viejas
+  // que todavía no conocen «dibujos»), igual se borra el resto y la sala.
   for (const s of subs) {
-    const snap = await getDocs(collection(db, 'salas', codigo, s));
-    for (let i = 0; i < snap.docs.length; i += 400) {
-      const lote = writeBatch(db);
-      snap.docs.slice(i, i + 400).forEach((d) => lote.delete(d.ref));
-      await lote.commit();
-    }
+    try {
+      const snap = await getDocs(collection(db, 'salas', codigo, s));
+      for (let i = 0; i < snap.docs.length; i += 400) {
+        const lote = writeBatch(db);
+        snap.docs.slice(i, i + 400).forEach((d) => lote.delete(d.ref));
+        await lote.commit();
+      }
+    } catch (e) { console.warn('No se pudo borrar ' + s, e); }
   }
   const lote = writeBatch(db);
   lote.delete(refSala(codigo));
