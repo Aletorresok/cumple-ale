@@ -366,6 +366,16 @@ try {
   afirmar(!(await tv.locator('.tv-intro').count()), 'al terminar un juego la intro no vuelve a empezar');
   paso('Intro de la noche en la tele (pizarrón) y no se repite al volver de un juego');
 
+  // ── Feliz cumpleaños: la tele pasa el video y vuelve al QR ──
+  await irAlPaso('🎂 Feliz cumpleaños');
+  await host.getByRole('button', { name: '🎂 Poner el feliz cumpleaños' }).click();
+  await tv.locator('.tv-cumple video').waitFor({ timeout: 15000 });
+  await tv.waitForFunction(() => { const v = document.querySelector('.tv-cumple video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
+  await captura(tv, '10p-cumple');
+  await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
+  await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
+  paso('Feliz cumpleaños: la tele pasa el video de los Ramones y vuelve al QR');
+
   // ── Podio ──
   await elegirJuego(host, 'Podio final');
   for (let i = 0; i < 4; i++) await host.getByRole('button', { name: /Revelar/ }).click().then(() => esperar(400));
