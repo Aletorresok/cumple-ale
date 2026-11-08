@@ -32,7 +32,7 @@ const DESEMPATES = [
 ];
 const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
-  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate', 'oculta'];
+  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate', 'oculta', 'publico', 'publicoHecho'];
 
 // Cómo va la ronda en modo alternado: «Los Magios 3 · Los Borbotones 1».
 export function marcadorRonda(sala, j) {
@@ -93,6 +93,9 @@ function persona(sala, giro, eid) {
   return { uid: p.uid, nombre: p.nombre };
 }
 
+// Equipos que no juegan esta ronda (miran desde afuera).
+const deAfuera = (sala, j) => (j.orden || sala.equipos().map((e) => e.id)).filter((e) => !(j.par || []).includes(e));
+
 function nuevoDuelo(sala, j, intento = 1) {
   const [a, b] = j.par;
   return { reps: { [a]: persona(sala, j.giro, a), [b]: persona(sala, j.giro, b) }, primero: null, resp: {}, intento };
@@ -104,7 +107,7 @@ function armarRonda(sala, j, ronda, pregunta, respuestas) {
   const r = {
     ronda, pregunta, casilleros: j.alterna ? Math.min(CASILLEROS_ALTERNADO, respuestas.length) : respuestas.length, reveladas: {}, strikes: 0, pozo: 0, pts: {}, paso: (j.paso || 0) + 1,
     ultimo: null, gano: null, todas: null, par, proximo: null, giro: { ...(j.giro || {}) },
-    mult: !j.alterna && j.doble && j.total && ronda >= j.total ? 2 : 1, seg: j.seg, desempate: null,
+    mult: !j.alterna && j.doble && j.total && ronda >= j.total ? 2 : 1, seg: j.seg, desempate: null, publico: {}, publicoHecho: false,
   };
   if (par.length < 2) {
     return { ...r, fase: 'jugando', turno: par[0] || null, duenio: par[0] || null, duelo: null, responde: persona(sala, r.giro, par[0]), terminaEn: vence(j) };
@@ -276,7 +279,22 @@ export default {
       return j;
     }
 
+    const sinAdivinar = (j) => privado.actual.slice(0, j.casilleros).map((_, i) => i).filter((i) => !j.reveladas?.[i]);
+
     async function cerrarRonda(j) {
+      // Antes de cerrar: si quedaron respuestas, los equipos de afuera pueden arriesgar (+1, errar no resta).
+      if (j.alterna && !j.publicoHecho && deAfuera(sala, j).length && sinAdivinar(j).length) {
+        j.fase = 'publico';
+        j.publicoHecho = true;
+        j.publico = {};
+        j.turno = null;
+        j.terminaEn = 0;
+        j.responde = null;
+        j.paso++;
+        await guardar(j);
+        sonido('bien');
+        return;
+      }
       if (j.alterna && !j.desempate?.gano) {
         const [a, b] = j.par || [];
         if (a && b && (j.pts?.[a] || 0) === (j.pts?.[b] || 0)) {
@@ -474,6 +492,27 @@ export default {
     }
 
     // Modo alternado: si nadie sabe las que faltan, se cierra la ronda (y si hay empate, desempate).
+    // Turno de los que miraban: el equipo de afuera que dijo la respuesta i se lleva 1 punto.
+    async function aciertoPublico(i, eid) {
+      const j = tomar(['publico']);
+      if (!j || j.reveladas?.[i]) return;
+      const r = privado.actual[i];
+      j.reveladas[i] = { texto: visible(r.texto), puntos: r.puntos, personas: true };
+      j.publico = { ...(j.publico || {}), [i]: eid };
+      pendiente[eid] = (pendiente[eid] || 0) + 1;
+      j.ultimo = { eid, texto: visible(r.texto), ok: true };
+      j.paso++;
+      sonido('bien');
+      if (!sinAdivinar(j).length) { await cerrarRonda(j); return; }
+      await guardar(j);
+    }
+
+    async function terminarPublico() {
+      const j = tomar(['publico']);
+      if (!j) return;
+      await cerrarRonda(j);
+    }
+
     async function cerrarAhora() {
       const j = tomar(['jugando']);
       if (!j) return;
@@ -656,6 +695,18 @@ export default {
             h('div', { class: 'fila' }, (j.par || []).map((e) => h('button', { class: 'btn grande', onclick: () => ganaDesempate(e) }, `Más cerca: ${sala.equipo(e)?.nombre || e}`))));
           return;
         }
+        if (j.fase === 'publico') {
+          const fuera = deAfuera(sala, j).map((e) => sala.equipo(e)).filter(Boolean);
+          montar(el, etiqueta, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
+            h('p', { class: 'grande' }, '¡Turno de los que miraban!'),
+            h('p', { class: 'muted' }, `Arriesgan ${fuera.map((e) => e.nombre).join(' y ')}, a los gritos. Cada acierto suma 1; errar no resta.`),
+            h('div', { class: 'pila-s' }, privado.actual.slice(0, j.casilleros).map((r, i) => (j.reveladas?.[i]
+              ? null
+              : h('div', { class: 'tarjeta fila entre' }, h('b', null, visible(r.texto)),
+                h('div', { class: 'fila' }, fuera.map((e) => h('button', { class: 'pildora-boton', style: { '--c': e.color }, onclick: () => aciertoPublico(i, e.id) }, 'La dijo ' + e.nombre))))))),
+            h('button', { class: 'btn grande', onclick: terminarPublico }, 'Nadie más: revelar las que faltan'));
+          return;
+        }
         if (j.fase === 'fin_ronda') {
           const ganador = sala.equipo(j.gano);
           const ultimaRonda = j.fuente === 'banco' && (j.ronda >= (j.total || privado.encuestas.length) || !sinUsar().length);
@@ -783,6 +834,11 @@ export default {
           if (!bloqueado) setTimeout(() => input.focus(), 50);
           return [h('div', { class: 'fila entre' }, h('h2', null, titulo), j.terminaEn ? reloj : null), h('p', { class: 'pregunta-alumno' }, j.pregunta), form];
         };
+        if (j.fase === 'publico') {
+          const juego = (j.par || []).includes(mio);
+          montar(el, esperando(juego ? '📺 Ahora arriesgan los otros' : '📣 ¡Arriesguen!', juego ? 'Los equipos que miraban pueden robar las respuestas que faltan.' : 'Griten las respuestas que faltan: cada una vale 1 punto y errar no resta.'));
+          return;
+        }
         if (j.fase === 'desempate') {
           montar(el, esperando('📺 ¡Desempate!', 'Miren la tele: pónganse de acuerdo y griten un número.'));
           return;
@@ -930,6 +986,10 @@ export default {
         } else if (j.fase === 'elegir') {
           estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Ganó el cara a cara'), pildoraEquipo(eq),
             h('div', { class: 'tv-sub centro' }, '¿Juegan o pasan?'));
+        } else if (j.fase === 'publico') {
+          estado = h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, '¡Turno de los que miraban!'),
+            deAfuera(sala, j).map((e) => pildoraEquipo(sala.equipo(e))),
+            h('div', { class: 'tv-sub centro' }, 'Arriesguen las que faltan: +1 cada una'));
         } else if (j.fase === 'fin_ronda') {
           estado = j.alterna
             ? h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Gana la ronda'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
