@@ -2,7 +2,7 @@
 import { asegurarSesion, mensajeError } from './fb.js';
 import { Sala } from './sala.js';
 import { juego as buscarJuego } from './juegos/index.js';
-import { marcador } from './juegos/comun.js';
+import { marcador, logoEquipo } from './juegos/comun.js';
 import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { noticiero } from './noticiero.js';
@@ -22,13 +22,17 @@ export async function iniciarTv(raiz, codigoUrl) {
   let vistaJuego = null;
   let idJuego;
 
-  const botonSonido = h('button', { class: 'tv-boton', onclick: () => { sonido('tic'); botonSonido.remove(); } }, '🔈 Activar sonido');
+  // El navegador no deja sonar nada hasta el primer toque o tecla en la página: cualquiera sirve
+  // (por ejemplo «Pantalla completa»), así que no hace falta un botón aparte.
+  const destrabar = () => { sonido('tic'); document.removeEventListener('pointerdown', destrabar); document.removeEventListener('keydown', destrabar); };
+  document.addEventListener('pointerdown', destrabar);
+  document.addEventListener('keydown', destrabar);
   const botonPantalla = h('button', { class: 'tv-boton', onclick: () => {
     if (document.fullscreenElement) document.exitFullscreen?.();
     else document.documentElement.requestFullscreen?.().catch(() => {});
   } }, '⛶ Pantalla completa');
 
-  const controles = h('div', { class: 'tv-controles visible' }, botonSonido, botonPantalla);
+  const controles = h('div', { class: 'tv-controles visible' }, botonPantalla);
   montar(raiz, h('div', { class: 'tv' }, controles, escena, pie));
   // Los botones aparecen al mover el mouse y se esconden solos.
   let ocultar = setTimeout(() => controles.classList.remove('visible'), 6000);
@@ -82,8 +86,10 @@ function espera(el, sala) {
       h('div', { class: 'tv-grupos' }, sala.equipos().map((e) => {
         const miembros = sala.miembros(e.id);
         return h('div', { class: 'tv-grupo', style: { '--c': e.color } },
-          h('div', { class: 'tv-grupo-cab' }, h('span', null, e.nombre),
-            h('span', { class: 'mono' }, Object.keys(sala.piezasDe(e.id)).length ? `🧩×${Object.keys(sala.piezasDe(e.id)).length} · ` : '', `${e.puntos} pts`)),
+          h('div', { class: 'tv-grupo-cab' }, logoEquipo(e, 'logo-eq tv-grupo-logo'),
+            h('span', { class: 'tv-grupo-nombre' }, e.nombre,
+              h('small', null, miembros.length === 1 ? '1 integrante' : `${miembros.length} integrantes`,
+                Object.keys(sala.piezasDe(e.id)).length ? ` · 🧩×${Object.keys(sala.piezasDe(e.id)).length}` : '', ` · ${e.puntos} pts`))),
           h('div', { class: 'tv-nombres' }, miembros.map((m) => h('span', { class: 'tv-nombre' }, m.nombre))));
       })))));
 }
