@@ -18,6 +18,7 @@ export const ESCENAS = [
   {
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
+    video: 'video/escena-cleto.mp4',
     consigna: 'Cleto le regala a Marge los cupones de pretzels y llama a todos sus hijos, uno por uno. ¿Cuántos nombres se acuerdan?',
     fija: true,
     items: [

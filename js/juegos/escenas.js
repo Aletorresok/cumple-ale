@@ -269,7 +269,7 @@ export default {
 
     const v = vista({
       destruir: () => fin?.(),
-      clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!privado}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!sala.juego.visto}:${!!privado}`,
       dibujar() {
         const j = sala.juego;
         fin?.(); fin = null; zonaEquipos = null; firma = '';
@@ -336,7 +336,7 @@ export default {
 
   alumno(el, sala) {
     return vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.n}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!sala.juego.visto}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         const mio = sala.data.asignaciones?.[sala.uid];
@@ -422,7 +422,7 @@ export default {
   tv(el, sala) {
     let zonaConteo = null;
     return vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.n}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!sala.juego.visto}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         zonaConteo = null;

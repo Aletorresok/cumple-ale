@@ -150,6 +150,7 @@ try {
     afirmar(await host.locator('#cfg-puntos').inputValue() === 'acierto', 'por defecto, 1 punto por cada cosa que se acuerden');
     await host.locator('#cfg-puntos').selectOption('puesto');
   });
+  await host.getByRole('button', { name: 'Saltear el video' }).click(); // Cleto viene con video: acá se prueba lo escrito
   await tv.getByText('Los hijos de Cleto').waitFor({ timeout: 15000 });
   await captura(tv, 'e1-presentar');
   await invitados[0].getByText('¡Miren la tele!').waitFor();
