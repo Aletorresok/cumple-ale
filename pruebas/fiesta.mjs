@@ -318,7 +318,7 @@ try {
   await irAlPaso('🎬 Intro de la noche');
   await host.getByRole('button', { name: '🎬 Poner la intro' }).click();
   await tv.locator('.tv-intro').waitFor({ timeout: 15000 });
-  await tv.locator('.in-final').waitFor({ state: 'visible', timeout: 15000 });
+  await tv.locator('.in-equipo >> nth=3').waitFor({ state: 'visible', timeout: 15000 });
   await esperar(1500);
   await captura(tv, '10n-intro');
   await host.getByRole('button', { name: '↻ Repetir la intro' }).waitFor();
