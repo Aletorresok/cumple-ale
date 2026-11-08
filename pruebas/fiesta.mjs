@@ -315,6 +315,12 @@ try {
       esperado += caso === 0 ? 2 : 1;
     }
     await tv.locator('.tv-opcion.correcta').waitFor({ timeout: 10000 });
+    if (n === 7) {
+      // La de Los Magios pasa la escena para chequear la respuesta.
+      await tv.waitForFunction(() => { const v = document.querySelector('video.tv-trivia-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
+      await captura(tv, '10c2-trivia-video-chequeo');
+      paso('Trivia japonesa: al responder la de Los Magios, la tele pasa la escena para chequear');
+    } else afirmar(!(await tv.locator('video.tv-trivia-video').count()), 'sin video, no pasa ninguna escena');
     await host.getByRole('button', { name: /Siguiente pregunta|aproximación/ }).click();
   }
   afirmar(new Set(turnos.slice(0, 4)).size === 4 && turnos[4] === turnos[0], `las preguntas rotan por equipo (${turnos.join(', ')})`);
