@@ -156,11 +156,41 @@ try {
   paso(`Sala ${codigo}: ${N} invitados en 4 equipos (sin agregar ningún banco)`);
   await medir('Entrada y equipos');
 
+  // ── Modo pizarra (por defecto): el celular solo muestra la palabra y el organizador marca ──
+  const antesPz = await puntos(host);
+  await elegirJuego(host, 'Dibujá en Springfield', async () => {
+    afirmar(await host.locator('#cfg-donde').inputValue() === 'pizarra', 'por defecto se dibuja en la pizarra');
+    afirmar(await host.locator('#cfg-seg').inputValue() === '90', 'por defecto, turnos de 1 minuto y medio');
+    await host.locator('#cfg-vueltas').selectOption('1');
+  });
+  await host.getByRole('button', { name: '✏️ Empezar turno' }).click();
+  const dibujaPz = await celularCon(invitados, '.dibujo-pizarra');
+  afirmar(!(await dibujaPz.locator('canvas').count()), 'en modo pizarra el celular no tiene lienzo');
+  const pz1 = await dibujaPz.locator('.dibujo-palabra').textContent();
+  await tv.getByText('dibuja en la pizarra').waitFor({ timeout: 10000 });
+  afirmar(!(await tv.getByText(pz1).count()), 'la tele no muestra la palabra');
+  await captura(dibujaPz, '0a-celular-pizarra');
+  await host.getByRole('button', { name: '✓ Adivinaron' }).click();
+  await dibujaPz.locator('.dibujo-palabra', { hasNotText: pz1 }).waitFor({ timeout: 10000 });
+  await tv.locator('.tv-dibujo-cartel', { hasText: pz1 }).waitFor({ timeout: 5000 });
+  await captura(tv, '0b-tv-pizarra');
+  const pz2 = await dibujaPz.locator('.dibujo-palabra').textContent();
+  await dibujaPz.getByRole('button', { name: /Pasar/ }).click();
+  await dibujaPz.locator('.dibujo-palabra', { hasNotText: pz2 }).waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: '✓ Adivinaron' }).click();
+  await host.getByText('2 adivinadas · 1 pasadas').waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: 'Terminar el turno ya' }).click();
+  await tv.locator('.tv-mimica-lista li').nth(2).waitFor({ timeout: 10000 });
+  afirmar(await puntos(host) - antesPz === 2, `pizarra: cada dibujo adivinado vale 1 (sumó ${await puntos(host) - antesPz})`);
+  paso(`Pizarra: adivinaron «${pz1}», pasaron «${pz2}», +2 puntos`);
+  await terminarJuego(host);
+
   const antes = await puntos(host);
   await elegirJuego(host, 'Dibujá en Springfield', async () => {
     await host.locator('#cfg-banco').waitFor();
     const op = await host.locator('#cfg-banco option').allTextContents();
     afirmar(op[0].includes('vienen con el juego'), `las palabras de Springfield vienen con el juego (${op})`);
+    await host.locator('#cfg-donde').selectOption('celular');
     await host.locator('#cfg-modo').selectOption('equipo');
     await host.locator('#cfg-vueltas').selectOption('1');
   });
@@ -242,6 +272,7 @@ try {
   // ── Modo «adivinan todos»: el primero que acierta se lleva 10 y el que dibuja, 5 ──
   const antesTodos = await puntos(host);
   await elegirJuego(host, 'Dibujá en Springfield', async () => {
+    await host.locator('#cfg-donde').selectOption('celular');
     await host.locator('#cfg-modo').selectOption('todos');
     await host.locator('#cfg-vueltas').selectOption('1');
   });

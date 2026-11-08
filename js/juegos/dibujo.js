@@ -1,4 +1,6 @@
-// Dibujá en Springfield (estilo Pictionary): por turnos, alguien del equipo dibuja con el dedo
+// Dibujá en Springfield (estilo Pictionary). Modo pizarra (el de la fiesta): quien dibuja ve la palabra
+// en el celular y dibuja en una pizarra; su equipo grita y el organizador marca (1 punto por dibujo).
+// Modo celular: por turnos, alguien del equipo dibuja con el dedo
 // en su celular la palabra que le toca, el dibujo aparece en vivo en la pantalla grande y su
 // equipo grita hasta adivinar. Quien dibuja marca «¡Adivinaron!» o «Pasar» (o lo marca quien
 // organiza). Los trazos viajan por Firebase en el documento salas/{codigo}/dibujos/{uid}.
@@ -11,13 +13,16 @@ const PUNTOS_ACIERTO = 10;
 // Modo «adivinan todos»: si acierta otro equipo, el equipo de quien dibuja se lleva esto por dibujar bien.
 const PUNTOS_DIBUJANTE = 5;
 
+// Modo pizarra (el de la fiesta): se dibuja en una pizarra de verdad y cada dibujo adivinado vale 1.
+const PUNTOS_PIZARRA = 1;
+
 // Puntos de un turno a partir de las palabras adivinadas ({ texto, ok, eq }).
-export function puntosDelTurno(palabras, equipo) {
+export function puntosDelTurno(palabras, equipo, porAcierto = PUNTOS_ACIERTO) {
   const pts = {};
   for (const p of palabras) {
     if (!p.ok) continue;
     const eq = p.eq || equipo;
-    pts[eq] = (pts[eq] || 0) + PUNTOS_ACIERTO;
+    pts[eq] = (pts[eq] || 0) + porAcierto;
     if (eq !== equipo) pts[equipo] = (pts[equipo] || 0) + PUNTOS_DIBUJANTE;
   }
   return pts;
@@ -126,28 +131,37 @@ export default {
     const opciones = [['', `Springfield (vienen con el juego) — ${PALABRAS_DIBUJO.length} palabras`],
       ...aptos.map((b) => [b.id, `${b.titulo} — ${itemsDe(b, 'dibujo').length} palabras para dibujar`])];
     const banco = selector('cfg-banco', 'Palabras', opciones, aptos.find((b) => b.plantilla === 'springfield')?.id || '');
-    const seg = selector('cfg-seg', 'Tiempo por turno', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos']], 60);
+    const donde = selector('cfg-donde', 'Dónde se dibuja', [
+      ['pizarra', `En una pizarra: el celular de quien dibuja solo muestra la palabra; su equipo grita y vos marcás (${PUNTOS_PIZARRA} punto por dibujo)`],
+      ['celular', 'En el celular: el dibujo sale en vivo en la tele']], 'pizarra');
+    const seg = selector('cfg-seg', 'Tiempo por turno', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos']], 90);
     const vueltas = selector('cfg-vueltas', 'Vueltas', [[1, '1 turno por equipo'], [2, '2 turnos por equipo'], [3, '3 turnos por equipo']], 2);
     const modo = selector('cfg-modo', 'Quién adivina', [['equipo', 'Solo el equipo de quien dibuja'], ['todos', 'Todos los equipos: el primero que acierta']], 'todos');
     const conGente = sala.equipos().filter((e) => sala.miembros(e.id).length >= 2);
+    const zonaCelular = h('div', { class: 'pila' }, modo.el,
+        h('p', { class: 'muted chico' }, `Cada palabra adivinada suma ${PUNTOS_ACIERTO} puntos. Con «Todos los equipos», gana los ${PUNTOS_ACIERTO} el equipo que grita primero la respuesta y el equipo de quien dibuja se lleva ${PUNTOS_DIBUJANTE} por dibujar bien. Pasar no resta, pero la palabra se pierde. Dibuja una persona distinta en cada turno. No se vale escribir letras ni números.`));
+    const selDonde = donde.el.querySelector('select');
+    const pintarDonde = () => { zonaCelular.hidden = selDonde.value !== 'celular'; };
+    selDonde.addEventListener('change', pintarDonde);
+    pintarDonde();
     return {
-      el: h('div', { class: 'pila' }, banco.el, h('div', { class: 'grilla-2' }, seg.el, vueltas.el), modo.el,
-        h('p', { class: 'muted chico' }, `Cada palabra adivinada suma ${PUNTOS_ACIERTO} puntos. Con «Todos los equipos», gana los ${PUNTOS_ACIERTO} el equipo que grita primero la respuesta y el equipo de quien dibuja se lleva ${PUNTOS_DIBUJANTE} por dibujar bien. Pasar no resta, pero la palabra se pierde. Dibuja una persona distinta en cada turno. No se vale escribir letras ni números.`),
+      el: h('div', { class: 'pila' }, banco.el, donde.el, h('div', { class: 'grilla-2' }, seg.el, vueltas.el), zonaCelular,
         conGente.length < 1 && h('p', { class: 'aviso' }, 'Hace falta al menos un equipo con 2 personas.')),
       leer: () => {
         const elegido = aptos.find((b) => b.id === banco.valor());
         const palabras = elegido ? itemsDe(elegido, 'dibujo').map((i) => i.palabra) : PALABRAS_DIBUJO;
         const equipos = sala.equipos().filter((e) => sala.miembros(e.id).length >= 2).map((e) => e.id);
         if (!equipos.length) { toast('Hace falta al menos un equipo con 2 personas', 'error'); return null; }
-        return { palabras: mezclar(palabras), seg: Number(seg.valor()), vueltas: Number(vueltas.valor()), equipos, modo: modo.valor() };
+        const pizarra = donde.valor() === 'pizarra';
+        return { palabras: mezclar(palabras), seg: Number(seg.valor()), vueltas: Number(vueltas.valor()), equipos, modo: pizarra ? 'equipo' : modo.valor(), pizarra };
       },
     };
   },
 
-  async iniciar(sala, { palabras, seg, vueltas, equipos, modo = 'equipo' }) {
+  async iniciar(sala, { palabras, seg, vueltas, equipos, modo = 'equipo', pizarra = false }) {
     const orden = mezclar(equipos);
     const juego = await sala.iniciarJuego({
-      tipo: 'dibujo', fase: 'listo', seg, modo, turno: 0, total: orden.length * vueltas, orden,
+      tipo: 'dibujo', fase: 'listo', seg, modo, pizarra, pts: pizarra ? PUNTOS_PIZARRA : PUNTOS_ACIERTO, turno: 0, total: orden.length * vueltas, orden,
       equipo: orden[0], actor: null, hasta: 0, n: 0, aciertos: 0, pasadas: 0, ultimas: [], dibujaron: [], ultimaOk: null, ultimaEq: null,
     });
     await sala.guardarPrivado({ juego, palabras, pos: 0, turnoPalabras: [] });
@@ -210,7 +224,7 @@ export default {
       const j = sala.juego;
       if (j.fase !== 'dibujando') return;
       const siguiente = j.turno < j.total ? j.orden[j.turno % j.orden.length] : null;
-      await sala.actualizarJuego({ fase: siguiente ? 'fin_turno' : 'fin', ultimas: privado.turnoPalabras, siguiente }, puntosDelTurno(privado.turnoPalabras, j.equipo));
+      await sala.actualizarJuego({ fase: siguiente ? 'fin_turno' : 'fin', ultimas: privado.turnoPalabras, siguiente }, puntosDelTurno(privado.turnoPalabras, j.equipo, j.pts));
       await sala.repartirSecretos({ [j.actor.uid]: { juego: j.id, ronda: j.turno, n: -1, palabra: '' } });
     }
 
@@ -226,9 +240,11 @@ export default {
         if (j.fase === 'listo' || j.fase === 'fin_turno') {
           montar(el,
             j.fase === 'fin_turno' && h('p', null, `Turno ${j.turno}: `, h('b', null, `${j.aciertos} adivinadas`), ' · ',
-              Object.entries(puntosDelTurno(j.ultimas || [], j.equipo)).map(([e, p]) => `${sala.equipo(e)?.nombre} +${p}`).join(' · ') || 'sin puntos'),
+              Object.entries(puntosDelTurno(j.ultimas || [], j.equipo, j.pts)).map(([e, p]) => `${sala.equipo(e)?.nombre} +${p}`).join(' · ') || 'sin puntos'),
             h('p', null, `Turno ${j.turno + 1} de ${j.total}: le toca a `, pildoraEquipo(sala.equipo(j.fase === 'fin_turno' ? j.siguiente : j.equipo))),
-            h('p', { class: 'muted chico' }, 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. El dibujo sale en vivo en la tele.'),
+            h('p', { class: 'muted chico' }, j.pizarra
+              ? 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. Dibuja en la pizarra, su equipo grita y vos tocás «Adivinaron».'
+              : 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. El dibujo sale en vivo en la tele.'),
             h('button', { class: 'btn grande', onclick: empezarTurno }, '✏️ Empezar turno'));
           return;
         }
@@ -246,7 +262,7 @@ export default {
           h('div', { class: 'fila' },
             j.modo === 'todos'
               ? sala.equipos().map((e) => h('button', { class: 'btn ok', style: { background: e.color }, onclick: () => marcar('acierto:' + e.id, sala.juego.n) }, '✓ ' + e.nombre))
-              : h('button', { class: 'btn ok', onclick: () => marcar('acierto', sala.juego.n) }, '✓ Adivinaron'),
+              : h('button', { class: 'btn ok grande', onclick: () => marcar('acierto', sala.juego.n) }, '✓ Adivinaron'),
             h('button', { class: 'btn sec', onclick: () => marcar('paso', sala.juego.n) }, '⏭ Pasar')),
           h('button', { class: 'btn-link', onclick: terminarTurno }, 'Terminar el turno ya'));
         fin = cuentaRegresiva(reloj, j.hasta, { alTerminar: terminarTurno });
@@ -290,12 +306,13 @@ export default {
           const valida = secreto && secreto.juego === j.id && secreto.ronda === j.turno && secreto.n === j.n;
           if (!valida) { montar(el, esperando('Cargando la palabra…')); return; }
           vibrar(60);
+          if (j.pizarra) { alLimpiar(palabraParaPizarra(el, sala, j, secreto)); return; }
           alLimpiar(pizarra(el, sala, j, secreto));
           return;
         }
         if (mio === j.equipo || (j.modo === 'todos' && mio)) {
           montar(el, h('div', { class: 'resultado bien' }, h('div', { class: 'resultado-titulo' }, mio === j.equipo ? '¡Adiviná!' : '¡Adiviná antes que nadie!'),
-            h('p', null, `${j.actor.nombre} está dibujando. Mirá la tele y gritá lo que se te ocurra.`)));
+            h('p', null, j.pizarra ? `${j.actor.nombre} está dibujando en la pizarra. ¡Gritá lo que se te ocurra!` : `${j.actor.nombre} está dibujando. Mirá la tele y gritá lo que se te ocurra.`)));
           return;
         }
         montar(el, esperando(`Turno del equipo ${eq?.nombre}`, 'Miren la tele, pero sin soplar 🤫'));
@@ -326,7 +343,9 @@ export default {
               ? [h('div', { class: 'tv-etiqueta' }, j.modo === 'todos' ? 'Palabras adivinadas' : `${eq?.nombre} adivinó`), h('h1', { class: 'tv-titulo enorme', style: { color: eq?.color } }, j.aciertos),
                 j.ultimas?.length > 0 && h('ul', { class: 'tv-mimica-lista' }, j.ultimas.map((p) => h('li', { class: p.ok ? 'ok' : 'paso' }, p.texto, j.modo === 'todos' && p.ok && p.eq && h('b', { style: { color: sala.equipo(p.eq)?.color } }, ' · ' + sala.equipo(p.eq)?.nombre))))]
               : [h('div', { class: 'tv-icono' }, '✏️'), h('h1', { class: 'tv-titulo' }, 'Dibujá en Springfield'),
-                h('p', { class: 'tv-sub' }, j.modo === 'todos'
+                h('p', { class: 'tv-sub' }, j.pizarra
+                  ? `Alguien del equipo dibuja en la pizarra la palabra que le sale en el celular. Su equipo grita. Cada dibujo adivinado vale ${j.pts} punto. ¡Todas las que puedan en ${j.seg} segundos!`
+                  : j.modo === 'todos'
                   ? 'Alguien dibuja en su celular y el dibujo sale acá. Adivinan todos los equipos: el primero que grita la respuesta se lleva los puntos.'
                   : 'Alguien del equipo dibuja en su celular y el dibujo sale acá. El resto grita. ¡Todas las que puedan!'),
                 h('p', { class: 'tv-sub chico' }, 'No se vale escribir letras ni números.')],
@@ -338,6 +357,17 @@ export default {
         cuenta = h('span', { class: 'tv-dibujo-cuenta', style: { color: eq?.color } });
         cartel = h('div', { class: 'tv-dibujo-cartel', hidden: true });
         ultimaOk = j.ultimaOk;
+        if (j.pizarra) {
+          montar(el, h('div', { class: 'tv-centro tv-pizarra' },
+            h('div', { class: 'tv-etiqueta' }, `Turno de ${eq?.nombre} · dibuja en la pizarra`),
+            h('h1', { class: 'tv-titulo enorme', style: { color: eq?.color } }, j.actor.nombre),
+            h('div', { class: 'tv-dibujo-datos' },
+              h('div', { class: 'pila-s centro' }, cuenta, h('span', { class: 'tv-etiqueta' }, 'adivinados')),
+              h('div', { class: 'pila-s centro' }, reloj, h('span', { class: 'tv-etiqueta' }, 'segundos'))),
+            h('div', { class: 'tv-pizarra-cartel' }, cartel)));
+          alLimpiar(cuentaRegresiva(reloj, j.hasta, { cadaSegundo: (falta) => reloj.classList.toggle('urgente', falta < 10000) }));
+          return;
+        }
         vivo = lienzoEnVivo(sala, j.actor.uid, 'lienzo-tv');
         montar(el, h('div', { class: 'tv-dibujo' },
           h('div', { class: 'tv-dibujo-cab' },
@@ -479,4 +509,21 @@ function pizarra(el, sala, j, secreto) {
   programar();
   const finReloj = cuentaRegresiva(reloj, j.hasta);
   return () => { terminado = true; clearTimeout(timer); finReloj?.(); l.soltar(); };
+}
+
+// Modo pizarra: el celular de quien dibuja solo muestra la palabra, bien grande, y un botón para pasar.
+function palabraParaPizarra(el, sala, j, secreto) {
+  let enviado = false;
+  const pasar = h('button', { class: 'btn sec grande', onclick: async () => {
+    if (enviado) return;
+    enviado = true; pasar.disabled = true;
+    try { await sala.responder({ ronda: j.turno, paso: secreto.n, accion: 'paso' }); } catch (e) { toast(e.message, 'error'); enviado = false; pasar.disabled = false; }
+  } }, '⏭ Pasar esta palabra');
+  const reloj = h('span', { class: 'reloj grande' });
+  montar(el, h('div', { class: 'pila centro dibujo-pizarra' },
+    h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, 'Dibujá en la pizarra'), reloj),
+    h('div', { class: 'dibujo-palabra enorme' }, secreto.palabra),
+    h('p', { class: 'muted' }, 'Sin letras ni números. Cuando adivinen, el organizador lo marca y te sale la próxima.'),
+    pasar));
+  return cuentaRegresiva(reloj, j.hasta);
 }
