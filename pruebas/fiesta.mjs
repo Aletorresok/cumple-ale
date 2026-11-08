@@ -315,10 +315,10 @@ try {
       esperado += caso === 0 ? 2 : 1;
     }
     await tv.locator('.tv-opcion.correcta').waitFor({ timeout: 10000 });
-    if ([0, 2, 4, 8].includes(n)) {
+    if ([0, 2, 4, 6, 8].includes(n)) {
       // Magios, Llamarada Moe, crayones y código de área pasan la escena para chequear la respuesta.
       await tv.waitForFunction(() => { const v = document.querySelector('video.tv-trivia-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
-      if (n === 2) { await captura(tv, '10c2-trivia-video-chequeo'); paso('Trivia japonesa: al responder las que tienen escena (Magios, Llamarada, crayones, código de área), la tele la pasa para chequear'); }
+      if (n === 2) { await captura(tv, '10c2-trivia-video-chequeo'); paso('Trivia japonesa: al responder las que tienen escena (Magios, Llamarada, crayones, Moe, código de área), la tele la pasa para chequear'); }
     } else afirmar(!(await tv.locator('video.tv-trivia-video').count()), 'sin video, no pasa ninguna escena');
     await host.getByRole('button', { name: /Siguiente pregunta|aproximación/ }).click();
   }

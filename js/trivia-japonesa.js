@@ -12,7 +12,7 @@ export const PREGUNTAS_JAPONESA = [
   q('¿Qué nombre nuevo se pone Homero, sacado de un secador de pelo?', 'Max Power', 'Homer Thompson', 'Mr. X', 'Señor Poder'),
   conVideo('video/trivia-crayones.mp4', q('¿Cuántos crayones se metió Homero por la nariz?', '16', '8', '12', '24')),
   q('¿Cómo se llama el osito de peluche del Sr. Burns?', 'Bobo', 'Rosebud', 'Winston', 'Teddy'),
-  q('¿Cuál es el teléfono del Señor Quitanieves?', 'KL5-3226', 'KL5-1234', '555-PLOW', '742-1989'),
+  conVideo('video/trivia-moe-revista.mp4', q('¿Qué se quedó haciendo Moe la noche que le dispararon al Sr. Burns?', 'Leía una revista del supermercado', 'Lustraba vasos', 'Miraba la tele', 'Dormía en la taberna')),
   q('¿Cuál es el nombre real de Krusty el payaso?', 'Herschel Krustofski', 'Hyman Krustofski', 'Krusty Kowalski', 'Herschel Klein'),
   conVideo('video/trivia-codigo-area.mp4', q('¿Cuál es el código de área de la Nueva Springfield?', '939', '636', '742', '555')),
 ];
