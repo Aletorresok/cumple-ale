@@ -135,7 +135,7 @@ export default {
       ['pizarra', `En una pizarra: el celular de quien dibuja solo muestra la palabra; su equipo grita y vos marcás (${PUNTOS_PIZARRA} punto por dibujo)`],
       ['celular', 'En el celular: el dibujo sale en vivo en la tele']], 'pizarra');
     const seg = selector('cfg-seg', 'Tiempo por turno', [[60, '1 minuto'], [90, '1 minuto y medio'], [120, '2 minutos']], 90);
-    const vueltas = selector('cfg-vueltas', 'Vueltas', [[1, '1 turno por equipo'], [2, '2 turnos por equipo'], [3, '3 turnos por equipo']], 2);
+    const vueltas = selector('cfg-vueltas', 'Vueltas', [[1, '1 turno por equipo'], [2, '2 turnos por equipo'], [3, '3 turnos por equipo']], 1);
     const modo = selector('cfg-modo', 'Quién adivina', [['equipo', 'Solo el equipo de quien dibuja'], ['todos', 'Todos los equipos: el primero que acierta']], 'todos');
     const conGente = sala.equipos().filter((e) => sala.miembros(e.id).length >= 2);
     const zonaCelular = h('div', { class: 'pila' }, modo.el,
@@ -228,10 +228,20 @@ export default {
       await sala.repartirSecretos({ [j.actor.uid]: { juego: j.id, ronda: j.turno, n: -1, palabra: '' } });
     }
 
+    // Otra vuelta: un turno más por equipo, aunque el juego ya haya empezado (o terminado).
+    async function otraVuelta() {
+      const j = sala.juego;
+      const total = j.total + j.orden.length;
+      if (j.fase === 'fin') await sala.actualizarJuego({ total, fase: 'fin_turno', siguiente: j.orden[j.turno % j.orden.length] });
+      else await sala.actualizarJuego({ total });
+      toast('Se agregó otra vuelta: un turno más por equipo');
+    }
+    const botonVuelta = () => h('button', { class: 'btn sec', onclick: otraVuelta }, '➕ Jugar otra vuelta');
+
     let contador;
     const v = vista({
       destruir: () => fin?.(),
-      clave: () => `${sala.juego.fase}:${sala.juego.turno}:${!!privado}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.turno}:${sala.juego.total}:${!!privado}`,
       dibujar() {
         const j = sala.juego;
         fin?.(); fin = null; contador = null;
@@ -245,11 +255,12 @@ export default {
             h('p', { class: 'muted chico' }, j.pizarra
               ? 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. Dibuja en la pizarra, su equipo grita y vos tocás «Adivinaron».'
               : 'Al empezar, la app elige quién dibuja y le muestra la palabra en su celular. El dibujo sale en vivo en la tele.'),
-            h('button', { class: 'btn grande', onclick: empezarTurno }, '✏️ Empezar turno'));
+            h('button', { class: 'btn grande', onclick: empezarTurno }, '✏️ Empezar turno'),
+            botonVuelta());
           return;
         }
         if (j.fase === 'fin') {
-          montar(el, h('p', { class: 'grande' }, '¡Terminó Dibujá en Springfield!'), ranking(sala));
+          montar(el, h('p', { class: 'grande' }, '¡Terminó Dibujá en Springfield!'), ranking(sala), botonVuelta());
           return;
         }
         const reloj = h('span', { class: 'reloj grande' });
