@@ -28,7 +28,7 @@ export default {
     const b = selectorBanco(bancos, 'pregunta', 1);
     const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto (con el banco elegido)'], ['castigo', `Trivia japonesa: ${PREGUNTAS_JAPONESA.length} preguntas por turno${APROX_JAPONESA ? ' + aproximación' : ''}`]], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
-    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 30);
+    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[10, '10 segundos'], [15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 10);
     const intro = h('input', { type: 'checkbox', id: 'cfg-intro', checked: true });
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),

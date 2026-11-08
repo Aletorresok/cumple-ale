@@ -59,7 +59,7 @@ export async function iniciarTv(raiz, codigoUrl) {
     if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala, espera);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;
-    montar(pie, sinMarcador ? null : marcador(sala));
+    montar(pie, sinMarcador ? null : marcador(sala, { compacto: true }));
     pie.hidden = sinMarcador;
   }, () => montar(escena, error('Esta sala está cerrada.')));
 }

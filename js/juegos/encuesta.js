@@ -156,6 +156,7 @@ export default {
   id: 'encuesta',
   nombre: 'Los invitados dicen',
   icono: '📊',
+  sinMarcador: true,   // la tele ya muestra los aciertos del cara a cara
   resumen: 'Al estilo 100 argentinos dicen: dos equipos, cara a cara y robo del pozo.',
   tipos: ['encuesta'],
 
