@@ -145,6 +145,8 @@ try {
       if (/Cleto|Borbotones/.test(t)) await marcas.nth(i).check(); else await marcas.nth(i).uncheck();
     }
     await host.locator('#cfg-seg').selectOption('60');
+    afirmar(await host.locator('#cfg-puntos').inputValue() === 'acierto', 'por defecto, 1 punto por cada cosa que se acuerden');
+    await host.locator('#cfg-puntos').selectOption('puesto');
   });
   await tv.getByText('Los hijos de Cleto').waitFor({ timeout: 15000 });
   await captura(tv, 'e1-presentar');
@@ -213,7 +215,7 @@ try {
 
   // ── Escena 2: los Borbotones; dos equipos empatan ──
   await host.getByRole('button', { name: 'Siguiente escena →' }).click();
-  await tv.getByText('Los Borbotones').waitFor();
+  await tv.locator('.tv-titulo', { hasText: 'Los Borbotones' }).waitFor();
   await host.getByRole('button', { name: /A escribir/ }).click();
   const b = [['homer', 'Apu', 'skiner'], ['Barney', 'Apu', 'Homero'], ['el jefe gorgory'], []];
   for (const [k, eq] of nombres.entries()) {
@@ -233,6 +235,48 @@ try {
   await tv.getByText('¡Terminaron las escenas!').waitFor();
   await medir('Escena 2');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
+
+  // ── Escena con video: se carga desde el panel, pasa una vez en la tele y después la pregunta ──
+  await terminarJuego(host);
+  const antesV = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
+  await elegirJuego(host, '¿Te acordás de la escena?', async () => {
+    await host.getByText('🎬 Cargar una escena con video').click();
+    await host.locator('#esc-titulo').fill('Homero en la feria');
+    await host.locator('#esc-video').fill('pruebas/escena-prueba.mp4');
+    await host.locator('#esc-pregunta').fill('¿Qué colores había en la pantalla?');
+    await host.locator('#esc-respuestas').fill('rojo / colorado\nverde\nazul');
+    await host.getByRole('button', { name: 'Guardar escena' }).click();
+    await host.locator('.escena-opcion', { hasText: 'Homero en la feria' }).waitFor();
+    const marcas = host.locator('.escena-opcion input');
+    for (let i = 0; i < await marcas.count(); i++) {
+      const t = await host.locator('.escena-opcion').nth(i).textContent();
+      if (/Homero en la feria/.test(t)) await marcas.nth(i).check(); else await marcas.nth(i).uncheck();
+    }
+  });
+  await tv.getByText('la escena pasa una sola vez').waitFor({ timeout: 10000 });
+  afirmar(!(await tv.getByText('¿Qué colores había').count()), 'la pregunta no aparece antes del video');
+  await host.getByRole('button', { name: /Pasar el video en la tele/ }).click();
+  await tv.locator('video.tv-video').waitFor({ timeout: 10000 });
+  await invitados[0].getByText('¡Miren la tele!').waitFor();
+  await tv.waitForFunction(() => { const v = document.querySelector('video.tv-video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
+  await captura(tv, 'e5-video');
+  paso('Escena con video: la tele pasa el video y los celulares dicen que miren la tele');
+  await host.getByRole('button', { name: /Terminó el video/ }).click();
+  await tv.getByText('¿Qué colores había en la pantalla?').waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: /A escribir/ }).click();
+  const unoV = invitados[0];
+  await unoV.locator('#escena-respuesta').waitFor({ timeout: 10000 });
+  for (const t of ['Colorado', 'azul', 'violeta']) { await unoV.locator('#escena-respuesta').fill(t); await unoV.locator('#escena-respuesta').press('Enter'); }
+  await esperar(1500);
+  await host.getByRole('button', { name: 'Cortar el tiempo ya' }).click();
+  await host.getByRole('button', { name: '📺 Revelar en la tele' }).click();
+  await tv.locator('.tv-escena-items li').first().waitFor();
+  await esperar(500);
+  const ptsV = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
+  afirmar(ptsV - antesV === 2, `1 punto por cada cosa recordada (sumó ${ptsV - antesV})`);
+  paso('Escena con video: el equipo se acordó de 2 de 3 y sumó 2 puntos');
+  await host.getByRole('button', { name: 'Ver resultados' }).click();
+  await terminarJuego(host);
 
   // ── Cerrar la sala: los celulares ven que se cerró y la sala desaparece del panel ──
   await host.getByRole('button', { name: 'Cerrar sala', exact: true }).last().click();
