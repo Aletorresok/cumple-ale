@@ -2,7 +2,8 @@
 // invitado sale en la pantalla grande, los equipos giran con suspenso y se revela adónde va.
 // El anfitrión elige a qué equipo va cada uno (para que nadie quede con desconocidos) o deja que
 // decida la suerte, que lo manda a uno de los equipos con menos gente.
-import { h, montar, vista, selector, esperando, pildoraEquipo } from './comun.js';
+import { h, montar, vista, selector, esperando, pildoraEquipo, logoEquipo } from './comun.js';
+import { LOGOS } from '../config.js';
 import { mezclar, sonido, vibrar, confeti, toast, idAzar } from '../util.js';
 
 const SUSPENSO = 3500;   // ms que giran los equipos antes de revelar
@@ -171,6 +172,7 @@ export default {
           if (soyYo) { vibrar([120, 60, 200]); confeti([mio.color, '#FFFFFF', '#F2C94C']); }
           montar(el, h('div', { class: 'resultado mi-equipo', style: { '--c': mio.color } },
             h('div', { class: 'etiqueta' }, 'Tu equipo es'),
+            logoEquipo(mio, 'logo-eq enorme'),
             h('div', { class: 'resultado-titulo' }, mio.nombre),
             h('p', null, 'Buscá a los de tu equipo: están en la pantalla grande.')));
           return;
@@ -187,7 +189,7 @@ export default {
         const j = sala.juego;
         const grupos = h('div', { class: 'tv-grupos chico' }, sala.equipos().map((e) =>
           h('div', { class: 'tv-grupo', style: { '--c': e.color } },
-            h('div', { class: 'tv-grupo-cab' }, h('span', null, e.nombre), h('span', { class: 'mono' }, sala.miembros(e.id).length)),
+            h('div', { class: 'tv-grupo-cab' }, h('span', { class: 'fila nowrap' }, logoEquipo(e), e.nombre), h('span', { class: 'mono' }, sala.miembros(e.id).length)),
             h('div', { class: 'tv-nombres' }, sala.miembros(e.id).map((m) => h('span', { class: 'tv-nombre' }, m.nombre))))));
         if (j.fase === 'lista' || j.fase === 'fin' || !j.actual) {
           montar(el, h('div', { class: 'tv-centro' },
@@ -199,11 +201,15 @@ export default {
         }
         const eq = sala.equipo(j.actual.equipo);
         const nombreEq = h('div', { class: 'tv-seleccion-eq' });
+        const logoEq = h('img', { class: 'tv-seleccion-logo', alt: '', hidden: true });
+        const ponerLogo = (e) => { const src = e && LOGOS[e.id]; logoEq.hidden = !src; if (src) logoEq.src = src; };
         montar(el, h('div', { class: 'tv-centro' },
           h('div', { class: 'tv-etiqueta' }, j.fase === 'girando' ? '¿A qué equipo va…?' : 'Va al equipo'),
           h('h1', { class: 'tv-titulo enorme' }, j.actual.nombre),
-          nombreEq), grupos);
+          logoEq, nombreEq), grupos);
         const final = () => {
+          ponerLogo(eq);
+          logoEq.classList.add('revelado');
           nombreEq.textContent = eq?.nombre || '';
           nombreEq.style.setProperty('--c', eq?.color || '#fff');
           nombreEq.classList.add('revelado');
@@ -220,6 +226,7 @@ export default {
           const e = eqs[k++ % eqs.length];
           nombreEq.textContent = e.nombre;
           nombreEq.style.setProperty('--c', e.color);
+          ponerLogo(e);
           sonido('tic');
           espera = Math.min(500, espera * 1.1);
           t = setTimeout(paso, espera);

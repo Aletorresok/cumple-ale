@@ -16,10 +16,13 @@ export const EQUIPOS_BASE = [
   { id: 'e1', nombre: 'Los Isótopos de Moreno', color: '#E4572E' },
   { id: 'e2', nombre: 'Los Magios',          color: '#3D8BFF' },
   { id: 'e3', nombre: 'Los Borbotones',      color: '#2BA36B' },
-  { id: 'e4', nombre: 'La Banda de Luxo',    color: '#8A4FD8' },
+  { id: 'e4', nombre: 'Los Amigos del Pino', color: '#8A4FD8' },
   { id: 'e5', nombre: 'Kwik-E-Mart',         color: '#C98A12' },
   { id: 'e6', nombre: 'Avenida Siempreviva', color: '#1A9BA8' },
 ];
 
 // Una sala se puede usar durante este tiempo; después no admite invitados nuevos.
 export const HORAS_SALA = 12;
+
+// Logo de cada equipo (por id, así también lo tienen las salas creadas antes).
+export const LOGOS = { e1: 'img/equipos/e1.png', e2: 'img/equipos/e2.png', e3: 'img/equipos/e3.png', e4: 'img/equipos/e4.png' };

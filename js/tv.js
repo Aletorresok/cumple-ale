@@ -6,7 +6,7 @@ import { marcador } from './juegos/comun.js';
 import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { noticiero } from './noticiero.js';
-import { intro } from './intro.js';
+import { intro, pararIntro } from './intro.js';
 import { mantenerPantalla, vigilarPanel } from './presencia.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
@@ -53,6 +53,7 @@ export async function iniciarTv(raiz, codigoUrl) {
         vistaJuego = buscarJuego(j.tipo)?.tv(zona, sala) || null;
       }
     }
+    if (j || sala.data.pantalla !== 'intro') pararIntro();
     if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;

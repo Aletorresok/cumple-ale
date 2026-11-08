@@ -860,3 +860,14 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .tv-pie .marcador-eq { font-size: 1.15em; padding: .35em 1em; }
 .mira-tele { text-align: center; font-family: var(--display); font-size: 1.2rem; color: var(--muted); margin: 8px 0; }
 .tv-pts-ronda { gap: .6em; } .tv-pts-ronda .tv-pozo { font-size: 2.6em; } .tv-pts-ronda .pildora { font-size: 1em; }
+
+/* Logos de los equipos */
+.logo-eq { height: 1.3em; width: auto; max-width: 2.2em; object-fit: contain; vertical-align: middle; flex: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+.marcador-nombre { display: inline-flex; align-items: center; gap: .35em; }
+.logo-eq.enorme { display: block; height: auto; width: min(55vw, 220px); max-width: none; margin: .4em auto; }
+.tv-seleccion-logo { height: 26vh; max-width: 40vw; object-fit: contain; margin: .2em auto; display: block; filter: drop-shadow(0 .3em .8em rgba(0,0,0,.45)); }
+.tv-seleccion-logo[hidden] { display: none; }
+.tv-seleccion-logo.revelado { animation: aparece .5s ease-out; }
+.in-logo { height: 1.4em; width: auto; vertical-align: middle; margin-right: .35em; }
+.in-equipo { display: inline-flex; align-items: center; }
+.tv-grupo-cab .logo-eq, .marcador .logo-eq { height: 1.8em; max-width: 2.8em; }
