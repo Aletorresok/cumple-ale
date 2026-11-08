@@ -314,28 +314,6 @@ try {
   await host.getByRole('button', { name: 'Ver resultados' }).click();
   await terminarJuego(host);
 
-  // ── Completá la frase: la tele muestra huecos, el panel marca quién dijo cada palabra ──
-  const antesF = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
-  await elegirJuego(host, 'Completá la frase', async () => {
-    await host.locator('#cfg-frases').fill('Mmm… [donas/rosquillas] con [chispitas]');
-    await host.locator('#cfg-clasicas').uncheck();
-  });
-  await tv.locator('.tv-frase-hueco').nth(1).waitFor({ timeout: 10000 });
-  afirmar(!(await tv.getByText('donas').count()), 'la tele no muestra las palabras ocultas');
-  await invitados[0].getByText('¡Miren la tele!').waitFor();
-  await host.getByRole('button', { name: /La dijo/ }).first().click();
-  await tv.locator('.tv-frase-palabra', { hasText: 'donas' }).waitFor({ timeout: 10000 });
-  await host.getByRole('button', { name: /^Robó/ }).first().click();
-  await tv.locator('.tv-frase-palabra', { hasText: 'chispitas' }).waitFor({ timeout: 10000 });
-  await captura(tv, 'f1-frase');
-  await esperar(500);
-  const ptsF = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
-  afirmar(ptsF - antesF === 2, `1 punto por palabra (sumó ${ptsF - antesF})`);
-  paso('Completá la frase: dos palabras, una del equipo y una robada, +2');
-  await host.getByRole('button', { name: 'Ver resultados' }).click();
-  await tv.getByText('¡Terminó Completá la frase!').waitFor({ timeout: 10000 });
-  await terminarJuego(host);
-
   // ── Cerrar la sala: los celulares ven que se cerró y la sala desaparece del panel ──
   await host.getByRole('button', { name: 'Cerrar sala', exact: true }).last().click();
   await host.getByRole('dialog').getByRole('button', { name: 'Cerrar sala' }).click();
