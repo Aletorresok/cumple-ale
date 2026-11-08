@@ -26,14 +26,14 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
-    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto (con el banco elegido)'], ['castigo', `Trivia japonesa: ${PREGUNTAS_JAPONESA.length} preguntas por turno + aproximación`]], 'castigo');
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto (con el banco elegido)'], ['castigo', `Trivia japonesa: ${PREGUNTAS_JAPONESA.length} preguntas por turno${APROX_JAPONESA ? ' + aproximación' : ''}`]], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
     const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 30);
     const intro = h('input', { type: 'checkbox', id: 'cfg-intro', checked: true });
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
         h('label', { class: 'fila nowrap' }, intro, h('span', null, '🎬 Antes de empezar, pasar el video «Nosotros castigamos la ignorancia» (solo con castigo)')),
-        h('p', { class: 'muted chico' }, `Trivia japonesa: nadie usa el celular. Cada pregunta le toca a un equipo; sin opciones vale ${PUNTOS_SIN_OPCIONES} y si piden opciones vale ${PUNTOS_CON_OPCIONES}. El reloj lo largás vos. Al final, aproximación para todos: el que más se acerca gana ${PUNTOS_APROX}. (Usa sus propias preguntas: el banco y la cantidad no cuentan.) En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
+        h('p', { class: 'muted chico' }, `Trivia japonesa: nadie usa el celular. Cada pregunta le toca a un equipo; sin opciones vale ${PUNTOS_SIN_OPCIONES} y si piden opciones vale ${PUNTOS_CON_OPCIONES}. El reloj lo largás vos.${APROX_JAPONESA ? ` Al final, aproximación para todos: el que más se acerca gana ${PUNTOS_APROX}.` : ''} (Usa sus propias preguntas: el banco y la cantidad no cuentan.) En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
       leer: () => {
         const banco = b.banco();
         if (modo.valor() === 'castigo') return { banco: banco || { titulo: 'Trivia japonesa', items: [] }, cantidad: 0, segundos: Number(seg.valor()), modo: 'castigo', intro: intro.checked };
@@ -404,6 +404,7 @@ function hostJaponesa(el, sala) {
   const siguiente = () => {
     const j = sala.juego;
     const n = j.n + 1;
+    if (n >= j.total && !privado.aprox) { act({ fase: 'fin' }); return; }
     if (n >= j.total) {
       act({ fase: 'aprox', video: null, pregunta: privado.aprox.pregunta, opciones: [], conOpciones: false, equipo: null, terminaEn: 0, acerto: null, pts: 0, correcta: null, ganadores: {} });
       return;
@@ -478,7 +479,7 @@ function hostJaponesa(el, sala) {
           ? h('div', { class: 'pila' },
             h('p', null, j.acerto ? `✓ Acertaron: +${j.pts}` : '✗ Se equivocaron: no suman.'),
             j.video && h('p', { class: 'muted chico' }, '🎬 En la tele pasa la escena para chequear la respuesta.'),
-            h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? '🎯 Ronda final: aproximación →' : 'Siguiente pregunta →'))
+            h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? (privado.aprox ? '🎯 Ronda final: aproximación →' : 'Ver resultados') : 'Siguiente pregunta →'))
           : h('div', { class: 'pila' },
             j.conOpciones
               ? h('div', { class: 'pila-s' }, h('span', { class: 'muted chico' }, 'Opciones en la tele (ahora vale 1):'), opciones)
