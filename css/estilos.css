@@ -919,3 +919,6 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .in-presenta { width: 100%; justify-content: center; text-align: center; }
 .in-logo-grande { display: block; margin: 0 auto; height: 30vh; }
 .in-miembros .in-sin { background: rgb(0 0 0 / .25); font-size: 1.3em; }
+
+/* Feliz cumpleaños: aviso si el navegador arrancó el video sin sonido */
+.tv-cumple-sonido { position: absolute; bottom: 5vh; left: 50%; transform: translateX(-50%); font-size: 2rem; padding: .5em 1em; border: 0; border-radius: 14px; background: #ffd90f; color: #1b1b1b; font-weight: 800; cursor: pointer; }
