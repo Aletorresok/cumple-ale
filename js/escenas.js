@@ -16,6 +16,18 @@ export const ESCENAS = [
     items: [['8', 'ocho', '8 veces', 'ocho veces']],
   },
   {
+    id: 'olimpicos',
+    titulo: 'Springfield, sede olímpica',
+    video: 'video/escena-olimpicos.mp4',
+    consigna: '¿Qué ciudades proponen como sede de los Juegos Olímpicos antes de Springfield? (Valen los países)',
+    fija: true,
+    minimo: 6,   // si nombran 6, la respuesta es correcta
+    items: [
+      ['París', 'Paris', 'Francia'], ['Moscú', 'Moscu', 'Rusia'], ['Mongolia'], ['Buenos Aires', 'Argentina'],
+      ['Ohio'], ['Budapest', 'Hungría', 'Hungria'], ['Dallas', 'Texas'], ['Londres', 'Inglaterra', 'Reino Unido'], ['Uganda'],
+    ],
+  },
+  {
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
     video: 'video/escena-cleto.mp4',
