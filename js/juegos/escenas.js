@@ -181,10 +181,10 @@ export default {
   async iniciar(sala, { escenas, seg, modo, voz = false }) {
     const juego = await sala.iniciarJuego({
       tipo: 'escenas', fase: 'presentar', n: 0, total: escenas.length, seg, modo, voz,
-      titulo: escenas[0].titulo, consigna: escenas[0].consigna, cantidad: escenas[0].items.length, hasta: 0,
+      titulo: escenas[0].titulo, consigna: escenas[0].consigna, cantidad: escenas[0].items.length, minimo: escenas[0].minimo || 0, hasta: 0,
       video: escenas[0].video || null, visto: false,
     });
-    await sala.guardarPrivado({ juego, escenas: escenas.map((e) => ({ titulo: e.titulo, consigna: e.consigna, video: e.video || null, items: e.items.map((it) => ({ a: it })) })), manual: {} });
+    await sala.guardarPrivado({ juego, escenas: escenas.map((e) => ({ titulo: e.titulo, consigna: e.consigna, video: e.video || null, minimo: e.minimo || 0, items: e.items.map((it) => ({ a: it })) })), manual: {} });
   },
 
   host(el, sala) {
@@ -231,7 +231,9 @@ export default {
       const j = sala.juego;
       if (j.fase !== 'revisar') return;
       const res = resultados();
-      const cuentas = Object.fromEntries(Object.entries(res).map(([e, r]) => [e, r.ok.length]));
+      // Con «mínimo» (ej.: nombrar 6 de 9), la escena vale 1 acierto si llegan, y nada si no.
+      const minimo = escena().minimo || 0;
+      const cuentas = Object.fromEntries(Object.entries(res).map(([e, r]) => [e, minimo ? (r.ok.length >= minimo ? 1 : 0) : r.ok.length]));
       const pts = repartirPuntos(cuentas, j.modo);
       const porEquipo = Object.fromEntries(Object.entries(res).map(([e, r]) => [e, { ok: r.ok, pts: pts[e] || 0 }]));
       await sala.actualizarJuego({ fase: 'revelada', items: escena().items.map((it) => it.a[0]), porEquipo }, pts);
@@ -242,7 +244,7 @@ export default {
       const n = j.n + 1;
       if (n >= j.total) { await sala.actualizarJuego({ fase: 'fin' }); return; }
       const e = privado.escenas[n];
-      await sala.actualizarJuego({ fase: 'presentar', n, titulo: e.titulo, consigna: e.consigna, cantidad: e.items.length, hasta: 0, items: undefined, porEquipo: undefined, video: e.video || null, visto: false });
+      await sala.actualizarJuego({ fase: 'presentar', n, titulo: e.titulo, consigna: e.consigna, cantidad: e.items.length, minimo: e.minimo || 0, hasta: 0, items: undefined, porEquipo: undefined, video: e.video || null, visto: false });
     });
 
     // Tarjeta por equipo: cuántas lleva y, al revisar, cada ítem para prender o apagar a mano.
@@ -258,7 +260,7 @@ export default {
         const r = res[e.id];
         const ok = new Set(r.ok);
         return h('div', { class: 'tarjeta pila-s escena-equipo', style: { '--c': e.color } },
-          h('div', { class: 'fila entre' }, pildoraEquipo(e), h('b', null, `${r.ok.length} de ${items.length}`),
+          h('div', { class: 'fila entre' }, pildoraEquipo(e), h('b', null, `${r.ok.length} de ${items.length}`, j.minimo ? (r.ok.length >= j.minimo ? ' ✓' : ` (necesitan ${j.minimo})`) : ''),
             !j.voz && h('span', { class: 'muted chico' }, `${r.lista.length} escritas`)),
           j.fase === 'revisar' && h('div', { class: 'fila escena-chips' }, items.map((t, i) =>
             h('button', { class: 'chip' + (ok.has(i) ? ' escena-ok' : ''), title: ok.has(i) ? 'Tocá para sacarla' : 'Tocá para aceptarla',
@@ -455,13 +457,13 @@ export default {
         if (j.fase === 'presentar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, j.voz ? (j.cantidad > 1 ? `Son ${j.cantidad}. Junten en equipo todo lo que se acuerden: lo dicen en voz alta.` : 'Piénsenlo en equipo y díganlo en voz alta.') : j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
+            h('p', { class: 'tv-sub' }, j.minimo ? `Son ${j.cantidad}: si nombran ${j.minimo}, la respuesta es correcta.` : j.voz ? (j.cantidad > 1 ? `Son ${j.cantidad}. Junten en equipo todo lo que se acuerden: lo dicen en voz alta.` : 'Piénsenlo en equipo y díganlo en voz alta.') : j.cantidad > 1 ? `Son ${j.cantidad}. Cada equipo escribe desde los celulares todo lo que se acuerde. ¡Repártanse!` : 'Cada equipo escribe la respuesta desde los celulares.')));
           return;
         }
         if (j.voz && j.fase === 'revisar') {
           montar(el, h('div', { class: 'tv-centro' }, ...cabecera,
             h('p', { class: 'tv-pregunta' }, j.consigna),
-            h('p', { class: 'tv-sub' }, `🗣️ Cada equipo dice lo que se acuerda${j.cantidad > 1 ? ` (son ${j.cantidad})` : ''}. ¡1 punto por cada una!`)));
+            h('p', { class: 'tv-sub' }, j.minimo ? `🗣️ Cada equipo dice lo que se acuerda: con ${j.minimo} de ${j.cantidad}, la respuesta es correcta.` : `🗣️ Cada equipo dice lo que se acuerda${j.cantidad > 1 ? ` (son ${j.cantidad})` : ''}. ¡1 punto por cada una!`)));
           return;
         }
         if (j.fase === 'escribiendo' || j.fase === 'revisar') {

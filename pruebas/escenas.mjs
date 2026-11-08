@@ -137,7 +137,7 @@ try {
 
   await elegirJuego(host, '¿Te acordás de la escena?', async () => {
     await host.locator('.escena-opcion').first().waitFor();
-    afirmar(await host.locator('.escena-opcion input:checked').count() === 3, 'vienen marcadas 3 escenas (el Abuelo «en onda», Cleto y las mascotas)');
+    afirmar(await host.locator('.escena-opcion input:checked').count() === 4, 'vienen marcadas 4 escenas (el Abuelo «en onda», los olímpicos, Cleto y las mascotas)');
     // Solo Cleto y los Borbotones.
     const marcas = host.locator('.escena-opcion input');
     for (let i = 0; i < await marcas.count(); i++) {
@@ -283,6 +283,33 @@ try {
   const ptsV = (await host.locator('.equipo-pts').allTextContents()).reduce((a, x) => a + Number(x), 0);
   afirmar(ptsV - antesV === 2, `1 punto por cada cosa recordada (sumó ${ptsV - antesV})`);
   paso('Escena con video en voz alta: el organizador marcó 2 de 3 para un equipo y sumó 2 puntos');
+  await host.getByRole('button', { name: 'Ver resultados' }).click();
+  await terminarJuego(host);
+
+  // ── Escena con mínimo: los olímpicos valen 1 punto si nombran 6 de 9 ──
+  const antesO = (await host.locator('.equipo-pts').allTextContents()).reduce((x, y) => x + Number(y), 0);
+  await elegirJuego(host, '¿Te acordás de la escena?', async () => {
+    await host.locator('.escena-opcion', { hasText: 'sede olímpica' }).waitFor();
+    const marcas = host.locator('.escena-opcion input');
+    for (let i = 0; i < await marcas.count(); i++) {
+      const t = await host.locator('.escena-opcion').nth(i).textContent();
+      if (/sede olímpica/.test(t)) await marcas.nth(i).check(); else await marcas.nth(i).uncheck();
+    }
+  });
+  await host.getByRole('button', { name: 'Saltear el video' }).click();
+  await host.getByRole('button', { name: '🗣️ ¡Que respondan!' }).click();
+  await tv.getByText(/con 6 de 9, la respuesta es correcta/).waitFor({ timeout: 10000 });
+  const t1 = host.locator('.escena-equipo').nth(0), t2 = host.locator('.escena-equipo').nth(1);
+  for (const c of ['París', 'Moscú', 'Mongolia', 'Buenos Aires', 'Ohio', 'Uganda']) await t1.getByRole('button', { name: c, exact: true }).click();
+  for (const c of ['París', 'Moscú', 'Mongolia', 'Londres', 'Dallas']) await t2.getByRole('button', { name: c, exact: true }).click();
+  await t1.getByText('6 de 9 ✓').waitFor({ timeout: 5000 });
+  await t2.getByText('(necesitan 6)').waitFor({ timeout: 5000 });
+  await host.getByRole('button', { name: '📺 Revelar en la tele' }).click();
+  await tv.locator('.tv-escena-items li').first().waitFor();
+  await esperar(500);
+  const ptsO = (await host.locator('.equipo-pts').allTextContents()).reduce((x, y) => x + Number(y), 0);
+  afirmar(ptsO - antesO === 1, `con 6 de 9 suma 1 y con 5 no suma (sumó ${ptsO - antesO})`);
+  paso('Escena con mínimo: un equipo nombró 6 de 9 (+1), otro 5 (nada)');
   await host.getByRole('button', { name: 'Ver resultados' }).click();
   await terminarJuego(host);
 
