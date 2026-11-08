@@ -160,8 +160,10 @@ export default {
 
   async iniciar(sala, { palabras, seg, vueltas, equipos, modo = 'equipo', pizarra = false }) {
     const orden = mezclar(equipos);
+    // Tope de palabras por turno (adivinadas + pasadas): la lista repartida entre los equipos que juegan.
+    const tope = Math.max(1, Math.floor(palabras.length / orden.length));
     const juego = await sala.iniciarJuego({
-      tipo: 'dibujo', fase: 'listo', seg, modo, pizarra, pts: pizarra ? PUNTOS_PIZARRA : PUNTOS_ACIERTO, turno: 0, total: orden.length * vueltas, orden,
+      tipo: 'dibujo', fase: 'listo', seg, modo, pizarra, tope, pts: pizarra ? PUNTOS_PIZARRA : PUNTOS_ACIERTO, turno: 0, total: orden.length * vueltas, orden,
       equipo: orden[0], actor: null, hasta: 0, n: 0, aciertos: 0, pasadas: 0, ultimas: [], dibujaron: [], ultimaOk: null, ultimaEq: null,
     });
     await sala.guardarPrivado({ juego, palabras, pos: 0, turnoPalabras: [] });
@@ -214,15 +216,19 @@ export default {
         privado.pos++;
         const campos = ok ? { aciertos: j.aciertos + 1, ultimaOk: privado.actual, ultimaEq: eq } : { pasadas: j.pasadas + 1 };
         await sala.actualizarJuego({ ...campos, n: j.n + 1 });
-        await darPalabra(j.turno, j.n + 1, j.actor.uid);
         sonido(ok ? 'bien' : 'mal');
+        // Llegó al tope de palabras del turno: termina aunque quede tiempo.
+        if (j.tope && j.n + 1 >= j.tope) { procesando = false; await terminarTurno(); return; }
+        await darPalabra(j.turno, j.n + 1, j.actor.uid);
       } catch (e) { toast(e.message, 'error'); }
       procesando = false;
     }
 
+    let cerrado = -1;   // turno ya cerrado (que el tope y el reloj no lo cierren dos veces)
     async function terminarTurno() {
       const j = sala.juego;
-      if (j.fase !== 'dibujando') return;
+      if (j.fase !== 'dibujando' || cerrado === j.turno) return;
+      cerrado = j.turno;
       const siguiente = j.turno < j.total ? j.orden[j.turno % j.orden.length] : null;
       await sala.actualizarJuego({ fase: siguiente ? 'fin_turno' : 'fin', ultimas: privado.turnoPalabras, siguiente }, puntosDelTurno(privado.turnoPalabras, j.equipo, j.pts));
       await sala.repartirSecretos({ [j.actor.uid]: { juego: j.id, ronda: j.turno, n: -1, palabra: '' } });
@@ -286,7 +292,7 @@ export default {
         const clave = r && `${j.turno}:${r.paso}:${r.accion}`;
         if (r && r.paso === j.n && !hechos.has(clave)) { hechos.add(clave); marcar(r.accion, r.paso); }
         if (contador) montar(contador, h('p', { class: 'muted' }, 'Palabra: ', h('b', null, privado.actual || '…')),
-          h('p', null, `${j.aciertos} adivinadas · ${j.pasadas} pasadas`));
+          h('p', null, `${j.aciertos} adivinadas · ${j.pasadas} pasadas`, j.tope ? ` · máximo ${j.tope} palabras` : ''));
       },
     });
     return v;
@@ -355,7 +361,7 @@ export default {
                 j.ultimas?.length > 0 && h('ul', { class: 'tv-mimica-lista' }, j.ultimas.map((p) => h('li', { class: p.ok ? 'ok' : 'paso' }, p.texto, j.modo === 'todos' && p.ok && p.eq && h('b', { style: { color: sala.equipo(p.eq)?.color } }, ' · ' + sala.equipo(p.eq)?.nombre))))]
               : [h('div', { class: 'tv-icono' }, '✏️'), h('h1', { class: 'tv-titulo' }, 'Dibujá en Springfield'),
                 h('p', { class: 'tv-sub' }, j.pizarra
-                  ? `Alguien del equipo dibuja en la pizarra la palabra que le sale en el celular. Su equipo grita. Cada dibujo adivinado vale ${j.pts} punto. ¡Todas las que puedan en ${j.seg} segundos!`
+                  ? `Alguien del equipo dibuja en la pizarra la palabra que le sale en el celular. Su equipo grita. Cada dibujo adivinado vale ${j.pts} punto. ¡Todas las que puedan en ${j.seg} segundos${j.tope ? `, hasta ${j.tope} palabras` : ''}!`
                   : j.modo === 'todos'
                   ? 'Alguien dibuja en su celular y el dibujo sale acá. Adivinan todos los equipos: el primero que grita la respuesta se lleva los puntos.'
                   : 'Alguien del equipo dibuja en su celular y el dibujo sale acá. El resto grita. ¡Todas las que puedan!'),
@@ -373,7 +379,7 @@ export default {
             h('div', { class: 'tv-etiqueta' }, `Turno de ${eq?.nombre} · dibuja en la pizarra`),
             h('h1', { class: 'tv-titulo enorme', style: { color: eq?.color } }, j.actor.nombre),
             h('div', { class: 'tv-dibujo-datos' },
-              h('div', { class: 'pila-s centro' }, cuenta, h('span', { class: 'tv-etiqueta' }, 'adivinados')),
+              h('div', { class: 'pila-s centro' }, cuenta, h('span', { class: 'tv-etiqueta' }, j.tope ? `adivinados (máx. ${j.tope})` : 'adivinados')),
               h('div', { class: 'pila-s centro' }, reloj, h('span', { class: 'tv-etiqueta' }, 'segundos'))),
             h('div', { class: 'tv-pizarra-cartel' }, cartel)));
           alLimpiar(cuentaRegresiva(reloj, j.hasta, { cadaSegundo: (falta) => reloj.classList.toggle('urgente', falta < 10000) }));
