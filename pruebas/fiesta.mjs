@@ -366,15 +366,19 @@ try {
   afirmar(!(await tv.locator('.tv-intro').count()), 'al terminar un juego la intro no vuelve a empezar');
   paso('Intro de la noche en la tele (pizarrón) y no se repite al volver de un juego');
 
-  // ── Feliz cumpleaños: la tele pasa el video y vuelve al QR ──
-  await irAlPaso('🎂 Feliz cumpleaños');
-  await host.getByRole('button', { name: '🎂 Poner el feliz cumpleaños' }).click();
+  // ── Feliz cumpleaños: botón fijo, se puede poner en cualquier momento (incluso en medio de un juego) ──
+  await elegirJuego(host, '¿Te acordás de la escena?');
+  await tv.getByText('la escena pasa una sola vez').waitFor({ timeout: 15000 });
+  await host.getByRole('button', { name: '🎂 Feliz cumpleaños en la tele' }).click();
   await tv.locator('.tv-cumple video').waitFor({ timeout: 15000 });
   await tv.waitForFunction(() => { const v = document.querySelector('.tv-cumple video'); return v && v.currentTime > 0.3; }, null, { timeout: 10000 });
   await captura(tv, '10p-cumple');
-  await host.getByRole('button', { name: 'Volver al QR en la tele' }).click();
+  await host.getByRole('button', { name: '⏹ Cortar el feliz cumpleaños' }).click();
+  await tv.locator('.tv-cumple').waitFor({ state: 'detached', timeout: 15000 });
+  await tv.getByText('la escena pasa una sola vez').waitFor({ timeout: 15000 });
+  await terminarJuego(host);
   await tv.locator('.tv-entrar').waitFor({ timeout: 15000 });
-  paso('Feliz cumpleaños: la tele pasa el video de los Ramones y vuelve al QR');
+  paso('Feliz cumpleaños: botón fijo, pasa el video encima del juego y al cortarlo vuelve donde estaba');
 
   // ── Podio ──
   await elegirJuego(host, 'Podio final');

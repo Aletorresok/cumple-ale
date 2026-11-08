@@ -1,20 +1,28 @@
-// Momento del «Feliz cumpleaños»: la tele pasa el video de los Ramones (con audio) a pantalla
-// completa y, cuando termina, vuelve sola a su pantalla de espera. Se dispara desde la escaleta
-// (sala.data.pantalla = 'cumple', sala.data.cumpleT = marca de tiempo, distinta cada vez para repetirlo).
-import { h, montar } from './util.js';
+// Momento del «Feliz cumpleaños»: se puede poner en cualquier momento de la noche, aunque haya un
+// juego en curso. Quien organiza toca el botón fijo del panel (sala.data.cumpleT = marca de tiempo)
+// y la tele pasa el video de los Ramones con audio, encima de lo que esté mostrando. Al terminar
+// desaparece solo. «Cortar» pone sala.data.cumpleFin y lo saca.
+import { h } from './util.js';
 
 export const VIDEO_CUMPLE = 'video/feliz-cumple.mp4';
-const pasados = new Set();   // marcas ya reproducidas: al volver de otra pantalla no se repite
+const VIGENCIA = 90000;      // una marca más vieja que esto (ej.: al recargar la tele) ya no arranca
+let vista = null;            // { marca, el }
+const pasados = new Set();
 
-export function cumple(el, sala, despuesDe) {
-  const marca = String(sala.data?.cumpleT || 0);
-  if (el.querySelector('.tv-cumple')?.getAttribute('data-t') === marca) return; // ya está pasando
-  if (pasados.has(marca)) { despuesDe?.(el, sala); return; }
+export function vigilarCumple(sala) {
+  const t = Number(sala.data?.cumpleT || 0);
+  const fin = Number(sala.data?.cumpleFin || 0);
+  const activo = t > fin;
+  if (vista && (!activo || String(t) !== vista.marca)) { vista.el.remove(); vista = null; }
+  if (!activo || vista || pasados.has(String(t)) || Date.now() - t > VIGENCIA) return;
+  const marca = String(t);
   pasados.add(marca);
   const video = h('video', { class: 'tv-video', src: VIDEO_CUMPLE, autoplay: true, playsinline: true });
   const aviso = h('button', { class: 'tv-cumple-sonido', hidden: true, onclick: () => { video.muted = false; aviso.hidden = true; } }, '🔊 Tocá para el sonido');
-  video.addEventListener('ended', () => { if (el.querySelector('.tv-cumple')?.getAttribute('data-t') === marca) despuesDe?.(el, sala); });
-  montar(el, h('div', { class: 'tv-video-marco tv-cumple', 'data-t': marca }, video, aviso));
+  const el = h('div', { class: 'tv-video-marco tv-cumple' }, video, aviso);
+  video.addEventListener('ended', () => { if (vista?.marca === marca) { el.remove(); vista = null; } });
+  document.body.append(el);
+  vista = { marca, el };
   // Si el navegador no deja arrancar con sonido, arranca mudo y ofrece activarlo con un toque.
   video.play?.().catch(() => { video.muted = true; aviso.hidden = false; video.play().catch(() => {}); });
 }
