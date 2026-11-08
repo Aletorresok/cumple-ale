@@ -7,7 +7,7 @@ const conVideo = (video, it) => ({ ...it, video });
 
 export const PREGUNTAS_JAPONESA = [
   conVideo('video/trivia-magios.mp4', q('¿Cuál es el número de Homero como integrante de Los Magios?', '908', '712', '1.024', '666')),
-  conVideo('video/trivia-llamarada.mp4', q('Además del fuego, ¿cuál es el ingrediente secreto de la Llamarada Moe?', 'Jarabe para la tos infantil de Krusty', 'Tequila', 'Licor de dona', 'Duff con pimienta')),
+  conVideo('video/trivia-llamarada.mp4', q('Además del fuego, ¿cuál es el ingrediente secreto de la Llamarada Moe?', 'Jarabe para la tos infantil de Krusty', 'Enjuague bucal', 'Jugo de pepinillos', 'Gotas para los ojos')),
   conVideo('video/trivia-crayones.mp4', q('¿Cuántos crayones se metió Homero por la nariz?', '16', '8', '12', '24')),
   conVideo('video/trivia-moe-revista.mp4', q('¿Qué se quedó haciendo Moe la noche que le dispararon al Sr. Burns?', 'Leía una revista del supermercado', 'Leía el diario', 'Hacía un crucigrama', 'Leía una historieta')),
   conVideo('video/trivia-codigo-area.mp4', q('¿Cuál es el código de área de la Nueva Springfield?', '939', '636', '742', '555')),

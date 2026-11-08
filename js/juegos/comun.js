@@ -60,8 +60,14 @@ export function logoEquipo(eq, clase = 'logo-eq') {
 }
 
 // Tabla de posiciones compacta.
-export function marcador(sala, { destacar } = {}) {
+export function marcador(sala, { destacar, compacto } = {}) {
   const eqs = sala.equipos();
+  // Compacto (pie de la tele): solo el logo y los puntos, en una fila chica.
+  if (compacto) {
+    return h('div', { class: 'marcador compacto' }, eqs.map((e) =>
+      h('div', { class: 'marcador-eq', style: { '--c': e.color }, title: e.nombre },
+        logoEquipo(e) || h('span', { class: 'marcador-nombre' }, e.nombre), h('span', { class: 'marcador-pts' }, e.puntos))));
+  }
   return h('div', { class: 'marcador' }, eqs.map((e) =>
     h('div', { class: 'marcador-eq' + (e.id === destacar ? ' destacado' : ''), style: { '--c': e.color } },
       h('span', { class: 'marcador-nombre' }, logoEquipo(e), e.nombre),

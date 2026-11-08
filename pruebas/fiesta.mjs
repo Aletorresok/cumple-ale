@@ -275,7 +275,7 @@ try {
   // ── Trivia japonesa: cada pregunta le toca a un equipo; sin opciones vale 2, con opciones 1 ──
   await elegirJuego(host, 'Trivia por equipos', async () => {
     afirmar(await host.locator('#cfg-modo').inputValue() === 'castigo', 'por defecto, trivia japonesa');
-    afirmar(await host.locator('#cfg-segundos').inputValue() === '30', 'por defecto, 30 segundos por pregunta');
+    afirmar(await host.locator('#cfg-segundos').inputValue() === '10', 'por defecto, 10 segundos por pregunta');
   });
   // Antes de la primera pregunta, la tele pasa el video «Nosotros castigamos la ignorancia».
   await tv.locator('video.tv-video').waitFor({ timeout: 15000 });
@@ -297,7 +297,7 @@ try {
     if (n === 0) {
       await invitados[0].getByText('¡Miren la tele!').waitFor({ timeout: 10000 });
       afirmar(!(await invitados[0].locator('.opcion').count()), 'el celular no muestra opciones');
-      await host.getByRole('button', { name: /Largar 30 s/ }).click();
+      await host.getByRole('button', { name: /Largar 10 s/ }).click();
       await tv.locator('.tv-reloj').waitFor({ timeout: 5000 });
       await captura(tv, '10a-trivia-sin-opciones');
       paso('Trivia japonesa: la pregunta sale sin opciones y el reloj lo larga el organizador');

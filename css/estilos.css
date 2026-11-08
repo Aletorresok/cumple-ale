@@ -298,6 +298,9 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 .tv-juego { flex: 1; }
 .tv-pie { display: flex; justify-content: center; }
 .tv-pie .marcador-eq { padding: .3em .9em; }
+.marcador.compacto { flex-wrap: nowrap; gap: 1.4vw; }
+.marcador.compacto .marcador-eq { padding: .15em .7em .15em .25em; gap: .4em; font-size: .9em; }
+.marcador.compacto .logo-eq { height: 1.8em; width: auto; }
 .tv-centro { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.4vh; text-align: center; }
 .tv-titulo { font-size: 2.6em; font-weight: 800; }
 .tv-titulo.enorme { font-size: 4em; color: var(--mark); }
