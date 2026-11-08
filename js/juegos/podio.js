@@ -1,5 +1,5 @@
 // Podio final: revela las posiciones de a una, del último al primero, con suspenso y papelitos.
-import { h, montar, vista, esperando } from './comun.js';
+import { h, montar, vista, esperando, logoEquipo } from './comun.js';
 import { sonido, vibrar, confeti } from '../util.js';
 
 // Posiciones con empates: dos equipos con los mismos puntos comparten el puesto.
@@ -130,6 +130,7 @@ export default {
         const visibles = j.tabla.slice(total - j.revelados);
         montar(el, h('div', { class: 'tv-centro' },
           h('div', { class: 'tv-etiqueta' }, nuevo.pos === 1 ? '¡Campeón de la noche!' : `${nuevo.pos}° puesto`),
+          logoEquipo(nuevo, 'tv-seleccion-logo revelado'),
           h('h1', { class: 'tv-titulo enorme podio-nuevo', style: { color: nuevo.color } }, `${MEDALLA[nuevo.pos] || ''} ${nuevo.nombre}`),
           h('p', { class: 'tv-sub' }, `${nuevo.puntos} puntos`, j.revelados >= total ? ' · Miren el celular: Hutz dictó una sentencia para cada uno' : ''),
           h('ol', { class: 'ranking podio-lista' }, visibles.map((e) => h('li', { style: { '--c': e.color } },

@@ -1,6 +1,7 @@
 // Piezas compartidas por los juegos.
 import { h, montar } from '../util.js';
 import { itemsDe, TIPOS } from '../bancos.js';
+import { LOGOS } from '../config.js';
 
 // Vista que se redibuja completa solo cuando cambia su «clave» (fase, ronda…)
 // y en el resto de los cambios solo refresca lo necesario (contadores, barras).
@@ -49,7 +50,13 @@ export function selector(id, etiqueta, opciones, valor) {
 
 export function pildoraEquipo(eq, extra = '') {
   if (!eq) return h('span', { class: 'pildora sin-equipo' }, 'Sin equipo');
-  return h('span', { class: 'pildora', style: { '--c': eq.color } }, eq.nombre, extra);
+  return h('span', { class: 'pildora', style: { '--c': eq.color } }, logoEquipo(eq), eq.nombre, extra);
+}
+
+// Logo del equipo (o nada si no tiene). clase: 'logo-eq' chico por defecto; 'logo-eq grande' etc.
+export function logoEquipo(eq, clase = 'logo-eq') {
+  const src = eq && LOGOS[eq.id];
+  return src ? h('img', { class: clase, src, alt: '', draggable: 'false' }) : null;
 }
 
 // Tabla de posiciones compacta.
@@ -57,7 +64,7 @@ export function marcador(sala, { destacar } = {}) {
   const eqs = sala.equipos();
   return h('div', { class: 'marcador' }, eqs.map((e) =>
     h('div', { class: 'marcador-eq' + (e.id === destacar ? ' destacado' : ''), style: { '--c': e.color } },
-      h('span', { class: 'marcador-nombre' }, e.nombre),
+      h('span', { class: 'marcador-nombre' }, logoEquipo(e), e.nombre),
       h('span', { class: 'marcador-pts' }, e.puntos))));
 }
 
