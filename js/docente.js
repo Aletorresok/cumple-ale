@@ -335,7 +335,7 @@ function panelSala(raiz, docente, codigo) {
   }
 
   function renombrar(e) {
-    const input = h('input', { class: 'campo', id: 'nombre-equipo', value: e.nombre, maxlength: 20 });
+    const input = h('input', { class: 'campo', id: 'nombre-equipo', value: e.nombre, maxlength: 30 });
     const cerrar = hoja('Nombre del equipo', h('form', { class: 'pila', onsubmit: async (ev) => {
       ev.preventDefault();
       const n = input.value.trim();
