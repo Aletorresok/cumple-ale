@@ -194,6 +194,10 @@ try {
 
   // ── Los invitados dicen ──
   await elegirJuego(host, 'Los invitados dicen');
+  // La tele muestra primero solo los equipos; la pregunta aparece cuando el panel la muestra.
+  await tv.locator('.duelo.en-tv').waitFor({ timeout: 15000 });
+  afirmar(!(await tv.locator('.tv-pregunta').count()), 'la pregunta arranca oculta en la tele');
+  await host.getByRole('button', { name: '📺 Mostrar la pregunta en la tele' }).click();
   await tv.locator('.tablero').waitFor({ timeout: 15000 });
   await captura(tv, '10-invitados-dicen');
   await esperar(1500);

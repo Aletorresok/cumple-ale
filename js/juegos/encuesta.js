@@ -32,7 +32,7 @@ const DESEMPATES = [
 ];
 const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
-  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate'];
+  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate', 'oculta'];
 
 // Cómo va la ronda en modo alternado: «Los Magios 3 · Los Borbotones 1».
 export function marcadorRonda(sala, j) {
@@ -109,7 +109,8 @@ function armarRonda(sala, j, ronda, pregunta, respuestas) {
   if (par.length < 2) {
     return { ...r, fase: 'jugando', turno: par[0] || null, duenio: par[0] || null, duelo: null, responde: persona(sala, r.giro, par[0]), terminaEn: vence(j) };
   }
-  return { ...r, fase: 'duelo', turno: null, duenio: null, responde: null, duelo: nuevoDuelo(sala, r), terminaEn: 0 };
+  // La pregunta arranca oculta en la tele: quien organiza la lee en voz alta y la muestra cuando termina.
+  return { ...r, fase: 'duelo', turno: null, duenio: null, responde: null, duelo: nuevoDuelo(sala, r), terminaEn: 0, oculta: true };
 }
 
 function tablero(j, { tv = false } = {}) {
@@ -609,7 +610,7 @@ export default {
     }
 
     const v = vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}:${!!privado}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}:${!!sala.juego.oculta}:${!!privado}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         zonaEncuesta = null;
@@ -672,6 +673,15 @@ export default {
                 h('button', { class: 'btn-link', type: 'button', onclick: () => sala.actualizarJuego({ fase: 'fin' }) }, 'Terminar y ver resultados')));
           return;
         }
+        if (j.fase === 'duelo' && j.oculta) {
+          montar(el, etiqueta,
+            h('div', { class: 'etiqueta' }, 'Pasan al frente'), frente(sala, j),
+            h('p', { class: 'muted' }, 'La tele muestra solo los equipos. Leé la pregunta en voz alta y, cuando termines, mostrala:'),
+            h('p', { class: 'pregunta-host' }, j.pregunta),
+            h('button', { class: 'btn grande', onclick: () => sala.actualizarJuego({ oculta: false }).catch((e) => toast(e.message, 'error')) }, '📺 Mostrar la pregunta en la tele'),
+            h('div', { class: 'fila' }, h('button', { class: 'btn-link', onclick: cambiarDuelo }, 'Que pasen otros dos')));
+          return;
+        }
         if (j.fase === 'duelo') {
           const pulso = j.duelo.primero;
           const rep = pulso && j.duelo.reps[j.turno];
@@ -727,7 +737,7 @@ export default {
     let enviado = -1;
     const miEncuesta = {};
     return vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}:${sala.data.asignaciones?.[sala.uid]}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}:${!!sala.juego.oculta}:${sala.data.asignaciones?.[sala.uid]}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         const mio = sala.data.asignaciones?.[sala.uid];
@@ -782,6 +792,11 @@ export default {
           montar(el, h('div', { class: 'resultado ' + (j.gano === mio ? 'bien' : '') },
             h('div', { class: 'resultado-titulo' }, g ? (j.gano === mio ? '¡Ganó tu equipo!' : `Ganó ${g.nombre}`) : 'Nadie suma'),
             g && h('p', null, j.alterna ? marcadorRonda(sala, j) : `+${j.pozo * (j.mult || 1)} puntos`)), tablero(j));
+          return;
+        }
+        if (j.fase === 'duelo' && j.oculta) {
+          const rep = j.duelo?.reps?.[mio];
+          montar(el, esperando('📺 ¡Miren la tele!', rep?.uid === sala.uid ? '¡Pasás al frente! Escuchá la pregunta y esperá a que salga en la tele.' : 'Escuchen la pregunta. Todavía no exploten el globo.'));
           return;
         }
         if (j.voz) {
@@ -864,7 +879,7 @@ export default {
   tv(el, sala) {
     let contador = null;
     return vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.ronda}:${sala.juego.paso}:${sala.juego.mult}:${!!sala.juego.oculta}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         contador = null;
@@ -884,6 +899,14 @@ export default {
               h('h1', { class: 'tv-titulo' }, 'Desempate'),
               h('div', { class: 'tv-pregunta centro' }, j.desempate.q),
               h('p', { class: 'tv-sub' }, 'Cada equipo dice un número. Gana el que quede más cerca.')));
+          return;
+        }
+        if (j.fase === 'duelo' && j.oculta) {
+          montar(el, cabecera,
+            h('div', { class: 'tv-centro' },
+              h('div', { class: 'tv-etiqueta' }, 'Cara a cara'),
+              frente(sala, j, { tv: true }),
+              h('p', { class: 'tv-sub' }, '👂 Escuchen la pregunta…')));
           return;
         }
         if (j.fase === 'encuesta') {
