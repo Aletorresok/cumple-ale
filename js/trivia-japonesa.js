@@ -13,6 +13,7 @@ export const PREGUNTAS_JAPONESA = [
   conVideo('video/trivia-codigo-area.mp4', q('¿Cuál es el código de área de la Nueva Springfield?', '939', '636', '742', '555')),
   conVideo('video/trivia-hugo.mp4', q('¿Qué come Hugo, el gemelo malvado de Bart?', 'Cabezas de pescado', 'Cucarachas', 'Comida de perro', 'Galletitas de Ayudante de Santa')),
   conVideo('video/trivia-juan-topo.mp4', q('¿Cuántos años tiene Juan Topo, el hombre topo?', '31', '82', '64', '95')),
+  conVideo('video/trivia-abejas.mp4', q('¿Cuánto le iban a pagar a Homero por las abejas que consiguió vendiendo azúcar?', '2.000 dólares', '500 dólares', '1.000 dólares', '5.000 dólares')),
 ];
 
 // Ronda final: cada equipo escribe su número en una hoja; el que más se acerca gana 3 puntos.
