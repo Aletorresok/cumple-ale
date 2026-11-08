@@ -18,13 +18,7 @@ const despues = (ms, f) => timers.push(setTimeout(f, ms));
 const DURACION = 78000;
 const TITULO = 9000;
 const PIZARRON = 13000;
-const FRASE_PIZARRON = 'No voy a faltar al cumple de Ale';
-const LEMAS = {
-  e1: 'Los campeones del béisbol de Springfield',
-  e2: 'Los que controlan todo desde las sombras',
-  e3: 'El cuarteto vocal que ganó un Grammy',
-  e4: 'La liga de bolos más temida del barrio',
-};
+const FRASE_PIZARRON = 'No me embriagaré en el cumple de Ale';
 
 // Intros que ya pasaron (por marca): al volver de un juego, la tele no la repite; muestra `despuesDe`.
 const pasadas = new Set();
@@ -61,7 +55,7 @@ export function intro(el, sala, despuesDe) {
     });
   });
 
-  // 3. Un equipo por vez: logo grande, nombre y sus integrantes (o su lema si todavía no hay equipos armados).
+  // 3. Un equipo por vez: logo grande, nombre y sus integrantes.
   const inicioEquipos = TITULO + PIZARRON;
   const final = DURACION - 6000;
   const porEquipo = equipos.length ? (final - inicioEquipos) / equipos.length : 0;
@@ -72,9 +66,9 @@ export function intro(el, sala, despuesDe) {
       h('div', { class: 'in-antes' }, `Equipo ${i + 1}`),
       LOGOS[e.id] && h('img', { class: 'in-logo-grande', src: LOGOS[e.id], alt: '' }),
       h('h1', { class: 'in-titulo in-nombre-eq' }, eq.nombre),
-      miembros.length
-        ? h('div', { class: 'in-miembros' }, miembros.map((n, k) => h('span', { style: { '--i': k } }, n)))
-        : h('div', { class: 'in-lema' }, LEMAS[e.id] || '')));
+      h('div', { class: 'in-miembros' }, miembros.length
+        ? miembros.map((n, k) => h('span', { style: { '--i': k } }, n))
+        : h('span', { class: 'in-sin' }, 'Todavía sin integrantes: armá los equipos antes de la intro'))));
   }));
 
   // 4. Final: todos los logos juntos.
