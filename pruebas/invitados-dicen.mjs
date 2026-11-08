@@ -231,7 +231,8 @@ try {
     afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'los globos vienen elegidos');
     afirmar(await host.locator('#cfg-reglas').inputValue() === 'alterna', 'las reglas alternadas vienen elegidas');
     await host.locator('#cfg-reglas').selectOption('clasico');
-    afirmar(await host.locator('#cfg-rondas').inputValue() === 'llaves', 'las llaves vienen elegidas');
+    afirmar(await host.locator('#cfg-rondas').inputValue() === '4', 'vienen 4 rondas rotando');
+    await host.locator('#cfg-rondas').selectOption('llaves');
     // Elige dos preguntas en orden: la 3.ª de la lista primero y la 1.ª después.
     await host.locator('.cfg-pregunta-banco input').nth(2).check();
     await host.locator('.cfg-pregunta-banco input').nth(0).check();
@@ -310,15 +311,14 @@ try {
   await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
   afirmar(!(await tv.getByText('puntos dobles').count()), 'en modo alternado no hay ronda doble');
   await host.getByRole('button', { name: /^Explotó / }).first().click();
-  await acerto(); await erro(); await acerto();
-  await host.getByRole('button', { name: /cerrar la ronda/ }).click();
-  await host.getByRole('button', { name: 'Cerrar la ronda', exact: true }).click();
+  await acerto(); await erro(); await acerto();   // 1 a 1, juega el rival
+  await erro(); await erro(); await erro();        // erra el rival, erra el primero, erra la última chance: termina
   await tv.getByText('Desempate', { exact: true }).waitFor({ timeout: 10000 });
   await captura(tv, 'a-desempate');
   await host.getByRole('button', { name: /^Más cerca: / }).last().click();
   await host.getByText(/^Desempate: «/).waitFor({ timeout: 10000 });
   await tv.getByText(/Desempate: era/).waitFor({ timeout: 10000 });
-  paso('Empate 1 a 1: desempate por aproximación y la ronda tiene ganador');
+  paso('Tres errores seguidos terminan la ronda; empate 1 a 1 y desempate por aproximación (+1)');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
