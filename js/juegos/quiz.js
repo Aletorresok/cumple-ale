@@ -363,7 +363,7 @@ export default {
 async function iniciarJaponesa(sala, { segundos, intro }) {
   const preguntas = PREGUNTAS_JAPONESA.map((it) => {
     const opciones = mezclar([it.correcta, ...it.incorrectas]);
-    return { pregunta: it.pregunta, opciones, correcta: opciones.indexOf(it.correcta) };
+    return { pregunta: it.pregunta, opciones, correcta: opciones.indexOf(it.correcta), video: it.video || null };
   });
   const orden = sala.equipos().map((e) => e.id);
   const id = idAzar();
@@ -399,17 +399,17 @@ function hostJaponesa(el, sala) {
     if (j.fase !== 'pregunta') return;
     const pts = acerto ? valeAhora(j) : 0;
     const p = privado.preguntas[j.n];
-    act({ fase: 'revelada', acerto, pts, opciones: p.opciones, correcta: p.correcta, terminaEn: 0 }, j.equipo ? { [j.equipo]: pts } : undefined);
+    act({ fase: 'revelada', acerto, pts, opciones: p.opciones, correcta: p.correcta, video: p.video || null, terminaEn: 0 }, j.equipo ? { [j.equipo]: pts } : undefined);
   };
   const siguiente = () => {
     const j = sala.juego;
     const n = j.n + 1;
     if (n >= j.total) {
-      act({ fase: 'aprox', pregunta: privado.aprox.pregunta, opciones: [], conOpciones: false, equipo: null, terminaEn: 0, acerto: null, pts: 0, correcta: null, ganadores: {} });
+      act({ fase: 'aprox', video: null, pregunta: privado.aprox.pregunta, opciones: [], conOpciones: false, equipo: null, terminaEn: 0, acerto: null, pts: 0, correcta: null, ganadores: {} });
       return;
     }
     const p = privado.preguntas[n];
-    act({ fase: 'pregunta', n, equipo: j.orden[n % j.orden.length] || null, pregunta: p.pregunta, opciones: [], conOpciones: false, terminaEn: 0, acerto: null, pts: 0, correcta: null });
+    act({ fase: 'pregunta', n, equipo: j.orden[n % j.orden.length] || null, pregunta: p.pregunta, opciones: [], conOpciones: false, terminaEn: 0, acerto: null, pts: 0, correcta: null, video: null });
   };
   const revelarAprox = () => act({ fase: 'aprox-revelada', respuesta: privado.aprox.respuesta, terminaEn: 0 });
   const tocarGanador = (eid) => {
@@ -477,6 +477,7 @@ function hostJaponesa(el, sala) {
         revelada
           ? h('div', { class: 'pila' },
             h('p', null, j.acerto ? `✓ Acertaron: +${j.pts}` : '✗ Se equivocaron: no suman.'),
+            j.video && h('p', { class: 'muted chico' }, '🎬 En la tele pasa la escena para chequear la respuesta.'),
             h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? '🎯 Ronda final: aproximación →' : 'Siguiente pregunta →'))
           : h('div', { class: 'pila' },
             j.conOpciones
@@ -521,6 +522,13 @@ function alumnoJaponesa(el, sala) {
       montar(el, esperando('👀 ¡Miren la tele!', mio ? 'Les toca a ustedes: discutan y uno responde en voz alta.' : `Le toca a ${eq?.nombre || 'otro equipo'}.`));
     },
   });
+}
+
+// Escena que pasa en la tele después de responder, para chequear la respuesta (con sonido).
+function videoChequeo(src) {
+  const video = h('video', { class: 'tv-trivia-video', src, autoplay: true, playsinline: true, controls: false });
+  video.play?.().catch(() => { video.muted = true; video.play().catch(() => {}); });
+  return video;
 }
 
 function tvJaponesa(el, sala) {
@@ -568,7 +576,8 @@ function tvJaponesa(el, sala) {
         h('div', { class: 'tv-turno', style: { '--c': eq?.color || '#888' } }, h('span', null, 'Le toca a'), pildoraEquipo(eq)),
         h('div', { class: 'tv-pregunta' }, j.pregunta),
         revelada
-          ? h('div', { class: 'tv-opciones' }, h('div', { class: 'tv-opcion correcta' }, h('span', { class: 'tv-op-txt' }, j.opciones[j.correcta])))
+          ? h('div', null, h('div', { class: 'tv-opcion correcta' }, h('span', { class: 'tv-op-txt' }, j.opciones[j.correcta])),
+            j.video && videoChequeo(j.video))
           : j.conOpciones
           ? h('div', { class: 'tv-opciones' }, j.opciones.map((o, i) =>
             h('div', { class: 'tv-opcion op' + i }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', { class: 'tv-op-txt' }, o))))
