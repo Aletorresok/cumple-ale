@@ -524,11 +524,14 @@ function alumnoJaponesa(el, sala) {
   });
 }
 
-// Escena que pasa en la tele después de responder, para chequear la respuesta (con sonido).
-function videoChequeo(src) {
+// Escena que pasa en la tele después de responder, para chequear la respuesta (con sonido). Ocupa la
+// pantalla con la respuesta arriba y, cuando termina, deja ver la revelación normal.
+function videoChequeo(src, respuesta) {
   const video = h('video', { class: 'tv-trivia-video', src, autoplay: true, playsinline: true, controls: false });
+  const marco = h('div', { class: 'tv-chequeo' }, h('div', { class: 'tv-chequeo-resp' }, '✓ ', respuesta), video);
+  video.addEventListener('ended', () => marco.remove());
   video.play?.().catch(() => { video.muted = true; video.play().catch(() => {}); });
-  return video;
+  return marco;
 }
 
 function tvJaponesa(el, sala) {
@@ -577,7 +580,7 @@ function tvJaponesa(el, sala) {
         h('div', { class: 'tv-pregunta' }, j.pregunta),
         revelada
           ? h('div', null, h('div', { class: 'tv-opcion correcta' }, h('span', { class: 'tv-op-txt' }, j.opciones[j.correcta])),
-            j.video && videoChequeo(j.video))
+            j.video && videoChequeo(j.video, j.opciones[j.correcta]))
           : j.conOpciones
           ? h('div', { class: 'tv-opciones' }, j.opciones.map((o, i) =>
             h('div', { class: 'tv-opcion op' + i }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', { class: 'tv-op-txt' }, o))))
