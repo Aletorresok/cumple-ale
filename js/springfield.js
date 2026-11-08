@@ -5,15 +5,12 @@ const q = (pregunta, correcta, ...incorrectas) => ({ tipo: 'pregunta', pregunta,
 // Para «Dibujá en Springfield»: cosas que se reconocen en un dibujo de un minuto.
 // Vienen con el juego (no hace falta agregar el banco) y se pueden cambiar desde «Mis bancos».
 export const PALABRAS_DIBUJO = [
-  'Una dona con chispitas', 'Una lata de Duff', 'La planta nuclear', 'El pelo de Marge', 'Plopper, el cerdo araña',
-  'El sillón de los Simpson', 'La patineta de Bart', 'El saxofón de Lisa', 'El chupete de Maggie', 'Blinky, el pez de tres ojos',
-  'El Kwik-E-Mart', 'La taberna de Moe', 'El auto de Homero', 'El micro escolar de Otto', 'El monorriel',
-  'La casa del árbol', 'Bola de Nieve, el gato', 'Ayudante de Santa, el perro', 'Krusty el payaso', 'El bigote de Flanders',
-  'Los anteojos de Milhouse', 'La gomera de Bart', 'Una barra de plutonio', 'Itchy y Scratchy', 'El Hombre Abeja',
-  'La estatua de Jebediah Springfield', 'El Sr. Burns diciendo «Excelente»', 'El Sr. Quitanieves', 'Una chuleta de cerdo',
-  'El pizarrón de los castigos de Bart', 'Homero astronauta', 'El collar de perlas de Marge', 'Bob Patiño pisando un rastrillo',
-  'Homero en la hamaca', 'La dentadura del abuelo', 'Duffman', 'La sirena del patrullero de Wiggum', 'El ojo morado de Moe',
-  'Lisa vegetariana comiendo una ensalada', 'La familia en el sillón mirando la tele',
+  // Cosas fáciles de dibujar en 90 segundos, con guiño Simpson.
+  'Una dona', 'Una lata de cerveza', 'El Puerco Araña', 'Un gato', 'Un perro', 'Una patineta', 'Un saxofón',
+  'Un chupete', 'Un pez de tres ojos', 'La planta nuclear', 'El pelo de Marge', 'Un sillón', 'Una chuleta',
+  'Un pizarrón', 'Un astronauta', 'Un collar de perlas', 'Un rastrillo', 'Una hamaca', 'Una dentadura',
+  'Un patrullero', 'Un ojo morado', 'Una ensalada', 'Una gomera', 'Un bigote', 'Unos anteojos', 'Un payaso',
+  'Una abeja', 'Un auto', 'Un televisor', 'Una estatua',
 ];
 
 export const BANCO_SPRINGFIELD = {
