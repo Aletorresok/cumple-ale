@@ -157,7 +157,6 @@ function panelSala(raiz, docente, codigo) {
   let bancos = [];
   let vistaJuego = null;
   let idJuego = null;
-  let asignando = false;
   misBancos(docente.uid).then((b) => { bancos = b; }).catch(() => {});
 
   const enlace = urlApp('?sala=' + codigo);
@@ -223,35 +222,10 @@ function panelSala(raiz, docente, codigo) {
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     actualizarNombres();
     contadorAlumnos.textContent = sala.activos().length;
-    if (motivo === 'jugadores' || motivo === 'sala') pedirAsignar();
+    // Los que entran quedan sin equipo: el organizador los asigna a mano (selección o el panel).
     if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
-
-  // Junta a los que entran casi juntos (al escanear el QR entran de a varios) en una sola escritura.
-  let esperaAsignar = null;
-  const pedirAsignar = () => {
-    if (esperaAsignar) return;
-    esperaAsignar = setTimeout(() => { esperaAsignar = null; autoAsignar(); }, 800);
-  };
-  sala.subs.push(() => clearTimeout(esperaAsignar));
-
-  // Los invitados nuevos van al equipo con menos integrantes.
-  // Durante la selección de equipos no: ahí los reparte la ceremonia.
-  async function autoAsignar() {
-    if (asignando || !sala.data || sala.juego?.tipo === 'seleccion') return;
-    const sinEquipo = sala.listaJugadores().filter((j) => !j.equipo);
-    if (!sinEquipo.length) return;
-    asignando = true;
-    const tam = Object.fromEntries(sala.equipos().map((e) => [e.id, sala.miembros(e.id).length]));
-    const nuevas = {};
-    for (const j of mezclar(sinEquipo)) {
-      const eid = Object.entries(tam).sort((a, b) => a[1] - b[1])[0][0];
-      nuevas[j.uid] = eid; tam[eid]++;
-    }
-    try { await sala.asignar(nuevas); } catch (e) { console.error(e); }
-    asignando = false;
-  }
 
   function dibujarJuego(motivo) {
     const j = sala.juego;

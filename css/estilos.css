@@ -911,7 +911,7 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .frase-palabra.hecha { opacity: .65; }
 
 /* Intro extendida: pizarrón, presentación de equipos y final */
-.in-pizarron { width: min(82vw, 1200px); padding: 1.2em 1.6em; border: .5em solid #8B5A2B; border-radius: .4em; background: #24553A;
+.in-pizarron { width: min(90vw, 1400px); box-sizing: border-box; padding: 1.2em 1.6em; border: .5em solid #8B5A2B; border-radius: .4em; background: #24553A;
   box-shadow: 0 .4em 1.2em rgb(0 0 0 / .35); text-align: left; animation: in-sube .6s ease-out; }
 .in-renglon { white-space: nowrap; overflow: hidden; font-family: "Comic Sans MS", "Chalkboard SE", var(--display); font-size: 2.3em; color: #F4F4EC; min-height: 1.35em; line-height: 1.35; opacity: .95; }
 .in-presenta { display: flex; flex-direction: column; align-items: center; gap: 2vh; }

@@ -381,6 +381,8 @@ try {
   await host.getByRole('button', { name: '↻ Repetir la intro' }).waitFor();
   await tv.locator('.in-pizarron').waitFor({ timeout: 15000 });
   await tv.locator('.in-renglon', { hasText: 'No me embriagaré' }).first().waitFor({ timeout: 10000 });
+  await tv.locator('.in-renglon', { hasText: 'No me embriagaré en el cumple de Ale' }).first().waitFor({ timeout: 15000 });
+  afirmar(await tv.evaluate(() => { const r = document.querySelector('.in-renglon'); return r.scrollWidth <= r.clientWidth; }), 'la frase entera entra en el pizarrón');
   await captura(tv, '10n2-intro-pizarron');
   // Si arranca un juego en medio de la intro y después termina, la tele no repite la intro: vuelve al QR.
   await elegirJuego(host, '¿Te acordás de la escena?');
