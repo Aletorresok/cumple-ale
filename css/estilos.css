@@ -937,7 +937,6 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 /* ── Modo proyector (tele): la imagen va proyectada con poca luz, así que todo lo que es
    texto secundario, bordes y colores de equipo sube de brillo y de grosor. ── */
 .tv .equipo-nombre, .tv .tv-grupo-cab, .tv .tv-eq-nombre { color: color-mix(in srgb, var(--c) 62%, #fff); }
-.tv .tv-grupo-cab > :last-child { white-space: nowrap; }
 .tv-etiqueta { font-weight: 700; font-size: .9em; }
 .tv .casillero { border: 2px solid var(--tv-surface2); }
 .tv .cas-num { color: var(--tv-tinta); }
@@ -946,3 +945,8 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .marcador.compacto .marcador-eq { font-size: 1.1em; }
 .marcador.compacto .logo-eq { height: 2.2em; }
 .tv .marcador-pts { color: #fff; }
+/* Bienvenida: logo grande y cantidad de integrantes en cada tarjeta de equipo */
+.tv .tv-grupo-cab { align-items: center; gap: .6em; }
+.tv .tv-grupo-cab .tv-grupo-logo { height: 2.6em; max-width: 3.6em; object-fit: contain; flex: none; }
+.tv-grupo-nombre { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.tv-grupo-nombre small { font-family: var(--body); font-weight: 700; font-size: .7em; color: var(--tv-muted); }

@@ -192,6 +192,10 @@ try {
   paso(`Equipos armados y parejos: ${tamanios.join(', ')}`);
   await captura(invitados[0], '4-seleccion-celular');
   await terminarJuego(host);
+  // De vuelta en la bienvenida: cada tarjeta con su logo y cuántos integrantes tiene.
+  await tv.locator('.tv-grupo-nombre small', { hasText: 'integrantes' }).first().waitFor({ timeout: 15000 });
+  await esperar(5000);
+  await captura(tv, '4b-espera-con-equipos');
   await medir('Selección de equipos');
 
   // ── Los invitados dicen ──
