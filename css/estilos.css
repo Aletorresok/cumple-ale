@@ -908,3 +908,6 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .in-logos { display: flex; gap: 3vw; justify-content: center; align-items: center; }
 .in-logos img { height: 22vh; object-fit: contain; animation: in-golpe .7s calc(var(--i) * .3s) cubic-bezier(.2, 1.6, .4, 1) both; }
 .in-logos + .in-titulo { animation-delay: 1.4s; }
+.in-presenta { width: 100%; justify-content: center; text-align: center; }
+.in-logo-grande { display: block; margin: 0 auto; height: 30vh; }
+.in-miembros .in-sin { background: rgb(0 0 0 / .25); font-size: 1.3em; }
