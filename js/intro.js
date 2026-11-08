@@ -46,6 +46,15 @@ export function intro(el, sala, despuesDe) {
   despues(TITULO, () => {
     const renglones = Array.from({ length: 5 }, () => h('div', { class: 'in-renglon' }));
     montar(escena, h('div', { class: 'in-pizarron' }, renglones));
+    // Achica la letra hasta que la frase entera entre en un renglón (cualquier pantalla).
+    const prueba = renglones[0];
+    prueba.textContent = FRASE_PIZARRON;
+    const base = parseFloat(getComputedStyle(prueba).fontSize);
+    if (prueba.scrollWidth > prueba.clientWidth) {
+      const tam = (base * prueba.clientWidth * 0.97) / prueba.scrollWidth;
+      renglones.forEach((r) => { r.style.fontSize = tam + 'px'; });
+    }
+    prueba.textContent = '';
     const porRenglon = (PIZARRON - 1500) / renglones.length;
     renglones.forEach((r, k) => {
       for (let c = 1; c <= FRASE_PIZARRON.length; c++) {
