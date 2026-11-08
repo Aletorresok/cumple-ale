@@ -161,7 +161,7 @@ try {
   await elegirJuego(host, 'Dibujá en Springfield', async () => {
     afirmar(await host.locator('#cfg-donde').inputValue() === 'pizarra', 'por defecto se dibuja en la pizarra');
     afirmar(await host.locator('#cfg-seg').inputValue() === '90', 'por defecto, turnos de 1 minuto y medio');
-    await host.locator('#cfg-vueltas').selectOption('1');
+    afirmar(await host.locator('#cfg-vueltas').inputValue() === '1', 'por defecto, una vuelta (un turno por equipo)');
   });
   await host.getByRole('button', { name: '✏️ Empezar turno' }).click();
   const dibujaPz = await celularCon(invitados, '.dibujo-pizarra');
@@ -183,6 +183,10 @@ try {
   await tv.locator('.tv-mimica-lista li').nth(2).waitFor({ timeout: 10000 });
   afirmar(await puntos(host) - antesPz === 2, `pizarra: cada dibujo adivinado vale 1 (sumó ${await puntos(host) - antesPz})`);
   paso(`Pizarra: adivinaron «${pz1}», pasaron «${pz2}», +2 puntos`);
+  await host.getByText('Turno 2 de 4').waitFor({ timeout: 10000 });
+  await host.getByRole('button', { name: '➕ Jugar otra vuelta' }).click();
+  await host.getByText('Turno 2 de 8').waitFor({ timeout: 10000 });
+  paso('Con el juego empezado, «Jugar otra vuelta» suma un turno más por equipo (4 → 8)');
   await terminarJuego(host);
 
   const antes = await puntos(host);
