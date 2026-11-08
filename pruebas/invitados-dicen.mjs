@@ -140,6 +140,7 @@ try {
     await host.locator('#cfg-rondas').selectOption('3');
     await host.locator('#cfg-seg').selectOption('0');
     await host.locator('#cfg-pulsador').selectOption('celular');
+    await host.locator('#cfg-reglas').selectOption('clasico');
   });
 
   // ── Ronda 1: todo desde los celulares ──
@@ -228,6 +229,8 @@ try {
   await elegirJuego(host, 'Los invitados dicen', async () => {
     await host.locator('#cfg-seg').selectOption('0');
     afirmar(await host.locator('#cfg-pulsador').inputValue() === 'fisico', 'los globos vienen elegidos');
+    afirmar(await host.locator('#cfg-reglas').inputValue() === 'alterna', 'las reglas alternadas vienen elegidas');
+    await host.locator('#cfg-reglas').selectOption('clasico');
     afirmar(await host.locator('#cfg-rondas').inputValue() === 'llaves', 'las llaves vienen elegidas');
     // Elige dos preguntas en orden: la 3.ª de la lista primero y la 1.ª después.
     await host.locator('.cfg-pregunta-banco input').nth(2).check();
@@ -277,6 +280,30 @@ try {
   afirmar(mismos(llaves[3].par, [llaves[0].gano, llaves[1].gano]), `la final es entre los ganadores (${llaves[3].par})`);
   afirmar(await host.getByText('(doble)').count(), 'la final vale doble');
   paso('Con globos y en llaves: ' + llaves.map((l, i) => `${i + 1}) ${l.par.join(' vs ')} → ${l.gano}`).join(' · '));
+  if (await host.getByRole('button', { name: 'Ver resultados' }).count()) await host.getByRole('button', { name: 'Ver resultados' }).click();
+  await terminarJuego(host);
+
+  // ── Reglas de la fiesta (alternado): 5 respuestas, 1 punto cada una, si erra responde el rival ──
+  await elegirJuego(host, 'Los invitados dicen', async () => {
+    await host.locator('#cfg-seg').selectOption('0');
+  });
+  await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
+  const eqA = (await host.getByRole('button', { name: /^Explotó / }).first().textContent()).replace(/^Explotó\s*/, '').trim();
+  await host.getByRole('button', { name: /^Explotó / }).first().click();
+  const acerto = async () => { await host.getByRole('button', { name: 'Acertó' }).first().click(); await esperar(700); };
+  const erro = async () => { await host.getByRole('button', { name: '✗ Respuesta incorrecta' }).click(); await esperar(700); };
+  await acerto();                 // A gana el cara a cara con la más dicha y sigue (sin «jugar o pasar»)
+  afirmar(!(await host.getByRole('button', { name: /^Juega / }).count()), 'en modo alternado no se elige jugar o pasar');
+  afirmar((await tv.locator('.casillero').count()) === 5, 'el tablero tiene 5 respuestas');
+  await erro();                   // A erra: responde B
+  await acerto(); await acerto(); // B acierta dos
+  await erro();                   // B erra: vuelve A
+  await acerto(); await acerto(); // A completa el tablero
+  const fin = await host.locator('p.grande').first().textContent();
+  const ptsA = Number((fin.match(new RegExp(eqA + ' (\\d+)')) || [])[1]);
+  afirmar(ptsA === 3 && /2/.test(fin.replace(eqA + ' 3', '')), `marcador de la ronda: ${eqA} 3 y el rival 2 (${fin})`);
+  await captura(tv, 'a-fin-ronda');
+  paso(`Reglas alternadas: 5 respuestas, ${fin}`);
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);
