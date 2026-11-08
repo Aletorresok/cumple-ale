@@ -40,8 +40,7 @@ export function intro(el, sala, despuesDe) {
     h('div', { class: 'in-antes' }, 'Springfield presenta'),
     h('h1', { class: 'in-titulo' }, 'El cumple de Ale'),
     h('div', { class: 'in-equipos' }, equipos.map((e, i) =>
-      h('span', { class: 'in-equipo', style: { '--c': e.color, '--i': i } }, LOGOS[e.id] && h('img', { class: 'in-logo', src: LOGOS[e.id], alt: '' }), e.nombre))),
-    h('div', { class: 'in-final' }, '¡Que empiece la fiesta!'));
+      h('span', { class: 'in-equipo', style: { '--c': e.color, '--i': i } }, LOGOS[e.id] && h('img', { class: 'in-logo', src: LOGOS[e.id], alt: '' }), e.nombre))));
 
   // 2. Pizarrón: la frase se escribe sola, renglón por renglón, como el castigo de Bart.
   despues(TITULO, () => {
