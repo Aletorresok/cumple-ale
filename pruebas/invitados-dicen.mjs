@@ -304,6 +304,21 @@ try {
   afirmar(ptsA === 3 && /2/.test(fin.replace(eqA + ' 3', '')), `marcador de la ronda: ${eqA} 3 y el rival 2 (${fin})`);
   await captura(tv, 'a-fin-ronda');
   paso(`Reglas alternadas: 5 respuestas, ${fin}`);
+  afirmar((await tv.locator('.cas-pts').first().textContent()).includes('👥'), 'al revelar se ve cuántas personas la dijeron');
+  // Ronda empatada (1 a 1) que se cierra a mano: desempate por aproximación.
+  await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+  await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
+  afirmar(!(await tv.getByText('puntos dobles').count()), 'en modo alternado no hay ronda doble');
+  await host.getByRole('button', { name: /^Explotó / }).first().click();
+  await acerto(); await erro(); await acerto();
+  await host.getByRole('button', { name: /cerrar la ronda/ }).click();
+  await host.getByRole('button', { name: 'Cerrar la ronda', exact: true }).click();
+  await tv.getByText('Desempate', { exact: true }).waitFor({ timeout: 10000 });
+  await captura(tv, 'a-desempate');
+  await host.getByRole('button', { name: /^Más cerca: / }).last().click();
+  await host.getByText(/^Desempate: «/).waitFor({ timeout: 10000 });
+  await tv.getByText(/Desempate: era/).waitFor({ timeout: 10000 });
+  paso('Empate 1 a 1: desempate por aproximación y la ronda tiene ganador');
   for (const [n, l, e] of etapas) console.log(`  ${n.padEnd(28)} ${String(l).padStart(6)} lecturas ${String(e).padStart(5)} escrituras`);
 } catch (e) {
   errores.push('PRUEBA: ' + e.message);

@@ -10,16 +10,24 @@
 // Las encuestas salen de un banco o de lo que responde el propio grupo en el momento.
 import { h, montar, vista, selectorBanco, selector, ranking, esperando, pildoraEquipo } from './comun.js';
 import { itemsDe } from '../bancos.js';
-import { mezclar, respuestaCorrecta, cuentaRegresiva, toast, sonido, vibrar, idAzar } from '../util.js';
+import { mezclar, respuestaCorrecta, cuentaRegresiva, toast, sonido, vibrar, idAzar, confirmar } from '../util.js';
 import { contarPalabras, ofensiva } from './nube.js';
 
 const MAX_CASILLEROS = 8;
 // Modo «alternado» (reglas de la fiesta): 5 respuestas por pregunta, cada acierto vale 1 punto
 // (2 en la ronda doble) para el equipo que la dice. Si acierta sigue; si erra, responde el rival.
 const CASILLEROS_ALTERNADO = 5;
+// Desempate por aproximación (modo alternado): gana el equipo que dice el número más cercano.
+const DESEMPATES = [
+  { q: '¿En qué número de la Avenida Siempreviva viven los Simpson?', a: '742' },
+  { q: '¿En qué año empezó la serie de Los Simpson?', a: '1989' },
+  { q: '¿En qué año se estrenó Los Simpson: la película?', a: '2007' },
+  { q: '¿Cuántos invitados respondieron el formulario de esta noche?', a: '18' },
+  { q: 'Bart, Lisa y Maggie: ¿cuántos años suman entre los tres?', a: '19 (10 + 8 + 1)' },
+];
 const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
-  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts'];
+  'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate'];
 
 // Cómo va la ronda en modo alternado: «Krusty Burger 3 · Planta Nuclear 1».
 export function marcadorRonda(sala, j) {
@@ -91,7 +99,7 @@ function armarRonda(sala, j, ronda, pregunta, respuestas) {
   const r = {
     ronda, pregunta, casilleros: j.alterna ? Math.min(CASILLEROS_ALTERNADO, respuestas.length) : respuestas.length, reveladas: {}, strikes: 0, pozo: 0, pts: {}, paso: (j.paso || 0) + 1,
     ultimo: null, gano: null, todas: null, par, proximo: null, giro: { ...(j.giro || {}) },
-    mult: j.doble && j.total && ronda >= j.total ? 2 : 1, seg: j.seg,
+    mult: !j.alterna && j.doble && j.total && ronda >= j.total ? 2 : 1, seg: j.seg, desempate: null,
   };
   if (par.length < 2) {
     return { ...r, fase: 'jugando', turno: par[0] || null, duenio: par[0] || null, duelo: null, responde: persona(sala, r.giro, par[0]), terminaEn: vence(j) };
@@ -107,7 +115,7 @@ function tablero(j, { tv = false } = {}) {
     const dato = r || perdida;
     celdas.push(h('div', { class: 'casillero' + (r ? ' revelada' : perdida ? ' perdida' : '') },
       h('span', { class: 'cas-num' }, i + 1),
-      dato ? [h('span', { class: 'cas-txt' }, dato.texto), h('span', { class: 'cas-pts' }, dato.puntos)] : h('span', { class: 'cas-txt' })));
+      dato ? [h('span', { class: 'cas-txt' }, dato.texto), h('span', { class: 'cas-pts', title: dato.personas ? 'personas que la dijeron' : 'puntos' }, dato.personas ? `👥 ${dato.puntos}` : dato.puntos)] : h('span', { class: 'cas-txt' })));
   }
   return h('div', { class: 'tablero' + (tv ? ' en-tv' : '') }, celdas);
 }
@@ -250,9 +258,23 @@ export default {
     }
 
     async function cerrarRonda(j) {
+      if (j.alterna && !j.desempate?.gano) {
+        const [a, b] = j.par || [];
+        if (a && b && (j.pts?.[a] || 0) === (j.pts?.[b] || 0)) {
+          const usados = (j.historial || []).filter((x) => x.desempate).length;
+          j.fase = 'desempate';
+          j.desempate = { ...DESEMPATES[usados % DESEMPATES.length], gano: null };
+          j.todas = privado.actual.slice(0, j.casilleros).map((r) => ({ texto: visible(r.texto), puntos: r.puntos, personas: true }));
+          j.terminaEn = 0;
+          j.responde = null;
+          j.paso++;
+          await guardar(j);
+          return;
+        }
+      }
       j.fase = 'fin_ronda';
-      j.historial = [...(j.historial || []), { ronda: j.ronda, par: j.par || [], gano: j.gano || null }];
-      j.todas = privado.actual.slice(0, j.casilleros).map((r) => ({ texto: visible(r.texto), puntos: j.alterna ? (j.mult || 1) : r.puntos }));
+      j.historial = [...(j.historial || []), { ronda: j.ronda, par: j.par || [], gano: j.gano || null, desempate: !!j.desempate }];
+      j.todas = privado.actual.slice(0, j.casilleros).map((r) => ({ texto: visible(r.texto), puntos: r.puntos, personas: !!j.alterna }));
       j.terminaEn = 0;
       j.responde = null;
       j.paso++;
@@ -260,7 +282,7 @@ export default {
         // Los puntos ya se sumaron con cada acierto. Gana la ronda quien acertó más (empate: el del cara a cara).
         const [a, b] = j.par || [];
         const pa = j.pts?.[a] || 0, pb = j.pts?.[b] || 0;
-        j.gano = pa === pb ? (j.duenio || j.gano || a || null) : (pa > pb ? a : b);
+        j.gano = j.desempate?.gano || (pa === pb ? (j.duenio || j.gano || a || null) : (pa > pb ? a : b));
         j.historial[j.historial.length - 1].gano = j.gano;
         await guardar(j);
       } else await guardar(j, j.gano && j.pozo ? { [j.gano]: j.pozo * (j.mult || 1) } : {});
@@ -280,8 +302,9 @@ export default {
     function revelar(j, i, valor) {
       const r = privado.actual[i];
       if (j.alterna) {
-        const n = j.mult || 1;
-        j.reveladas[i] = { texto: visible(r.texto), puntos: n };
+        // Se muestra cuántas personas la dijeron; el acierto vale siempre 1 punto.
+        const n = 1;
+        j.reveladas[i] = { texto: visible(r.texto), puntos: r.puntos, personas: true };
         j.pozo += n;
         if (j.turno) {
           j.pts = { ...(j.pts || {}), [j.turno]: (j.pts?.[j.turno] || 0) + n };
@@ -422,6 +445,20 @@ export default {
       j.paso++;
       j.terminaEn = vence(j);
       await guardar(j);
+    }
+
+    // Modo alternado: si nadie sabe las que faltan, se cierra la ronda (y si hay empate, desempate).
+    async function cerrarAhora() {
+      const j = tomar(['jugando']);
+      if (!j) return;
+      await cerrarRonda(j);
+    }
+
+    async function ganaDesempate(eid) {
+      const j = tomar(['desempate']);
+      if (!j) return;
+      j.desempate = { ...j.desempate, gano: eid };
+      await cerrarRonda(j);
     }
 
     const jugar = (jugada) => (sala.juego.fase === 'duelo' ? jugarDuelo(jugada) : jugarTablero(jugada));
@@ -582,11 +619,20 @@ export default {
         const etiqueta = h('div', { class: 'fila entre' },
           h('span', { class: 'etiqueta' }, `Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''}${etapa(j)} · pozo ${j.pozo}`),
           h('button', { class: 'btn-link', onclick: alternarDoble }, j.mult > 1 ? '×2 activado (sacar)' : 'Hacer que valga doble'));
+        if (j.fase === 'desempate') {
+          montar(el, h('p', { class: 'pregunta-host' }, j.pregunta), h('p', { class: 'grande' }, `Empate: ${marcadorRonda(sala, j)}`),
+            h('div', { class: 'etiqueta' }, 'Desempate por aproximación (leelo en voz alta)'),
+            h('p', { class: 'pregunta-host' }, j.desempate.q),
+            h('p', null, 'Respuesta: ', h('b', null, j.desempate.a), h('span', { class: 'muted' }, ' · cada equipo dice un número; gana el más cercano')),
+            h('div', { class: 'fila' }, (j.par || []).map((e) => h('button', { class: 'btn grande', onclick: () => ganaDesempate(e) }, `Más cerca: ${sala.equipo(e)?.nombre || e}`))));
+          return;
+        }
         if (j.fase === 'fin_ronda') {
           const ganador = sala.equipo(j.gano);
           const ultimaRonda = j.fuente === 'banco' && (j.ronda >= (j.total || privado.encuestas.length) || !sinUsar().length);
           const otra = h('input', { class: 'campo', id: 'otra-pregunta', maxlength: 120, placeholder: 'Siguiente pregunta para el grupo' });
           montar(el, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
+            j.desempate?.gano && h('p', null, `Desempate: «${j.desempate.q}» → ${j.desempate.a}. Ganó ${ganador?.nombre || ''}.`),
             h('p', { class: 'grande' }, j.alterna ? marcadorRonda(sala, j) : ganador ? `${ganador.nombre} se lleva ${j.pozo * (j.mult || 1)} puntos${j.mult > 1 ? ' (doble)' : ''}` : 'Nadie suma en esta ronda'),
             tablero(j),
             !ultimaRonda && elegirProximo(j),
@@ -635,7 +681,10 @@ export default {
           j.fase === 'robo' && h('p', { class: 'aviso' }, `${eq?.nombre} se pone de acuerdo y tiene una sola respuesta para robar el pozo.`),
           ultimo,
           lista(true),
-          h('button', { class: 'btn peligro', onclick: () => jugar({ error: true }) }, j.fase === 'robo' ? '✗ No acertó el robo' : '✗ Respuesta incorrecta'));
+          h('button', { class: 'btn peligro', onclick: () => jugar({ error: true }) }, j.fase === 'robo' ? '✗ No acertó el robo' : '✗ Respuesta incorrecta'),
+          j.alterna && h('button', { class: 'btn-link', onclick: async () => {
+            if (await confirmar({ titulo: '¿Cerrar la ronda?', texto: 'Se muestran las que faltan. Si quedan empatados, hay desempate.', ok: 'Cerrar la ronda' })) cerrarAhora();
+          } }, 'Nadie sabe las que faltan: cerrar la ronda'));
       },
       refrescar(motivo) {
         if (sala.juego.fase === 'encuesta' && motivo === 'respuestas') pintarEncuesta();
@@ -696,6 +745,10 @@ export default {
           if (!bloqueado) setTimeout(() => input.focus(), 50);
           return [h('div', { class: 'fila entre' }, h('h2', null, titulo), j.terminaEn ? reloj : null), h('p', { class: 'pregunta-alumno' }, j.pregunta), form];
         };
+        if (j.fase === 'desempate') {
+          montar(el, esperando('📺 ¡Desempate!', 'Miren la tele: pónganse de acuerdo y griten un número.'));
+          return;
+        }
         if (j.fase === 'fin_ronda') {
           const g = sala.equipo(j.gano);
           montar(el, h('div', { class: 'resultado ' + (j.gano === mio ? 'bien' : '') },
@@ -795,6 +848,16 @@ export default {
         const cabecera = h('div', { class: 'tv-cabecera' },
           h('span', { class: 'tv-etiqueta' }, `Los invitados dicen · Ronda ${j.ronda}${j.total ? ' de ' + j.total : ''}${etapa(j)}${j.fase === 'encuesta' ? ' · Encuesta' : ''}`),
           doble(j));
+        if (j.fase === 'desempate') {
+          sonido('bien');
+          montar(el, cabecera,
+            h('div', { class: 'tv-centro' },
+              h('div', { class: 'tv-etiqueta' }, `¡Empate! ${marcadorRonda(sala, j)}`),
+              h('h1', { class: 'tv-titulo' }, 'Desempate'),
+              h('div', { class: 'tv-pregunta centro' }, j.desempate.q),
+              h('p', { class: 'tv-sub' }, 'Cada equipo dice un número. Gana el que quede más cerca.')));
+          return;
+        }
         if (j.fase === 'encuesta') {
           contador = h('div', { class: 'tv-contador enorme' }, '0');
           montar(el, cabecera,
@@ -818,7 +881,8 @@ export default {
             h('div', { class: 'tv-sub centro' }, '¿Juegan o pasan?'));
         } else if (j.fase === 'fin_ronda') {
           estado = j.alterna
-            ? h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Gana la ronda'), j.gano && pildoraEquipo(sala.equipo(j.gano)))
+            ? h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Gana la ronda'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
+              j.desempate?.gano && h('div', { class: 'tv-sub centro' }, `Desempate: era ${j.desempate.a}`))
             : h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, j.gano ? 'Se lo lleva' : 'Nadie suma'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
               j.gano && j.mult > 1 && h('div', { class: 'tv-sub centro' }, `${j.pozo} × 2 = ${j.pozo * 2}`));
         } else {
