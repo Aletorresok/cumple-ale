@@ -327,9 +327,21 @@ try {
   await mostrarPregunta(host);
   await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
   afirmar(!(await tv.getByText('puntos dobles').count()), 'en modo alternado no hay ronda doble');
+  const parR2 = (await host.getByRole('button', { name: /^Explotó / }).allTextContents()).map((t) => t.replace(/^Explotó\s*/, '').trim());
   await host.getByRole('button', { name: /^Explotó / }).first().click();
   await acerto(); await erro(); await acerto();   // 1 a 1, juega el rival
   await erro(); await erro(); await erro();        // erra el rival, erra el primero, erra la última chance: termina
+  // Quedaron 3 sin adivinar: arriesgan los dos equipos que miraban (+1 cada acierto, errar no resta).
+  await tv.getByText('¡Turno de los que miraban!').waitFor({ timeout: 10000 });
+  await captura(tv, 'a-publico');
+  const antesPub = await puntos(host);
+  const robo = (await host.getByRole('button', { name: /^La dijo / }).first().textContent()).replace(/^La dijo\s*/, '').trim();
+  afirmar(!parR2.includes(robo), 'arriesga un equipo que no jugaba la ronda');
+  await host.getByRole('button', { name: /^La dijo / }).first().click();
+  await esperar(900);
+  afirmar(await puntos(host) - antesPub === 1, `el equipo de afuera suma 1 (${await puntos(host) - antesPub})`);
+  await host.getByRole('button', { name: 'Nadie más: revelar las que faltan' }).click();
+  paso(`Turno de los que miraban: ${robo} adivinó una (+1) y se revelaron las demás`);
   await tv.getByText('Desempate', { exact: true }).waitFor({ timeout: 10000 });
   await captura(tv, 'a-desempate');
   await host.getByRole('button', { name: /^Más cerca: / }).last().click();
