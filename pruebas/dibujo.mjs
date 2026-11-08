@@ -187,6 +187,17 @@ try {
   await host.getByRole('button', { name: '➕ Jugar otra vuelta' }).click();
   await host.getByText('Turno 2 de 8').waitFor({ timeout: 10000 });
   paso('Con el juego empezado, «Jugar otra vuelta» suma un turno más por equipo (4 → 8)');
+  // Tope: las palabras repartidas entre los equipos (30 / 4 = 7). Al llegar, el turno termina solo.
+  await host.getByRole('button', { name: '✏️ Empezar turno' }).click();
+  await host.getByText('máximo 7 palabras').waitFor({ timeout: 10000 });
+  for (let i = 0; i < 7; i++) {
+    await host.getByText(`${i} adivinadas`).waitFor({ timeout: 10000 });
+    await esperar(700);
+    await host.getByRole('button', { name: '✓ Adivinaron' }).click();
+  }
+  await tv.locator('.tv-mimica-lista li').nth(6).waitFor({ timeout: 10000 });
+  afirmar(!(await host.getByRole('button', { name: '✓ Adivinaron' }).count()), 'al llegar al tope el turno terminó solo');
+  paso('Tope: con 4 equipos, cada turno llega hasta 7 palabras y termina solo');
   await terminarJuego(host);
 
   const antes = await puntos(host);
