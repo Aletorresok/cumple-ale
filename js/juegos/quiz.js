@@ -9,6 +9,8 @@ import { mezclar, cuentaRegresiva, letraOpcion, toast, sonido, vibrar, idAzar } 
 
 const PUNTOS = 100;
 const PUNTOS_CASTIGO = 1;
+// Video que pasa en la tele antes de la primera pregunta del modo con castigo («Nosotros castigamos la ignorancia»).
+export const VIDEO_INTRO = 'video/trivia-intro.mp4';
 
 export default {
   id: 'quiz',
@@ -22,18 +24,21 @@ export default {
     const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: responden en voz alta y vos marcás bien o mal']], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
     const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 20);
+    const intro = h('input', { type: 'checkbox', id: 'cfg-intro', checked: true });
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
+        h('label', { class: 'fila nowrap' }, intro, h('span', null, '🎬 Antes de empezar, pasar el video «Nosotros castigamos la ignorancia» (solo con castigo)')),
         h('p', { class: 'muted chico' }, `Con castigo: nadie usa el celular. Cada equipo dice su respuesta en voz alta, vos marcás ✓ o ✗ y cada acierto vale ${PUNTOS_CASTIGO} punto. En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
       leer: () => {
         const banco = b.banco();
         if (!banco) return null;
-        return { banco, cantidad: Number(cant.valor()), segundos: Number(seg.valor()), modo: modo.valor() };
+        return { banco, cantidad: Number(cant.valor()), segundos: Number(seg.valor()), modo: modo.valor(), intro: intro.checked };
       },
     };
   },
 
-  async iniciar(sala, { banco, cantidad, segundos, modo = 'puntos' }) {
+  async iniciar(sala, { banco, cantidad, segundos, modo = 'puntos', intro = false }) {
+    const conIntro = intro && modo === 'castigo';
     let items = mezclar(itemsDe(banco, 'pregunta'));
     // Las preguntas marcadas como «sale siempre» entran aunque se sorteen menos.
     if (cantidad) {
@@ -47,10 +52,10 @@ export default {
     const id = idAzar();
     await sala.guardarPrivado({ juego: id, preguntas });
     await sala.iniciarJuego({
-      tipo: 'quiz', fase: 'pregunta', n: 0, total: preguntas.length, titulo: banco.titulo, modo,
+      tipo: 'quiz', fase: conIntro ? 'intro' : 'pregunta', n: 0, total: preguntas.length, titulo: banco.titulo, modo,
       marcas: {},
       pregunta: preguntas[0].pregunta, opciones: preguntas[0].opciones,
-      duracion: segundos * 1000, terminaEn: Date.now() + segundos * 1000,
+      duracion: segundos * 1000, terminaEn: conIntro ? 0 : Date.now() + segundos * 1000,
     }, id);
   },
 
@@ -111,6 +116,12 @@ export default {
       try { await sala.actualizarJuego({ ['marcas.' + eid]: nueva }); } catch (e) { toast(e.message, 'error'); }
     }
 
+    const empezar = async () => {
+      const j = sala.juego;
+      if (j.fase !== 'intro') return;
+      try { await sala.actualizarJuego({ fase: 'pregunta', terminaEn: Date.now() + j.duracion }); } catch (e) { toast(e.message, 'error'); }
+    };
+
     let contador, reloj, marcasEl;
     const v = vista({
       clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!privado}`,
@@ -118,6 +129,12 @@ export default {
         const j = sala.juego;
         marcasEl = null;
         if (!privado) { montar(el, esperando('Cargando el quiz…')); return; }
+        if (j.fase === 'intro') {
+          montar(el, h('p', null, '🎬 En la tele está pasando «Nosotros castigamos la ignorancia».'),
+            h('p', { class: 'muted chico' }, 'Cuando termine, largá la primera pregunta.'),
+            h('button', { class: 'btn grande', onclick: empezar }, '⚡ Empezar la trivia'));
+          return;
+        }
         if (j.fase === 'fin') {
           montar(el, h('h3', null, '¡Terminó el quiz!'), ranking(sala));
           return;
@@ -184,6 +201,7 @@ export default {
           montar(el, h('h2', null, '¡Terminó el quiz!'), ranking(sala));
           return;
         }
+        if (j.fase === 'intro') { montar(el, esperando('📺 ¡Miren la tele!', 'Ya empieza la trivia.')); return; }
         const pe = j.porEquipo?.[miEquipo()];
         // Con castigo nadie usa el celular: discuten mirando la tele y uno responde en voz alta.
         if (j.modo === 'castigo') {
@@ -250,6 +268,12 @@ export default {
         if (j.fase === 'fin') {
           sonido('fin');
           montar(el, h('div', { class: 'tv-centro' }, h('h1', { class: 'tv-titulo' }, '¡Terminó el quiz!'), ranking(sala)));
+          return;
+        }
+        if (j.fase === 'intro') {
+          const video = h('video', { class: 'tv-video', src: VIDEO_INTRO, autoplay: true, playsinline: true });
+          video.play?.().catch(() => { video.muted = true; video.play().catch(() => {}); });
+          montar(el, h('div', { class: 'tv-video-marco' }, video));
           return;
         }
         const castigo = j.modo === 'castigo';
