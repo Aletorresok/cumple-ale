@@ -871,3 +871,11 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .in-logo { height: 1.4em; width: auto; vertical-align: middle; margin-right: .35em; }
 .in-equipo { display: inline-flex; align-items: center; }
 .tv-grupo-cab .logo-eq, .marcador .logo-eq { height: 1.8em; max-width: 2.8em; }
+
+/* Dibujá en Springfield · modo pizarra */
+.dibujo-pizarra { padding-top: 1em; gap: 1.2em; }
+.dibujo-palabra.enorme { font-size: clamp(2rem, 11vw, 3.4rem); padding: .6em .3em; border-radius: 18px; background: var(--surface2, rgba(0,0,0,.06)); }
+.tv-pizarra .tv-dibujo-datos { justify-content: center; gap: 3em; font-size: 1.4em; margin: .4em 0; }
+.tv-pizarra-cartel { min-height: 5em; width: min(80vw, 900px); margin: 0 auto; }
+.tv-pizarra-cartel { display: flex; justify-content: center; align-items: center; }
+.tv-pizarra-cartel .tv-dibujo-cartel { position: static; transform: none; margin: 0 auto; }
