@@ -164,12 +164,24 @@ try {
 
   // ── Selección de equipos ──
   await elegirJuego(host, 'Selección de equipos');
-  await host.getByRole('button', { name: 'Empezar la ceremonia' }).click();
+  // El anfitrión elige a quién y a qué equipo lo manda.
+  const quien = await host.locator('#sel-quien option').nth(1).textContent();
+  await host.locator('#sel-quien').selectOption({ label: quien });
+  const destino = (await host.locator('.tarjeta .pildora-boton').nth(2).textContent()).replace(/ \(\d+\)$/, '');
+  await host.locator('.tarjeta .pildora-boton').nth(2).click();
   await esperar(1200);
   await captura(tv, '2-seleccion-girando');
-  await host.getByRole('button', { name: 'Siguiente invitado' }).waitFor({ timeout: 10000 });
-  await host.locator('.tarjeta.suave .pildora').waitFor();
+  await host.locator('.tarjeta.suave .pildora').waitFor({ timeout: 10000 });
+  afirmar((await host.locator('.tarjeta.suave .grande').textContent()) === quien, `pasa el elegido a mano (${quien})`);
+  afirmar((await host.locator('.tarjeta.suave .pildora').textContent()).includes(destino), `va al equipo elegido a mano (${destino})`);
+  await tv.getByText(destino, { exact: false }).first().waitFor();
+  paso(`Selección a mano: ${quien} → ${destino}`);
   await captura(tv, '3-seleccion-revelado');
+  // Y uno que decide la suerte.
+  await host.getByRole('button', { name: /Que decida la suerte/ }).click();
+  await host.getByText('Eligiendo equipo para').waitFor();
+  await host.getByText('Quedó en').waitFor({ timeout: 10000 });
+  afirmar((await host.locator('.tarjeta.suave .grande').textContent()) !== quien, 'la suerte eligió a otro invitado');
   await host.getByRole('button', { name: /Repartir a todos/ }).click();
   await host.getByText('¡Equipos armados!').waitFor();
   for (const p of invitados) await p.locator('.resultado.mi-equipo').waitFor({ timeout: 15000 });

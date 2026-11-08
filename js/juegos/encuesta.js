@@ -34,7 +34,7 @@ const STRIKES = 3;
 const CAMPOS = ['fase', 'reveladas', 'strikes', 'turno', 'duenio', 'pozo', 'paso', 'ultimo', 'gano', 'todas',
   'terminaEn', 'duelo', 'responde', 'giro', 'mult', 'par', 'proximo', 'historial', 'pts', 'desempate'];
 
-// Cómo va la ronda en modo alternado: «Krusty Burger 3 · Planta Nuclear 1».
+// Cómo va la ronda en modo alternado: «Los Magios 3 · Los Borbotones 1».
 export function marcadorRonda(sala, j) {
   return (j.par || []).map((e) => `${sala.equipo(e)?.nombre || e} ${j.pts?.[e] || 0}`).join(' · ');
 }
@@ -135,7 +135,7 @@ function checksEquipos(sala) {
   return sala.equipos().map((e) => ({ e, input: h('input', { type: 'checkbox', id: 'cfg-eq-' + e.id, checked: !conGente.length || conGente.includes(e.id) }) }));
 }
 
-// «Krusty Burger vs Planta Nuclear», con el nombre de quien pasa al frente debajo.
+// «Los Magios vs Los Borbotones», con el nombre de quien pasa al frente debajo.
 function frente(sala, j, { tv = false } = {}) {
   const lado = (eid) => {
     const rep = j.duelo?.reps?.[eid];
