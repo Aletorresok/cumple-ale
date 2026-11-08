@@ -86,6 +86,14 @@ const paso = (t) => console.log(`· ${t}`);
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 function afirmar(cond, texto) { if (!cond) throw new Error('Falló: ' + texto); }
 
+// La pregunta arranca oculta en la tele: quien organiza la muestra después de leerla.
+async function mostrarPregunta(host) {
+  const b = host.getByRole('button', { name: '📺 Mostrar la pregunta en la tele' });
+  await b.waitFor({ timeout: 15000 });
+  await b.click();
+  await b.waitFor({ state: 'detached', timeout: 10000 });
+}
+
 async function elegirJuego(host, nombre, preparar) {
   await host.locator('.juego-tarjeta', { hasText: nombre }).click();
   await preparar?.();
@@ -142,6 +150,7 @@ try {
     await host.locator('#cfg-pulsador').selectOption('celular');
     await host.locator('#cfg-reglas').selectOption('clasico');
   });
+  await mostrarPregunta(host);
 
   // ── Ronda 1: todo desde los celulares ──
   await tv.locator('.duelo.en-tv').waitFor({ timeout: 15000 });
@@ -186,21 +195,26 @@ try {
   // ── Ronda 2: todo marcado a mano desde el panel ──
   await host.getByText('Próximo cara a cara').waitFor();
   await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+  await mostrarPregunta(host);
   await host.getByRole('button', { name: /^Pulsó / }).first().click();
   await host.getByRole('button', { name: 'Acertó' }).first().click();
   await host.getByRole('button', { name: /^Juega / }).click();
   const antes2 = await puntos(host);
-  while (await host.getByRole('button', { name: 'Acertó' }).count()) {
-    await host.getByRole('button', { name: 'Acertó' }).first().click();
-    await esperar(700);
+  // Acierta todo el tablero (el panel se redibuja después de cada toque: se espera el botón de nuevo).
+  for (let k = 0; k < 12 && !(await host.getByText(/se lleva \d+ puntos/).count()); k++) {
+    const boton = host.getByRole('button', { name: 'Acertó' }).first();
+    await Promise.race([boton.waitFor({ timeout: 5000 }), host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 5000 })]).catch(() => {});
     if (await host.getByText(/se lleva \d+ puntos/).count()) break;
+    await boton.click().catch(() => {});
+    await esperar(700);
   }
-  await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 });
+  await host.getByText(/se lleva \d+ puntos/).waitFor({ timeout: 10000 }).catch(async (e) => { await host.screenshot({ path: '/tmp/claude-0/-home-claude-cumple-ale/41f68cc2-21c7-5885-9bd2-9f1fde8ce030/scratchpad/fallo-r2.png' }); throw e; });
   afirmar(await puntos(host) > antes2, 'el tablero completo sumó');
   paso('Ronda 2 (panel): ' + await host.locator('p.grande').first().textContent());
 
   // ── Ronda 3: vale doble; nadie acierta en el cara a cara, pasan otros dos ──
   await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+  await mostrarPregunta(host);
   await tv.locator('.doble').waitFor({ timeout: 10000 });
   await host.getByRole('button', { name: /^Pulsó / }).first().click();
   await host.getByRole('button', { name: '✗ No está en el tablero' }).click();
@@ -237,6 +251,7 @@ try {
     await host.locator('.cfg-pregunta-banco input').nth(2).check();
     await host.locator('.cfg-pregunta-banco input').nth(0).check();
   });
+  await mostrarPregunta(host);
   await tv.getByText('¡A explotar el globo!').waitFor({ timeout: 15000 });
   afirmar((await tv.locator('.tv-pregunta').textContent()).includes('lugar de Springfield'), 'sale primero la pregunta elegida primero');
   await captura(tv, 'f-a-explotar');
@@ -273,7 +288,7 @@ try {
       afirmar(sel.includes('personaje'), `la próxima sugerida es la segunda elegida (${sel})`);
       await host.locator('#prox-pregunta').selectOption({ label: 'Nombrá un invitado famoso de Los Simpson' });
     }
-    if (r < 4) await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+    if (r < 4) { await host.getByRole('button', { name: 'Siguiente ronda →' }).click(); await mostrarPregunta(host); }
     if (r === 1) await tv.getByText('Nombrá un invitado famoso de Los Simpson').waitFor({ timeout: 10000 });
   }
   const mismos = (a, b) => [...a].sort().join() === [...b].sort().join();
@@ -288,6 +303,7 @@ try {
   await elegirJuego(host, 'Los invitados dicen', async () => {
     await host.locator('#cfg-seg').selectOption('0');
   });
+  await mostrarPregunta(host);
   await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
   const eqA = (await host.getByRole('button', { name: /^Explotó / }).first().textContent()).replace(/^Explotó\s*/, '').trim();
   await host.getByRole('button', { name: /^Explotó / }).first().click();
@@ -308,6 +324,7 @@ try {
   afirmar((await tv.locator('.cas-pts').first().textContent()).includes('👥'), 'al revelar se ve cuántas personas la dijeron');
   // Ronda empatada (1 a 1) que se cierra a mano: desempate por aproximación.
   await host.getByRole('button', { name: 'Siguiente ronda →' }).click();
+  await mostrarPregunta(host);
   await host.getByRole('button', { name: /^Explotó / }).first().waitFor({ timeout: 15000 });
   afirmar(!(await tv.getByText('puntos dobles').count()), 'en modo alternado no hay ronda doble');
   await host.getByRole('button', { name: /^Explotó / }).first().click();
