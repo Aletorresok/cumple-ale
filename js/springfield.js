@@ -9,7 +9,7 @@ export const PALABRAS_DIBUJO = [
   'Una dona', 'Una lata de cerveza', 'El Puerco Araña', 'Un gato', 'Un perro', 'Una patineta', 'Un saxofón',
   'Un chupete', 'Un pez de tres ojos', 'La planta nuclear', 'El pelo de Marge', 'Un sillón', 'Una chuleta',
   'Un pizarrón', 'Un astronauta', 'Un collar de perlas', 'Un rastrillo', 'Una hamaca', 'Una dentadura',
-  'Un patrullero', 'Un ojo morado', 'Una ensalada', 'Una gomera', 'Un bigote', 'Unos anteojos', 'Un payaso',
+  'Un patrullero', 'Una hamburguesa', 'Una ensalada', 'Una gomera', 'Un bigote', 'Unos anteojos', 'Un payaso',
   'Una abeja', 'Un auto', 'Un televisor', 'Una estatua',
 ];
 
