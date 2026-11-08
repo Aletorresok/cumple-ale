@@ -163,9 +163,9 @@ try {
   const nombres = Object.keys(porEquipo);
   afirmar(nombres.length === 4, 'hay cuatro equipos con gente');
   const listas = [
-    ['tifany', 'Cody', 'dilan', 'Brittney', 'kiubert', 'Zoey', 'Max', 'Noa', 'Phil', 'Mario'],   // 9 bien + 1 inventado
-    ['Heather', 'Cody', 'Cody', 'Hunter', 'Kira', 'Wesley'],                                       // 5 (una repetida)
-    ['Tiffany', 'Taylor', 'Pepe'],                                                                  // 2 + Pepe (se acepta a mano no: queda afuera)
+    ['sabina', 'Honoria', 'transito', 'Higinio', 'Ufano', 'hilario', 'Jacinta', 'Candido', 'Teodosia', 'Mario'],   // 9 bien + 1 inventado
+    ['Gervasia', 'Epifanio', 'Epifanio', 'Gaudelia', 'Eufemio', 'Eustaquio'],                                    // 5 (una repetida)
+    ['Sabina', 'Celso', 'Pepe'],                                                                  // 2 + Pepe (se acepta a mano no: queda afuera)
     [],                                                                                             // no escribe nada
   ];
   const esperado = [9, 5, 2, 0];
@@ -196,15 +196,15 @@ try {
   const cuenta = async (eq) => Number((await host.locator('.escena-equipo', { hasText: eq }).locator('b').first().textContent()).split(' ')[0]);
   for (const [k, eq] of nombres.entries()) afirmar(await cuenta(eq) === esperado[k], `${eq} reconoce ${esperado[k]} (${await cuenta(eq)})`);
   afirmar(await host.locator('.escena-equipo', { hasText: nombres[0] }).getByText('Mario').count() === 1, 'lo inventado queda sin reconocer');
-  // A mano: el equipo 3 dijo «Pepe» queriendo decir Dermot (se acepta) y al equipo 1 se le saca Phil.
-  await host.locator('.escena-equipo', { hasText: nombres[2] }).getByRole('button', { name: 'Dermot', exact: true }).click();
-  await host.locator('.escena-equipo', { hasText: nombres[0] }).getByRole('button', { name: '✓ Phil' }).click();
+  // A mano: el equipo 3 dijo «Pepe» queriendo decir Tiburcio (se acepta) y al equipo 1 se le saca Teodosia.
+  await host.locator('.escena-equipo', { hasText: nombres[2] }).getByRole('button', { name: 'Tiburcio', exact: true }).click();
+  await host.locator('.escena-equipo', { hasText: nombres[0] }).getByRole('button', { name: '✓ Teodosia' }).click();
   await esperar(400);
   afirmar(await cuenta(nombres[2]) === 3 && await cuenta(nombres[0]) === 8, 'los cambios a mano cuentan');
   await captura(host, 'e1-revisar');
   await host.getByRole('button', { name: '📺 Revelar en la tele' }).click();
   await tv.locator('.tv-escena-items li').first().waitFor();
-  afirmar(await tv.locator('.tv-escena-items li').count() === 27, 'la tele muestra los 27 hijos');
+  afirmar(await tv.locator('.tv-escena-items li').count() === 25, 'la tele muestra los 25 hijos');
   await esperar(7500);
   await captura(tv, 'e1-revelada');
   const pts = await host.locator('.equipo-pts').allTextContents();
@@ -212,7 +212,7 @@ try {
   // Cleto pide 5 nombres: los que llegan (8 y 5) aciertan y empatan primeros; 3 y 0 no.
   afirmar(total === 100 + 100, `con mínimo de 5, los dos que llegan empatan primeros: 100+100 (${pts})`);
   const cel = porEquipo[nombres[0]][0];
-  await cel.getByText('8 de 27').waitFor();
+  await cel.getByText('8 de 25').waitFor();
   await captura(cel, 'e1-celular-resultado');
   paso(`Escena 1 revelada: ${nombres.map((e, k) => `${e} ${[8, 5, 3, 0][k]}`).join(', ')} → ${pts.join(' / ')}`);
   await medir('Escena 1: revisar y revelar');
