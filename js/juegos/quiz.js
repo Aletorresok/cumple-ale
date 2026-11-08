@@ -183,7 +183,9 @@ export default {
             return equipos.size > 0 && [...equipos].every((e) => votaron.has(e));
           })()
           : total > 0 && resp >= total;
-        if (listos) setTimeout(revelar, 800);
+        // Se revela un instante después, solo si sigue siendo la misma pregunta (si quien organiza
+        // ya pasó a la siguiente, este aviso viejo no tiene que revelar la nueva).
+        if (listos) { const n = j.n; setTimeout(() => { if (sala.juego?.n === n) revelar(); }, 800); }
       },
     });
     return v;

@@ -5,15 +5,12 @@ import { misBancos, borrarBanco, guardarBanco, editorBanco, resumenBanco, itemsD
 import { BANCO_FIESTA } from './ejemplos.js';
 import { TRIVIAS } from './trivias.js';
 import { BANCO_SPRINGFIELD } from './springfield.js';
-import { BANCO_HUTZ } from './expedientes.js';
 import { JUEGOS, juego as buscarJuego } from './juegos/index.js';
 import { pildoraEquipo } from './juegos/comun.js';
 import { h, montar, toast, confirmar, hoja, urlApp, mezclar, idAzar, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { imprimirRespaldo } from './respaldo.js';
 import { panelEscaleta } from './escaleta.js';
-import { panelBotonera } from './botonera.js';
-import { panelNarrador } from './narrador.js';
 import { mantenerPantalla, latidoPanel } from './presencia.js';
 
 const SESION = idAzar(10); // identifica esta pestaña para que un solo dispositivo controle la sala
@@ -122,7 +119,6 @@ async function inicio(raiz, docente) {
     const trivias = TRIVIAS.map((t) => agregar(t, `⚡ ${t.titulo}`, 'Trivia agregada')).filter(Boolean);
     const catalogo = [
       agregar(BANCO_SPRINGFIELD, '🍩 Agregar el banco Springfield', 'Banco Springfield agregado'),
-      agregar(BANCO_HUTZ, '⚖️ Agregar los escapes de Lionel Hutz', 'Escapes de Lionel Hutz agregados'),
       agregar(BANCO_FIESTA, '🎉 Agregar el banco de ejemplo', 'Banco de ejemplo agregado'),
       trivias.length > 0 && h('div', { class: 'pila-s' },
         h('span', { class: 'muted chico' }, 'Propuestas de temática para la trivia (unas 15 preguntas cada una):'),
@@ -167,8 +163,6 @@ function panelSala(raiz, docente, codigo) {
   const zonaJuego = h('section', { class: 'tarjeta pila' });
   const zonaEquipos = h('section', { class: 'tarjeta pila' });
   const piezas = panelPiezas(sala, () => bancos);
-  const botonera = panelBotonera(sala);
-  const narrador = panelNarrador(sala);
   const escaleta = panelEscaleta(sala, { abrirJuego: (def) => configurarJuego(def) });
   const contadorAlumnos = h('span', null, '0');
   let entrada;
@@ -192,11 +186,8 @@ function panelSala(raiz, docente, codigo) {
             } }, 'Copiar enlace'),
             h('a', { class: 'btn-link', href: urlApp('?diagnostico=' + codigo), target: '_blank', rel: 'noopener' }, '🩺 Diagnóstico')))),
       escaleta.el,
-      botonera.el,
-      narrador.el,
       zonaJuego,
       zonaEquipos,
-      piezas.el,
       h('div', { class: 'fila entre' },
         h('button', { class: 'btn-link', onclick: salirAlInicio }, '← Volver al inicio (la sala sigue abierta)'),
         h('button', { class: 'btn-link peligro', onclick: async () => {
@@ -217,7 +208,7 @@ function panelSala(raiz, docente, codigo) {
   sala.escuchar({ jugadores: true, respuestas: true }, (motivo) => {
     contadorAlumnos.textContent = sala.activos().length;
     if (motivo === 'jugadores' || motivo === 'sala') pedirAsignar();
-    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); narrador.refrescar(); }
+    if (motivo !== 'respuestas') { dibujarEquipos(); piezas.refrescar(); escaleta.refrescar(); }
     dibujarJuego(motivo);
   }, () => salirAlInicio());
 
