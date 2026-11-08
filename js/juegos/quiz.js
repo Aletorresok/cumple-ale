@@ -21,7 +21,7 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
-    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: responden en voz alta y vos marcás bien o mal']], 'castigo');
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Trivia japonesa (con castigo): responden en voz alta y vos marcás bien o mal']], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
     const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 20);
     const intro = h('input', { type: 'checkbox', id: 'cfg-intro', checked: true });
@@ -285,7 +285,9 @@ export default {
         cruz = h('div', { class: 'tv-cruz', 'aria-hidden': 'true' });
         montar(el,
           h('div', { class: 'tv-cabecera' },
-            h('span', { class: 'tv-etiqueta' }, `${j.titulo || 'Quiz'} · Pregunta ${j.n + 1} de ${j.total}`),
+            castigo
+              ? h('div', { class: 'tv-trivia-nombre' }, h('b', null, '⚡ Trivia japonesa'), h('span', null, 'Treinta minutos sobre Tokio'), h('small', null, `Pregunta ${j.n + 1} de ${j.total}`))
+              : h('span', { class: 'tv-etiqueta' }, `${j.titulo || 'Quiz'} · Pregunta ${j.n + 1} de ${j.total}`),
             !revelada && reloj),
           h('div', { class: 'tv-pregunta' }, j.pregunta),
           h('div', { class: 'tv-opciones' }, j.opciones.map((o, i) =>
