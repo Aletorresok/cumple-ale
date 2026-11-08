@@ -14,7 +14,6 @@ export const ESCALETA = [
   { icono: '📺', titulo: 'Pausa · Noticiero de Springfield', pantalla: 'noticiero', nota: 'Comida. La tele pasa el noticiero con lo que va de la noche. Podés mandar avisos.', decir: 'A comer. En la tele pasa el noticiero de Springfield con cómo va la noche.' },
   { icono: '⚡', titulo: 'Trivia japonesa', juego: 'quiz', nota: 'Trivia japonesa · Treinta minutos sobre Tokio. Modo «Con castigo»: arranca con el video «Nosotros castigamos la ignorancia» (cuando termina, tocás «Empezar la trivia»). 8 preguntas, 20 segundos. Nadie usa el celular: cada equipo dice su respuesta en voz alta y vos marcás ✓ o ✗. Al que se equivoca le sale la cruz en la tele (el castigo va por fuera). La del contrato sale siempre.', decir: 'Miren la tele y discutan en equipo. Cuando termine el tiempo, uno de cada equipo dice la respuesta en voz alta. Cada acierto vale 1 punto. El que se equivoca… ya va a ver.' },
   { icono: '📼', titulo: '¿Te acordás de la escena?', juego: 'escenas', nota: 'Cargá tus videos en «🎬 Cargar una escena con video». Cada uno pasa una vez, después la pregunta. Responden en voz alta y vos tocás lo que dijeron bien: 1 punto cada cosa.', decir: 'Miren bien la escena: pasa una sola vez. Después viene la pregunta: junten en equipo todo lo que se acuerden y díganlo en voz alta. Cada cosa vale 1 punto.' },
-  { icono: '🎂', titulo: 'Feliz cumpleaños', pantalla: 'cumple', nota: 'Apagá las luces, que traigan la torta, subí el volumen y tocá el botón de la torta 🎂. La tele pasa el video de los Ramones y vuelve sola al QR.', decir: '¡Que traigan la torta! Canten con los Ramones.' },
   { icono: '🏆', titulo: 'Podio y sentencias', juego: 'podio', nota: 'Del último al campeón. Al final cada uno ve su sentencia en el celular.', decir: 'Revelamos el podio. Después miren el celular: Hutz dictó una sentencia para cada uno.' },
 ];
 
@@ -33,7 +32,7 @@ export function panelEscaleta(sala, { abrirJuego }) {
     const enJuego = !!sala.juego;
     const noticiero = sala.data.pantalla === 'noticiero';
     const enIntro = sala.data.pantalla === 'intro';
-    const k = `${n}:${enJuego}:${noticiero}:${enIntro}:${sala.data.introT || 0}:${sala.data.pantalla}:${sala.data.cumpleT || 0}:${sala.data.avisoTv || ''}`;
+    const k = `${n}:${enJuego}:${noticiero}:${enIntro}:${sala.data.introT || 0}:${(sala.data.cumpleT || 0) > (sala.data.cumpleFin || 0)}:${sala.data.avisoTv || ''}`;
     if (k === clave) return;
     clave = k;
     const p = ESCALETA[n];
@@ -43,6 +42,10 @@ export function panelEscaleta(sala, { abrirJuego }) {
       h('div', { class: 'fila entre' },
         h('h2', null, '🗓 La noche, paso a paso'),
         h('span', { class: 'muted chico mono' }, `${n + 1} de ${ESCALETA.length}`)),
+      // Feliz cumpleaños: en cualquier momento, aunque haya un juego en curso.
+      (sala.data.cumpleT || 0) > (sala.data.cumpleFin || 0) && Date.now() - sala.data.cumpleT < 60000
+        ? h('button', { class: 'btn sec', onclick: () => sala.actualizar({ cumpleFin: Date.now() }).catch((e) => toast(mensajeError(e), 'error')) }, '⏹ Cortar el feliz cumpleaños')
+        : h('button', { class: 'btn', onclick: () => sala.actualizar({ cumpleT: Date.now() }).catch((e) => toast(mensajeError(e), 'error')) }, '🎂 Feliz cumpleaños en la tele'),
       h('div', { class: 'escaleta-actual' },
         h('div', { class: 'escaleta-icono' }, p.icono),
         h('div', { class: 'pila-s' },
@@ -57,9 +60,6 @@ export function panelEscaleta(sala, { abrirJuego }) {
         p.pantalla === 'intro' && !enJuego && h('button', { class: enIntro ? 'btn sec' : 'btn', onclick: () => sala.actualizar({ pantalla: 'intro', introT: Date.now() }).catch((e) => toast(mensajeError(e), 'error')) },
           enIntro ? '↻ Repetir la intro' : '🎬 Poner la intro'),
         p.pantalla === 'intro' && enIntro && h('button', { class: 'btn sec', onclick: () => pantalla(null) }, 'Volver al QR en la tele'),
-        p.pantalla === 'cumple' && !enJuego && h('button', { class: 'btn', onclick: () => sala.actualizar({ pantalla: 'cumple', cumpleT: Date.now() }).catch((e) => toast(mensajeError(e), 'error')) },
-          sala.data.pantalla === 'cumple' ? '↻ Repetir el feliz cumpleaños' : '🎂 Poner el feliz cumpleaños'),
-        p.pantalla === 'cumple' && sala.data.pantalla === 'cumple' && h('button', { class: 'btn sec', onclick: () => pantalla(null) }, 'Volver al QR en la tele'),
         h('button', { class: 'btn sec', disabled: n === 0, onclick: () => ir(n - 1) }, '←'),
         h('button', { class: 'btn sec', disabled: n === ESCALETA.length - 1, onclick: () => ir(n + 1) }, 'Siguiente paso →')),
       (noticiero || p.pantalla === 'noticiero') && h('form', { class: 'fila', onsubmit: (ev) => {

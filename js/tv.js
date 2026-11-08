@@ -7,7 +7,7 @@ import { h, montar, urlApp, sonido, bandaConexion } from './util.js';
 import { qr } from './qr.js';
 import { noticiero } from './noticiero.js';
 import { intro, pararIntro } from './intro.js';
-import { cumple } from './cumple.js';
+import { vigilarCumple } from './cumple.js';
 import { mantenerPantalla, vigilarPanel } from './presencia.js';
 
 export async function iniciarTv(raiz, codigoUrl) {
@@ -54,8 +54,9 @@ export async function iniciarTv(raiz, codigoUrl) {
         vistaJuego = buscarJuego(j.tipo)?.tv(zona, sala) || null;
       }
     }
+    vigilarCumple(sala);
     if (j || sala.data.pantalla !== 'intro') pararIntro();
-    if (!j) ({ noticiero, intro, cumple }[sala.data.pantalla] || espera)(escena, sala, espera);
+    if (!j) ({ noticiero, intro }[sala.data.pantalla] || espera)(escena, sala, espera);
     else vistaJuego?.actualizar(motivo);
     const sinMarcador = !j || buscarJuego(j.tipo)?.sinMarcador;
     montar(pie, sinMarcador ? null : marcador(sala));
