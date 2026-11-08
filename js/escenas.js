@@ -47,13 +47,10 @@ export const ESCENAS = [
     fija: true,
     minimo: 5,   // con 5 nombres, la respuesta es correcta
     items: [
-      ['Tiffany', 'Tifany', 'Tiffani'], ['Heather', 'Heder', 'Hether'], ['Cody', 'Kody', 'Codi'],
-      ['Dylan', 'Dilan'], ['Dermot', 'Dermott'], ['Jacob', 'Jakob', 'Yacob'], ['Jordan', 'Jordán'], ['Taylor', 'Tailor', 'Teylor'],
-      ['Brittany', 'Britany', 'Britney', 'Brittney'], ['Wesley', 'Wesly', 'Uesley'], ['Rumer', 'Rumor', 'Rummer'],
-      ['Scout', 'Skaut', 'Scaut'], ['Cassidy', 'Casidy', 'Cassidi'], ['Zoe', 'Zoey', 'Zoé'], ['Chloe', 'Cloe', 'Cloé', 'Kloe'],
-      ['Max'], ['Hunter', 'Jonter', 'Hanter'], ['Kendall', 'Kendal'], ['Caitlin', 'Katlin', 'Kaitlin', 'Kaitlyn', 'Catlin'],
-      ['Noah', 'Noa', 'Noé'], ['Sasha', 'Sacha'], ['Morgan'], ['Kyra', 'Kira', 'Kaira'], ['Ian', 'Ían'],
-      ['Lauren', 'Loren'], ['Q-bert', 'Qbert', 'Kiubert', 'Cubert', 'Q bert'], ['Phil', 'Fil'],
+      ['Sabina'], ['Honoria'], ['Tránsito', 'Transito'], ['Higinio'], ['Ufano'], ['Hilario'], ['Jacinta'], ['Cándido', 'Candido'],
+      ['Teodosia'], ['Cástulo', 'Castulo'], ['Gervasia'], ['Epifanio'], ['Gaudelia'], ['Eufemio'], ['Eustaquio'], ['Brígida', 'Brigida'],
+      ['Melitón', 'Meliton'], ['Leonila'], ['Nicanor'], ['Martina'], ['Régulo', 'Regulo'], ['Teodora'], ['Teódulo', 'Teodulo'],
+      ['Tiburcio'], ['Celso'],
     ],
   },
   {
