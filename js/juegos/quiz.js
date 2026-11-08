@@ -1,48 +1,14 @@
-// Quiz por equipos: todos responden desde el celular. Dos modos:
-//  · puntos: suma cada equipo según qué proporción de sus integrantes acertó.
-//  · castigo (estilo programa japonés): cada integrante vota, la opción más votada es la
-//    respuesta del equipo (si empatan, desempata el capitán de la pregunta) y el equipo que
-//    se equivoca paga una prenda.
+// Quiz por equipos. Dos modos:
+//  · puntos: todos responden desde el celular; cada equipo suma según qué proporción acertó.
+//  · castigo: sin celulares. Cada equipo discute en voz alta y uno dice la respuesta; quien
+//    organiza marca bien o mal por equipo. Al que se equivoca le sale una cruz roja en la tele
+//    (el castigo va por fuera de la app). Cada acierto vale 1 punto.
 import { h, montar, vista, selectorBanco, selector, pildoraEquipo, ranking, esperando } from './comun.js';
 import { itemsDe } from '../bancos.js';
 import { mezclar, cuentaRegresiva, letraOpcion, toast, sonido, vibrar, idAzar } from '../util.js';
 
 const PUNTOS = 100;
-
-// Prendas suaves y de tema; todas tienen versión sin alcohol.
-export const PRENDAS = [
-  'Todo el equipo toma un trago de Duff (o de Buzz Cola).',
-  'Todo el equipo grita «¡Ay, caramba!» con voz de Bart.',
-  'Todo el equipo hace el «¡Doh!» de Homero a la vez.',
-  'Un integrante canta el tema de Los Simpson tarareando.',
-  'Un integrante come una dona sin usar las manos.',
-  'Todo el equipo imita la risa de Nelson: «¡Ja, ja!».',
-  'Un integrante imita al Sr. Burns diciendo «Excelente».',
-  'El equipo se saca una foto del sillón: se apiñan en el sofá más cercano.',
-  'Un integrante dice «Gracias, vuelva pronto» con acento de Apu.',
-  'Todo el equipo baila 10 segundos como Homero.',
-];
-
-// Elige al capitán de cada equipo para una pregunta: alguien conectado, al azar.
-function capitanes(sala) {
-  const out = {};
-  for (const e of sala.equipos()) {
-    const m = sala.miembrosActivos(e.id);
-    if (m.length) out[e.id] = mezclar(m)[0].uid;
-  }
-  return out;
-}
-
-// Respuesta del equipo: la opción más votada. Con empate gana la que votó el capitán; si no
-// votó ninguna de las empatadas, la primera. Sin votos no hay respuesta.
-export function respuestaDeEquipo(votos, voto_capitan) {
-  const cuenta = new Map();
-  votos.forEach((v) => cuenta.set(v, (cuenta.get(v) || 0) + 1));
-  if (!cuenta.size) return null;
-  const mayor = Math.max(...cuenta.values());
-  const empatadas = [...cuenta].filter(([, n]) => n === mayor).map(([v]) => v).sort((a, b) => a - b);
-  return empatadas.includes(voto_capitan) ? voto_capitan : empatadas[0];
-}
+const PUNTOS_CASTIGO = 1;
 
 export default {
   id: 'quiz',
@@ -53,12 +19,12 @@ export default {
 
   configurar({ bancos }) {
     const b = selectorBanco(bancos, 'pregunta', 1);
-    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: el equipo que se equivoca paga una prenda']], 'castigo');
+    const modo = selector('cfg-modo', 'Modo', [['puntos', 'Puntos por acierto'], ['castigo', 'Con castigo: responden en voz alta y vos marcás bien o mal']], 'castigo');
     const cant = selector('cfg-cantidad', 'Cantidad de preguntas', [[5, '5'], [8, '8'], [10, '10'], [15, '15'], [20, '20'], [0, 'Todas']], 8);
-    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 15);
+    const seg = selector('cfg-segundos', 'Tiempo por pregunta', [[15, '15 segundos'], [20, '20 segundos'], [30, '30 segundos'], [45, '45 segundos'], [60, '1 minuto'], [90, '1 minuto y medio']], 20);
     return {
       el: h('div', { class: 'pila' }, b.el, modo.el, h('div', { class: 'grilla-2' }, cant.el, seg.el),
-        h('p', { class: 'muted chico' }, `Cada equipo suma hasta ${PUNTOS} puntos por pregunta, según qué parte del equipo acertó (así no importa si un equipo tiene más integrantes).`)),
+        h('p', { class: 'muted chico' }, `Con castigo: nadie usa el celular. Cada equipo dice su respuesta en voz alta, vos marcás ✓ o ✗ y cada acierto vale ${PUNTOS_CASTIGO} punto. En «puntos», responden todos desde el celular y cada equipo suma hasta ${PUNTOS} según qué parte acertó.`)),
       leer: () => {
         const banco = b.banco();
         if (!banco) return null;
@@ -82,7 +48,7 @@ export default {
     await sala.guardarPrivado({ juego: id, preguntas });
     await sala.iniciarJuego({
       tipo: 'quiz', fase: 'pregunta', n: 0, total: preguntas.length, titulo: banco.titulo, modo,
-      capitanes: modo === 'castigo' ? capitanes(sala) : null,
+      marcas: {},
       pregunta: preguntas[0].pregunta, opciones: preguntas[0].opciones,
       duracion: segundos * 1000, terminaEn: Date.now() + segundos * 1000,
     }, id);
@@ -106,19 +72,18 @@ export default {
       const porEquipo = {};
       const sumas = {};
       for (const e of sala.equipos()) {
+        if (j.modo === 'castigo') {
+          // Responde el equipo en voz alta: vale lo que marcó quien organiza.
+          const acerto = j.marcas?.[e.id] === true;
+          porEquipo[e.id] = { marca: j.marcas?.[e.id] ?? null, acerto, pts: acerto ? PUNTOS_CASTIGO : 0 };
+          sumas[e.id] = porEquipo[e.id].pts;
+          continue;
+        }
         // Cuentan los que siguen conectados, o los que respondieron aunque ya se hayan ido.
         const miembros = sala.miembros(e.id).filter((m) => m.presente || resp.has(m.uid));
         const ok = miembros.filter((m) => resp.get(m.uid)?.valor === correcta).length;
-        let pts = miembros.length ? Math.round((PUNTOS * ok) / miembros.length) : 0;
+        const pts = miembros.length ? Math.round((PUNTOS * ok) / miembros.length) : 0;
         porEquipo[e.id] = { ok, n: miembros.length, pts };
-        if (j.modo === 'castigo') {
-          // Responde el equipo, no cada uno: la opción más votada decide.
-          const votos = miembros.map((m) => resp.get(m.uid)?.valor).filter((x) => Number.isInteger(x));
-          const elegida = respuestaDeEquipo(votos, resp.get(j.capitanes?.[e.id])?.valor);
-          const acerto = elegida === correcta;
-          pts = acerto ? PUNTOS : 0;
-          porEquipo[e.id] = { ok, n: miembros.length, pts, elegida, acerto, prenda: acerto || !miembros.length ? null : mezclar(PRENDAS)[0] };
-        }
         sumas[e.id] = pts;
       }
       try {
@@ -134,15 +99,24 @@ export default {
       await sala.actualizarJuego({
         fase: 'pregunta', n, pregunta: p.pregunta, opciones: p.opciones,
         terminaEn: Date.now() + j.duracion, correcta: undefined, conteo: undefined, porEquipo: undefined,
-        capitanes: j.modo === 'castigo' ? capitanes(sala) : null,
+        marcas: {},
       });
     }
 
-    let contador, reloj;
+    // Castigo: ✓ o ✗ por equipo (tocar de nuevo la misma marca la saca).
+    async function marcar(eid, valor) {
+      const j = sala.juego;
+      if (j.fase !== 'pregunta') return;
+      const nueva = j.marcas?.[eid] === valor ? null : valor;
+      try { await sala.actualizarJuego({ ['marcas.' + eid]: nueva }); } catch (e) { toast(e.message, 'error'); }
+    }
+
+    let contador, reloj, marcasEl;
     const v = vista({
       clave: () => `${sala.juego.fase}:${sala.juego.n}:${!!privado}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
+        marcasEl = null;
         if (!privado) { montar(el, esperando('Cargando el quiz…')); return; }
         if (j.fase === 'fin') {
           montar(el, h('h3', null, '¡Terminó el quiz!'), ranking(sala));
@@ -160,29 +134,37 @@ export default {
             j.fase === 'pregunta' && reloj),
           h('p', { class: 'pregunta-host' }, j.pregunta),
           opciones,
-          j.fase === 'pregunta'
+          j.fase === 'pregunta' && j.modo === 'castigo'
+            ? h('div', { class: 'pila' },
+              h('p', { class: 'muted chico' }, 'Cada equipo dice su respuesta en voz alta. Marcá ✓ o ✗: al que se equivoca le sale la cruz en la tele.'),
+              marcasEl = h('div', { class: 'pila-s' }),
+              h('button', { class: 'btn', onclick: revelar }, 'Revelar respuesta'))
+            : j.fase === 'pregunta'
             ? h('div', { class: 'fila entre' }, h('span', null, contador, ' respondieron'),
               h('button', { class: 'btn', onclick: revelar }, 'Revelar respuesta'))
             : h('div', { class: 'pila' },
               h('div', { class: 'fila' }, sala.equipos().map((e) => pildoraEquipo(e, ` +${j.porEquipo?.[e.id]?.pts ?? 0}`))),
-              ...sala.equipos().filter((e) => j.porEquipo?.[e.id]?.prenda).map((e) => h('p', { class: 'prenda' }, `🍩 ${e.nombre}: ${j.porEquipo[e.id].prenda}`)),
               h('button', { class: 'btn grande', onclick: siguiente }, j.n + 1 >= j.total ? 'Ver resultados' : 'Siguiente pregunta →')));
-        if (j.fase === 'pregunta') alLimpiar(cuentaRegresiva(reloj, j.terminaEn, { alTerminar: revelar }));
+        // Con castigo el reloj no revela solo: primero hay que escuchar y marcar a cada equipo.
+        if (j.fase === 'pregunta') alLimpiar(cuentaRegresiva(reloj, j.terminaEn, j.modo === 'castigo' ? {} : { alTerminar: revelar }));
       },
       refrescar() {
         const j = sala.juego;
+        if (marcasEl) {
+          montar(marcasEl, sala.equipos().map((e) => {
+            const m = j.marcas?.[e.id];
+            return h('div', { class: 'fila entre' }, pildoraEquipo(e),
+              h('div', { class: 'fila' },
+                h('button', { class: 'btn' + (m === true ? ' ok' : ' sec'), onclick: () => marcar(e.id, true) }, '✓ Bien'),
+                h('button', { class: 'btn' + (m === false ? ' peligro' : ' sec'), onclick: () => marcar(e.id, false) }, '✗ Mal')));
+          }));
+          return;
+        }
         if (!privado || j.fase !== 'pregunta' || !contador) return;
         const total = participantes().length;
         const resp = [...sala.respuestasJuego(j.n).keys()].filter((uid) => sala.data.asignaciones?.[uid] && sala.presente(uid)).length;
         contador.textContent = `${resp}/${total}`;
-        // Con castigo vota uno por equipo: alcanza con que cada equipo con gente haya votado.
-        const listos = j.modo === 'castigo'
-          ? (() => {
-            const votaron = new Set([...sala.respuestasJuego(j.n).keys()].map((uid) => sala.data.asignaciones?.[uid]).filter(Boolean));
-            const equipos = new Set(participantes().map((p) => p.equipo));
-            return equipos.size > 0 && [...equipos].every((e) => votaron.has(e));
-          })()
-          : total > 0 && resp >= total;
+        const listos = total > 0 && resp >= total;
         // Se revela un instante después, solo si sigue siendo la misma pregunta (si quien organiza
         // ya pasó a la siguiente, este aviso viejo no tiene que revelar la nueva).
         if (listos) { const n = j.n; setTimeout(() => { if (sala.juego?.n === n) revelar(); }, 800); }
@@ -193,30 +175,40 @@ export default {
 
   alumno(el, sala) {
     const elegida = {};
-    const votoYo = new Set();
     const miEquipo = () => sala.data.asignaciones?.[sala.uid];
-    const dibujarDeNuevo = () => v.actualizar();
     const v = vista({
-      clave: () => `${sala.juego.fase}:${sala.juego.n}:${votoYo.has(sala.juego.n)}`,
+      clave: () => `${sala.juego.fase}:${sala.juego.n}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         if (j.fase === 'fin') {
           montar(el, h('h2', null, '¡Terminó el quiz!'), ranking(sala));
           return;
         }
+        const pe = j.porEquipo?.[miEquipo()];
+        // Con castigo nadie usa el celular: discuten mirando la tele y uno responde en voz alta.
+        if (j.modo === 'castigo') {
+          if (j.fase === 'revelada') {
+            if (pe?.marca != null) vibrar(pe.acerto ? 60 : [60, 60, 60]);
+            montar(el, h('div', { class: 'resultado ' + (pe?.marca == null ? '' : pe.acerto ? 'bien' : 'mal') },
+              h('div', { class: 'resultado-titulo' }, pe?.marca == null ? 'Sin respuesta' : pe.acerto ? '¡Tu equipo acertó! +1' : '✗ Tu equipo se equivocó'),
+              h('p', null, 'La respuesta era ', h('b', null, `${letraOpcion(j.correcta)}. ${j.opciones[j.correcta]}`))));
+            return;
+          }
+          const reloj = h('span', { class: 'reloj' });
+          montar(el,
+            h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj),
+            esperando('👀 ¡Miren la tele!', 'Discutan en equipo y uno dice la respuesta en voz alta.'));
+          alLimpiar(cuentaRegresiva(reloj, j.terminaEn));
+          return;
+        }
         if (j.fase === 'revelada') {
           const mia = elegida[j.n];
           const acerto = mia === j.correcta;
-          const pe = j.porEquipo?.[miEquipo()];
           if (mia !== undefined) { vibrar(acerto ? 60 : [60, 60, 60]); }
           montar(el, h('div', { class: 'resultado ' + (mia === undefined ? '' : acerto ? 'bien' : 'mal') },
             h('div', { class: 'resultado-titulo' }, mia === undefined ? 'Se terminó el tiempo' : acerto ? '¡Correcto!' : 'Incorrecto'),
             h('p', null, 'La respuesta era ', h('b', null, `${letraOpcion(j.correcta)}. ${j.opciones[j.correcta]}`)),
-            j.modo === 'castigo' && pe
-              ? h('div', { class: 'pila-s' },
-                h('p', null, pe.elegida == null ? 'Tu equipo no votó.' : `Tu equipo eligió ${letraOpcion(pe.elegida)}: ${pe.acerto ? '¡acertó!' : 'se equivocó.'}`),
-                pe.prenda && h('p', { class: 'prenda' }, '🍩 Prenda: ', pe.prenda))
-              : pe && h('p', { class: 'muted' }, `Tu equipo: ${pe.ok} de ${pe.n} acertaron · +${pe.pts} puntos`)));
+            pe && h('p', { class: 'muted' }, `Tu equipo: ${pe.ok} de ${pe.n} acertaron · +${pe.pts} puntos`)));
           return;
         }
         const reloj = h('span', { class: 'reloj' });
@@ -231,20 +223,7 @@ export default {
           },
         }, h('span', { class: 'op-letra' }, letraOpcion(i)), h('span', null, o)));
         const estado = h('p', { class: 'muted chico centro' }, elegida[j.n] !== undefined ? 'Respuesta enviada.' : 'Elegí una opción.');
-        const capitan = j.modo === 'castigo' && j.capitanes?.[miEquipo()] === sala.uid;
-        // Con castigo vota solo el capitán: los demás discuten mirando la tele, sin celular.
-        // Si el capitán no aparece, cualquiera puede tocar «Voto yo» y votar.
-        if (j.modo === 'castigo' && !capitan && !votoYo.has(j.n) && elegida[j.n] === undefined) {
-          const reloj2 = h('span', { class: 'reloj' });
-          montar(el,
-            h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj2),
-            esperando('👀 ¡Miren la tele!', 'Discutan en voz alta. Vota el capitán del equipo (le sale 👑 en el celular).'),
-            h('button', { class: 'btn-link chico', onclick: () => { votoYo.add(j.n); dibujarDeNuevo(); } }, 'El capitán no está: voto yo'));
-          alLimpiar(cuentaRegresiva(reloj2, j.terminaEn));
-          return;
-        }
         montar(el,
-          j.modo === 'castigo' && h('p', { class: 'muted chico centro' }, capitan ? '👑 Sos el capitán: escuchá a tu equipo y votá vos.' : 'Votá por tu equipo.'),
           h('div', { class: 'fila entre' }, h('span', { class: 'etiqueta' }, `Pregunta ${j.n + 1}/${j.total}`), reloj),
           h('p', { class: 'pregunta-alumno' }, j.pregunta),
           h('div', { class: 'opciones' }, botones),
@@ -257,21 +236,29 @@ export default {
 
   tv(el, sala) {
     let barras = null;
+    let cruz = null;
+    let vistas = {};   // marcas ya mostradas: la cruz sale solo cuando aparece un ✗ nuevo
+    const tarjetaMarca = (e, m) => h('div', { class: 'tv-eq tv-eq-marca' + (m === false ? ' mal' : m === true ? ' bien' : ''), style: { '--c': e.color } },
+      h('span', { class: 'tv-eq-nombre' }, e.nombre),
+      h('span', { class: 'tv-eq-marca-ico' }, m === false ? '✗' : m === true ? '✓' : '…'));
     return vista({
       clave: () => `${sala.juego.fase}:${sala.juego.n}`,
       dibujar(alLimpiar) {
         const j = sala.juego;
         barras = null;
+        vistas = { ...(j.marcas || {}) };
         if (j.fase === 'fin') {
           sonido('fin');
           montar(el, h('div', { class: 'tv-centro' }, h('h1', { class: 'tv-titulo' }, '¡Terminó el quiz!'), ranking(sala)));
           return;
         }
+        const castigo = j.modo === 'castigo';
         const revelada = j.fase === 'revelada';
         if (revelada) sonido('bien');
         const max = revelada ? Math.max(1, ...j.conteo) : 1;
         const reloj = h('div', { class: 'tv-reloj' });
         barras = h('div', { class: 'tv-equipos' });
+        cruz = h('div', { class: 'tv-cruz', 'aria-hidden': 'true' });
         montar(el,
           h('div', { class: 'tv-cabecera' },
             h('span', { class: 'tv-etiqueta' }, `${j.titulo || 'Quiz'} · Pregunta ${j.n + 1} de ${j.total}`),
@@ -281,28 +268,46 @@ export default {
             h('div', { class: 'tv-opcion op' + i + (revelada ? (i === j.correcta ? ' correcta' : ' apagada') : '') },
               h('span', { class: 'op-letra' }, letraOpcion(i)),
               h('span', { class: 'tv-op-txt' }, o),
-              revelada && h('span', { class: 'tv-op-n' }, j.conteo[i]),
-              revelada && h('span', { class: 'tv-op-barra', style: { width: (100 * j.conteo[i]) / max + '%' } })))),
+              revelada && !castigo && h('span', { class: 'tv-op-n' }, j.conteo[i]),
+              revelada && !castigo && h('span', { class: 'tv-op-barra', style: { width: (100 * j.conteo[i]) / max + '%' } })))),
           revelada
             ? h('div', { class: 'tv-equipos' }, sala.equipos().map((e) => {
               const pe = j.porEquipo?.[e.id] || { ok: 0, n: 0, pts: 0 };
-              if (j.modo === 'castigo') {
-                return h('div', { class: 'tv-eq' + (pe.prenda ? ' penado' : ''), style: { '--c': e.color } },
+              if (castigo) {
+                return h('div', { class: 'tv-eq tv-eq-marca' + (pe.marca === false ? ' mal' : pe.acerto ? ' bien' : ''), style: { '--c': e.color } },
                   h('span', { class: 'tv-eq-nombre' }, e.nombre),
-                  h('span', { class: 'tv-eq-dato' }, pe.elegida == null ? 'sin voto' : `${letraOpcion(pe.elegida)} ${pe.acerto ? '✓' : '✗'}`),
-                  pe.prenda ? h('span', { class: 'tv-prenda' }, `🍩 ${pe.prenda}`) : h('span', { class: 'tv-eq-pts' }, `+${pe.pts}`));
+                  h('span', { class: 'tv-eq-marca-ico' }, pe.marca === false ? '✗' : pe.acerto ? '✓' : '—'),
+                  h('span', { class: 'tv-eq-pts' }, `+${pe.pts}`));
               }
               return h('div', { class: 'tv-eq', style: { '--c': e.color } },
                 h('span', { class: 'tv-eq-nombre' }, e.nombre),
                 h('span', { class: 'tv-eq-dato' }, `${pe.ok}/${pe.n} ✓`),
                 h('span', { class: 'tv-eq-pts' }, `+${pe.pts}`));
             }))
-            : barras);
-        if (!revelada) alLimpiar(cuentaRegresiva(reloj, j.terminaEn, { cadaSegundo: (f) => reloj.classList.toggle('urgente', f < 5500) }));
+            : barras,
+          cruz);
+        if (!revelada) {
+          alLimpiar(cuentaRegresiva(reloj, j.terminaEn, {
+            cadaSegundo: (f) => reloj.classList.toggle('urgente', f < 5500),
+            alTerminar: castigo ? () => { reloj.textContent = '¡Tiempo!'; } : undefined,
+          }));
+        }
       },
       refrescar() {
         const j = sala.juego;
         if (!barras || j.fase !== 'pregunta') return;
+        if (j.modo === 'castigo') {
+          const marcas = j.marcas || {};
+          montar(barras, sala.equipos().map((e) => tarjetaMarca(e, marcas[e.id])));
+          const nuevo = sala.equipos().find((e) => marcas[e.id] === false && vistas[e.id] !== false);
+          vistas = { ...marcas };
+          if (nuevo && cruz) {
+            sonido('error');
+            montar(cruz, h('div', { class: 'tv-cruz-x' }, '✗'), h('div', { class: 'tv-cruz-eq', style: { '--c': nuevo.color } }, nuevo.nombre));
+            cruz.classList.remove('activa'); void cruz.offsetWidth; cruz.classList.add('activa');
+          }
+          return;
+        }
         const resp = sala.respuestasJuego(j.n);
         montar(barras, sala.equipos().map((e) => {
           const m = sala.miembros(e.id).filter((x) => x.presente || resp.has(x.uid));

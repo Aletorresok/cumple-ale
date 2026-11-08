@@ -796,9 +796,18 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 @media (prefers-reduced-motion: reduce) { .tv-escena-items li { animation: none; opacity: 1; } }
 
 /* Trivia con castigo */
-.prenda { margin: 6px 0; padding: 8px 12px; border-radius: 10px; background: var(--mark); color: #1b1b1b; font-weight: 700; }
-.tv-eq.penado { outline: 3px solid var(--mark); border-radius: 12px; }
-.tv-prenda { grid-column: 1 / -1; font-size: 1.5rem; font-weight: 800; color: var(--mark); }
+/* Trivia con castigo: marcas por equipo y cruz roja gigante en la tele */
+.tv-eq.tv-eq-marca { grid-template-columns: 1fr auto auto; }
+.tv-eq-marca-ico { font-size: 1.8em; font-weight: 900; line-height: 1; color: var(--tv-muted, #999); }
+.tv-eq-marca.bien .tv-eq-marca-ico { color: #2fbf4a; }
+.tv-eq-marca.mal { outline: 4px solid #e23b2e; }
+.tv-eq-marca.mal .tv-eq-marca-ico { color: #e23b2e; }
+.tv-cruz { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 50; background: rgba(120, 0, 0, .35); }
+.tv-cruz.activa { display: flex; animation: cruz-sale 2.4s ease forwards; }
+.tv-cruz-x { font-size: min(60vh, 60vw); line-height: .9; font-weight: 900; color: #e23b2e; text-shadow: 0 0 40px rgba(0,0,0,.6), 0 8px 0 #7a0d06; animation: cruz-golpe .35s cubic-bezier(.2, 1.6, .4, 1); }
+.tv-cruz-eq { margin-top: .2em; padding: .2em .8em; border-radius: 14px; background: var(--c); color: #fff; font-size: 3.2rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,.4); }
+@keyframes cruz-golpe { from { transform: scale(2.4) rotate(-12deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes cruz-sale { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ── Dibujá en Springfield ── */
 .lienzo { display: block; width: 100%; aspect-ratio: 4 / 3; background: #fff; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -856,7 +865,6 @@ body.modo-invitado { background: color-mix(in srgb, var(--mi-color) 9%, var(--bg
 .modo-invitado .opcion { min-height: 72px; font-size: 1.15rem; }
 
 /* ════════ Tele: legible desde el sillón ════════ */
-.tv-prenda { font-size: 1.05em; line-height: 1.25; }
 .tv-pie .marcador-eq { font-size: 1.15em; padding: .35em 1em; }
 .mira-tele { text-align: center; font-family: var(--display); font-size: 1.2rem; color: var(--muted); margin: 8px 0; }
 .tv-pts-ronda { gap: .6em; } .tv-pts-ronda .tv-pozo { font-size: 2.6em; } .tv-pts-ronda .pildora { font-size: 1em; }
