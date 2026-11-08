@@ -28,6 +28,18 @@ export const ESCENAS = [
     ],
   },
   {
+    id: 'burns-enfermedades',
+    titulo: 'Las enfermedades del Sr. Burns',
+    video: 'video/escena-burns.mp4',
+    consigna: '¿Qué enfermedades tiene el Sr. Burns? (Si nombran 5, la respuesta es correcta)',
+    fija: true,
+    minimo: 5,   // si nombran 5 de las 6, la respuesta es correcta
+    items: [
+      ['Pulmonía', 'Pulmonia', 'Neumonía', 'Neumonia'], ['Diabetes juvenil', 'Diabetes'], ['Embarazo psicológico', 'Embarazo psicologico', 'Embarazo'],
+      ['Gripe', 'Influenza'], ['Bronquitis'], ['Cáncer pancreático', 'Cancer pancreatico', 'Cáncer de páncreas', 'Cancer'],
+    ],
+  },
+  {
     id: 'cleto',
     titulo: 'Los hijos de Cleto',
     video: 'video/escena-cleto.mp4',
@@ -74,7 +86,6 @@ export const ESCENAS = [
     id: 'mascotas',
     titulo: 'Las mascotas de los Simpson',
     consigna: 'Perros, gatos y bichos que pasaron por la casa de Siempreviva. ¿Cuántos se acuerdan?',
-    fija: true,
     items: [
       ['Ayudante de Santa', 'Ayudante de Santa Claus', 'Santa\'s Little Helper', 'Ayudante'], ['Bola de Nieve', 'Bola de Nieve II', 'Snowball'],
       ['Pinchy', 'la langosta', 'Pinchi'], ['Mojo', 'el mono'], ['Plopper', 'Cerdo Araña', 'Spider Cerdo', 'Spider Pig'],
