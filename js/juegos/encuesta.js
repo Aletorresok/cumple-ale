@@ -10,8 +10,13 @@
 // Las encuestas salen de un banco o de lo que responde el propio grupo en el momento.
 import { h, montar, vista, selectorBanco, selector, ranking, esperando, pildoraEquipo } from './comun.js';
 import { itemsDe } from '../bancos.js';
+import { BANCO_SPRINGFIELD } from '../springfield.js';
 import { mezclar, respuestaCorrecta, cuentaRegresiva, toast, sonido, vibrar, idAzar, confirmar } from '../util.js';
 import { contarPalabras, ofensiva } from './nube.js';
+
+// El banco Springfield guardado en Firebase es una copia del momento en que se agregó. Sus encuestas
+// salen siempre del código, que tiene los puntos reales del formulario de los invitados.
+const encuestasDe = (banco) => itemsDe(banco?.plantilla === 'springfield' ? BANCO_SPRINGFIELD : banco, 'encuesta');
 
 const MAX_CASILLEROS = 8;
 // Modo «alternado» (reglas de la fiesta): 5 respuestas por pregunta, cada acierto vale 1 punto
@@ -169,7 +174,7 @@ export default {
     const zonaPreguntas = h('div', { class: 'pila-s' });
     const pintarPreguntas = () => {
       const banco = b.banco();
-      const lista = banco ? itemsDe(banco, 'encuesta').map((e) => e.pregunta) : [];
+      const lista = banco ? encuestasDe(banco).map((e) => e.pregunta) : [];
       elegidas = elegidas.filter((q) => lista.includes(q));
       montar(zonaPreguntas, h('span', { class: 'etq' }, 'Preguntas que salen (tocalas en orden; si no elegís, salen al azar)'),
         h('div', { class: 'pila-s' }, lista.map((q) => {
@@ -183,17 +188,30 @@ export default {
     };
     b.el.querySelector?.('select')?.addEventListener('change', () => { elegidas = []; pintarPreguntas(); });
     pintarPreguntas();
-    const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el, zonaPreguntas, h('label', { class: 'check' }, dobleUltima, 'La última ronda vale doble'));
+    const checkDoble = h('label', { class: 'check' }, dobleUltima, 'La última ronda vale doble');
+    const zonaBanco = h('div', { class: 'pila' }, b.el, rondas.el, zonaPreguntas, checkDoble);
     const zonaCurso = h('div', { class: 'pila', hidden: true },
       h('label', { class: 'pila-s' }, h('span', { class: 'etq' }, 'Primera pregunta'), pregunta),
       h('p', { class: 'muted chico' }, 'Cada invitado responde desde su celular. Con las respuestas más repetidas se arma el tablero: cada una vale tantos puntos como personas la dijeron.'));
+    // Con las reglas de la fiesta cada respuesta vale siempre 1: el doble y el pozo son del modo clásico.
+    const selReglas = alternado.el.querySelector('select');
+    const ayuda = h('p', { class: 'muted chico' });
+    const pintarReglas = () => {
+      const clasico = selReglas.value === 'clasico';
+      checkDoble.hidden = !clasico;
+      ayuda.textContent = clasico
+        ? `Cada ronda se enfrentan dos equipos, rotando. Cara a cara con pulsador, el ganador elige si juega o pasa, y con ${STRIKES} errores el otro equipo puede robar el pozo.`
+        : 'Cada ronda se enfrentan dos equipos, rotando. Cada respuesta vale 1 punto para la tabla general; si un equipo erra, responde el otro. Con 3 errores se termina la ronda.';
+    };
+    selReglas.addEventListener('change', pintarReglas);
+    pintarReglas();
     const selFuente = fuente.el.querySelector('select');
     selFuente.addEventListener('change', () => { zonaBanco.hidden = selFuente.value !== 'banco'; zonaCurso.hidden = selFuente.value !== 'curso'; });
     return {
       el: h('div', { class: 'pila' }, fuente.el, zonaBanco, zonaCurso, alternado.el, pulsador.el, seg.el,
         h('fieldset', { class: 'pila-s' }, h('legend', { class: 'etq' }, 'Equipos que juegan'),
           h('div', { class: 'fila' }, checks.map(({ e, input }) => h('label', { class: 'check' }, input, pildoraEquipo(e))))),
-        h('p', { class: 'muted chico' }, `Cada ronda se enfrentan dos equipos, rotando. Cara a cara con pulsador, el ganador elige si juega o pasa, y con ${STRIKES} errores el otro equipo puede robar el pozo.`)),
+        ayuda),
       leer: () => {
         const equipos = checks.filter((c) => c.input.checked).map((c) => c.e.id);
         if (!equipos.length) { toast('Elegí al menos un equipo', 'error'); return null; }
@@ -207,7 +225,7 @@ export default {
         if (!banco) return null;
         const llaves = rondas.valor() === 'llaves';
         if (llaves && equipos.length !== 4) { toast('Las llaves son para 4 equipos: elegí otra cantidad de rondas', 'error'); return null; }
-        return { ...base, banco, llaves, rondas: llaves ? 4 : Number(rondas.valor()), doble: dobleUltima.checked, elegidas };
+        return { ...base, banco, llaves, rondas: llaves ? 4 : Number(rondas.valor()), doble: base.alterna ? false : dobleUltima.checked, elegidas };
       },
     };
   },
@@ -222,7 +240,7 @@ export default {
       return;
     }
     // Primero las elegidas (en su orden) y después el resto al azar, de repuesto.
-    const todas = itemsDe(cfg.banco, 'encuesta').map((e) => ({
+    const todas = encuestasDe(cfg.banco).map((e) => ({
       pregunta: e.pregunta, respuestas: [...e.respuestas].sort((a, b) => b.puntos - a.puntos).slice(0, MAX_CASILLEROS),
     }));
     const elegidas = (cfg.elegidas || []).map((q) => todas.find((e) => e.pregunta === q)).filter(Boolean);
