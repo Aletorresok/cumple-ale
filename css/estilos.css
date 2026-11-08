@@ -796,6 +796,11 @@ body.modo-tv { background: linear-gradient(180deg, var(--tv-cielo) 0%, var(--tv-
 @media (prefers-reduced-motion: reduce) { .tv-escena-items li { animation: none; opacity: 1; } }
 
 /* Trivia con castigo */
+/* Trivia japonesa: título con subtítulo del capítulo */
+.tv-trivia-nombre { display: flex; flex-direction: column; gap: .1em; line-height: 1.1; }
+.tv-trivia-nombre b { font-size: 2.3rem; color: #e23b2e; letter-spacing: .02em; }
+.tv-trivia-nombre span { font-size: 1.35rem; font-style: italic; color: var(--tv-muted); }
+.tv-trivia-nombre small { font-size: .85rem; letter-spacing: .2em; text-transform: uppercase; color: var(--tv-muted); }
 /* Trivia con castigo: marcas por equipo y cruz roja gigante en la tele */
 .tv-eq.tv-eq-marca { grid-template-columns: 1fr auto auto; }
 .tv-eq-marca-ico { font-size: 1.8em; font-weight: 900; line-height: 1; color: var(--tv-muted, #999); }
