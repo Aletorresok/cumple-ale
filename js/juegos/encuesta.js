@@ -153,7 +153,7 @@ export default {
   configurar({ bancos, sala }) {
     const fuente = selector('cfg-fuente', 'Preguntas', [['banco', 'De un banco (encuestas ya cargadas)'], ['curso', 'Encuesta en vivo: primero responden todos']], 'banco');
     const b = selectorBanco(bancos, 'encuesta', 1);
-    const rondas = selector('cfg-rondas', 'Rondas', [['llaves', '4 rondas en llaves: dos cruces, perdedores entre sí y final (4 equipos)'], [3, '3, rotando'], [4, '4, rotando'], [5, '5, rotando'], [6, '6, rotando'], [0, 'Todas las del banco, rotando']], 'llaves');
+    const rondas = selector('cfg-rondas', 'Rondas', [['llaves', '4 rondas en llaves: dos cruces, perdedores entre sí y final (4 equipos)'], [3, '3, rotando'], [4, '4, rotando'], [5, '5, rotando'], [6, '6, rotando'], [0, 'Todas las del banco, rotando']], 4);
     const dobleUltima = h('input', { type: 'checkbox', id: 'cfg-doble', checked: true });
     const alternado = selector('cfg-reglas', 'Reglas', [
       ['alterna', '5 respuestas, 1 punto cada una: si acierta sigue, si erra responde el rival'],
@@ -430,7 +430,14 @@ export default {
         return;
       }
       if (j.alterna) {
-        if (!acierto) j.turno = rival(j, j.turno) || j.turno; // erra: responde el otro equipo
+        // Acierta: sigue su equipo. Erra: tiene la chance el rival. Tres errores seguidos
+        // (el que juega, el rival y la última chance del primero) terminan la ronda.
+        if (acierto) j.strikes = 0;
+        else {
+          j.strikes = (j.strikes || 0) + 1;
+          if (j.strikes >= STRIKES) { await cerrarRonda(j); return; }
+          j.turno = rival(j, j.turno) || j.turno;
+        }
       } else if (!acierto) {
         j.strikes++;
         if (j.strikes >= STRIKES) {
@@ -458,6 +465,9 @@ export default {
       const j = tomar(['desempate']);
       if (!j) return;
       j.desempate = { ...j.desempate, gano: eid };
+      // El más cercano suma 1 punto a la tabla general.
+      j.pts = { ...(j.pts || {}), [eid]: (j.pts?.[eid] || 0) + 1 };
+      pendiente[eid] = (pendiente[eid] || 0) + 1;
       await cerrarRonda(j);
     }
 
@@ -632,7 +642,7 @@ export default {
           const ultimaRonda = j.fuente === 'banco' && (j.ronda >= (j.total || privado.encuestas.length) || !sinUsar().length);
           const otra = h('input', { class: 'campo', id: 'otra-pregunta', maxlength: 120, placeholder: 'Siguiente pregunta para el grupo' });
           montar(el, h('p', { class: 'pregunta-host' }, j.pregunta), ultimo,
-            j.desempate?.gano && h('p', null, `Desempate: «${j.desempate.q}» → ${j.desempate.a}. Ganó ${ganador?.nombre || ''}.`),
+            j.desempate?.gano && h('p', null, `Desempate: «${j.desempate.q}» → ${j.desempate.a}. +1 para ${sala.equipo(j.desempate.gano)?.nombre || ''}.`),
             h('p', { class: 'grande' }, j.alterna ? marcadorRonda(sala, j) : ganador ? `${ganador.nombre} se lleva ${j.pozo * (j.mult || 1)} puntos${j.mult > 1 ? ' (doble)' : ''}` : 'Nadie suma en esta ronda'),
             tablero(j),
             !ultimaRonda && elegirProximo(j),
@@ -882,7 +892,7 @@ export default {
         } else if (j.fase === 'fin_ronda') {
           estado = j.alterna
             ? h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, 'Gana la ronda'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
-              j.desempate?.gano && h('div', { class: 'tv-sub centro' }, `Desempate: era ${j.desempate.a}`))
+              j.desempate?.gano && h('div', { class: 'tv-sub centro' }, `Desempate: era ${j.desempate.a} · +1 ${sala.equipo(j.desempate.gano)?.nombre || ''}`))
             : h('div', { class: 'pila-s centro' }, h('div', { class: 'tv-etiqueta' }, j.gano ? 'Se lo lleva' : 'Nadie suma'), j.gano && pildoraEquipo(sala.equipo(j.gano)),
               j.gano && j.mult > 1 && h('div', { class: 'tv-sub centro' }, `${j.pozo} × 2 = ${j.pozo * 2}`));
         } else {
@@ -896,7 +906,8 @@ export default {
           h('div', { class: 'tv-encuesta-lado' },
             ...(j.alterna
               ? [h('div', { class: 'tv-etiqueta' }, 'Aciertos'), h('div', { class: 'pila-s' }, (j.par || []).map((e) =>
-                h('div', { class: 'fila entre nowrap tv-pts-ronda' }, pildoraEquipo(sala.equipo(e)), h('span', { class: 'tv-pozo' }, j.pts?.[e] || 0))))]
+                h('div', { class: 'fila entre nowrap tv-pts-ronda' }, pildoraEquipo(sala.equipo(e)), h('span', { class: 'tv-pozo' }, j.pts?.[e] || 0)))),
+                enJuego(j) && errores(j.strikes)]
               : [h('div', { class: 'tv-etiqueta' }, 'Pozo'), h('div', { class: 'tv-pozo' }, j.pozo),
                 j.fase !== 'duelo' && j.fase !== 'elegir' && errores(j.strikes)]),
             estado));
